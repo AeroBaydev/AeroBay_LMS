@@ -1,0 +1,10 @@
+<?php
+
+$observers = [
+    [
+        'eventname' => '\core\event\user_created',
+        'callback' => '\local_students\send_email::user_created',
+    ],
+];
+
+?>

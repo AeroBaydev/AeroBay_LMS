@@ -1,0 +1,18 @@
+<?php
+
+require_once('../../config.php');
+
+global $DB;
+require_login();
+
+
+$PAGE->set_pagelayout('course');
+$somdata=array();
+ 
+echo'';
+
+
+
+echo $OUTPUT->header();
+echo $OUTPUT->render_from_template('local_mydashboard/mydashboard', $somdata);
+echo $OUTPUT->footer();

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Data Fetching</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Real-Time Data from MySQL</h1>
+    <div id="data-container"></div>
+
+    <script>
+        function fetchData() {
+            $.ajax({
+                url: 'fetch_data.php',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    $('#data-container').empty(); // Clear previous data
+
+                    if (data.length > 0) {
+                        $.each(data, function(index, record) {
+                            $('#data-container').append(
+                                '<p>ID: ' + record.id + '<br>' +
+                                'Name: ' + record.name + '<br>' +
+                                'Email: ' + record.email + '<br>' +
+                                'Created At: ' + record.created_at + '</p>'
+                            );
+                        });
+                    } else {
+                        $('#data-container').append('<p>No records found</p>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error: ' + status + error);
+                }
+            });
+        }
+
+        // Fetch data every 5 seconds
+        setInterval(fetchData, 5000);
+
+        // Initial fetch
+        fetchData();
+    </script>
+</body>
+</html>

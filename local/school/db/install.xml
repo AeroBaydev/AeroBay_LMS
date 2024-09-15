@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/school/db" VERSION="20240605" COMMENT="XMLDB file for Moodle local/school"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="school" COMMENT="Default comment for the table, please edit me">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="school_id" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="course_cat_id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="school_name" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="school_address" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="school_sortname" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="syllabus" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="aerobay_fees" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="principal_name" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="principal_email" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="principal_contact" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_name1" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_email1" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_contact1" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_name2" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_email2" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_contact2" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_name3" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_email3" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_contact3" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_name4" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_email4" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coordinator_contact4" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="state_name" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="last_number" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+    <TABLE NAME="schoolassign" COMMENT="Default comment for the table, please edit me">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="schoolid" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="assigneeroleid" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="schoolassignedto" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="schoolassignee" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="14" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="14" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+    
+  </TABLES>
+</XMLDB>

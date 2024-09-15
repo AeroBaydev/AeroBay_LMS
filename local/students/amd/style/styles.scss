@@ -1,0 +1,71 @@
+
+/*********************Student Registration****************************/
+#page-local-students-student_form .navbar.fixed-top{
+    display: none;
+}
+
+#page-local-students-student_form div#page {
+    background: linear-gradient(45deg, #0700244f, #4A148C), url(img/bg-2.jpg);
+    background-size: cover;
+    background-position: bottom;
+    background-color: #1a253b;
+    margin-top: 0;
+    height: 100vh;
+    overflow: auto;
+}
+
+#page-local-students-student_form div#topofscroll {
+    width: 40% !important;
+    max-width: 40% !important;
+    border-radius: 30px;
+    border: 2px dashed #1b3649;
+    box-shadow: 0 0 100px black;
+}
+
+#page-local-students-student_form  .custom-form-class .col-md-3 {
+    flex: 0 0 35%;
+    max-width: 35%;
+}
+
+#page-local-students-student_form  .custom-form-class .col-md-9 {
+    flex: 0 0 65%;
+    max-width: 65%;
+}
+
+#page-local-students-student_form  .custom-form-class .col-md-9 input,#page-local-students-student_form  .custom-form-class .col-md-9 select {
+    width: 100%;
+}
+#page-local-students-student_form  header#page-header > .w-100 > .d-flex:nth-child(1) li.breadcrumb-item a {
+    color: #372d6a;
+    font-weight: 600;
+}
+
+#page-local-students-student_form .fdescription {
+    display: none;
+}
+#page-local-students-student_form #fgroup_id_buttonar{
+    width: 100%;
+}
+
+#page-local-students-student_form .btn-secondary {
+    color: #ffffff;
+    background-color: #F44336;
+    border-color: #F44336;
+    border-radius: 50px;
+    padding: 10px 40px;
+    font-weight: 600;
+}
+#page-local-students-student_form .btn-primary {
+    font-weight: 600;
+}
+#page-local-students-student_form label, #page-local-students-student_form #id_dob_label {
+    color: black;
+    font-weight: 600;
+}
+#page-local-students-student_form .page-context-header {
+    color: #000;
+}
+
+#page-local-students-student_form .custom-form-class  .mb-3{
+    margin-bottom: 0.5rem !important;
+}

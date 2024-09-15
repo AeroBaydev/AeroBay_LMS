@@ -1,0 +1,45 @@
+<?php
+
+$string['pluginname'] = 'School';
+$string['school_name'] = 'School Name';
+$string['school_sortname'] = 'Short Name';
+$string['school_address'] = 'School Address';
+$string['principal_name'] = 'Principal Name';
+$string['principal_email'] = 'Principal Email';
+$string['principal_contact'] = 'Principal Contact No';
+$string['coordinator_names'] = 'Coordinator name';
+$string['coordinator_name1'] = 'Coordinator name-1';
+$string['coordinator_name2'] = 'Coordinator name-2';
+$string['coordinator_name3'] = 'Coordinator name-3';
+$string['coordinator_name4'] = 'Coordinator name-4';
+$string['coordinator_email1'] = 'Coordinator Email-1';
+$string['coordinator_email2'] = 'Coordinator Email-2';
+$string['coordinator_email3'] = 'Coordinator Email-3';
+$string['coordinator_email4'] = 'Coordinator Email-4';
+$string['coordinator_contact1'] = 'Coordinator Contact-1';
+$string['coordinator_contact2'] = 'Coordinator Contact-2';
+$string['coordinator_contact3'] = 'Coordinator Contact-3';
+$string['coordinator_contact4'] = 'Coordinator Contact-4';
+$string['syllabus'] = 'Syllabus';
+$string['aerobay_fees'] = 'Aerobay Fees';
+$string['profile'] = 'School Profile';
+$string['selectcohort'] = 'Select Cohort';
+$string['selectuser'] = 'Select Users';
+$string['cohort'] = 'Add User into Cohort';
+$string['deleteconfirm'] = 'Are you sure want to delete school';
+$string['school'] = 'School Management';
+$string['category'] = 'Manage Classes and Sessions';
+$string['all_cohort'] = 'Enroll user in school';
+$string['add_student'] = 'Add Student';
+$string['savechanges'] = 'Add School';
+$string['savechanges1'] = 'Save Changes';
+$string['schoolsuccess'] = 'School created Successfully';
+$string['updatesuccess'] = 'School Updated Successfully';
+$string['state_name'] = 'State';
+$string['numeric_required'] = 'Enter only numerical value!';
+$string['deletesuccess'] = 'School data deleted successfully!';
+$string['course_copy'] = 'Course Copy';
+$string['selectsubcategory'] = 'Select Grade';
+$string['school_sortname_error'] = 'short name is already used for another school';
+$string['aerobay_about'] = 'About School';
+?>

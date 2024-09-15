@@ -1,0 +1,129 @@
+.completionprogress{
+     background:#06a9ef;
+     height:120%;
+     text-align:center;
+}
+thead > tr{
+	background: #434e58;
+    color: #fff;
+}
+
+thead > tr > th{
+	text-align: center !important;
+}
+
+.custom-table tr th{
+	white-space:nowrap;
+}
+
+tbody > tr > td{
+	text-align: center !important;
+}
+
+.filterblock{
+	background: #f3e420;
+}
+.filter{
+	font-size: 16px;
+    margin-left: 0.3%;
+    float: left;
+}
+.coursename{
+    margin-left: 2%;
+    color: black;
+    display: inline;
+}
+#filtervalue{
+	margin-left: 1%;
+	border-color: darkblue;
+}
+
+.rtr-button{
+	margin:0px 5px;
+}
+
+.margin-top{
+	margin-top:30px;
+}
+
+.form-row .form-group{
+	margin-bottom: 10px;
+}
+
+.margin-bottom{
+	margin-bottom:15px;
+}
+
+.iconimg{
+	height: 24px;
+    width: 41px;
+    float: right;
+}
+.cleardiv{
+	clear: both;
+}
+
+.tp-div-filter-heading{
+	background-color: #fff565;
+    padding: 10px 0px 0px;
+    margin-bottom: 30px;
+    border-bottom: 5px solid #c9b900;
+}
+
+
+.filter-newinput{
+	padding:15px;
+}
+
+.filter-input input, .filter-input textarea, 
+.filter-input .uneditable-input {
+    width: 70%;
+}
+
+.add-box{
+	background: #ccc;
+    padding: 5px 10px;
+    border-bottom: 5px solid #a4a4a4;
+}
+
+.span6-custom{
+	   
+    display: grid;
+    padding: 10px;
+}
+
+.amit-form .form-group .col-md-3{
+	max-width: 100%;
+    flex: inherit !important;	
+}
+
+.cus-ami-right-form{
+	margin-top:15px;
+}
+
+.cus-ami-right-form .form-group{
+	float:right;
+}
+/*
+#mform1{
+	border: 1px solid #e4d000;
+    margin-bottom: 15px;
+}*/
+
+.fcontainer{
+    margin-top: -30px;
+	padding-top: 30px;
+}
+
+#id_filterhead{
+	margin-top: -18px;
+}
+
+.mform fieldset {
+    border-bottom: none;
+}
+
+.ftoggler{
+	
+	margin-bottom: 30px;
+}

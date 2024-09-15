@@ -1,0 +1,43 @@
+/*******
+  Created by Cocoon
+  https://createdbycocoon.com
+  Edumy - LMS Online Education Course & School Moodle Theme
+********/
+/* */
+
+body {
+  background-attachment: fixed;
+  background-color: #ffffff;
+  color: #6f7074;
+  font-family: '[[setting:secondary_font]]', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.642;
+  overflow-x: hidden;
+  transition: inherit;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dropdown .drawer.drawer-left .drawercontent .list-group .list-group-item {
+    color: #63718c;
+    padding: 16px 24px;
+    border: unset;
+}
+
+.dropdown-item:active, .dropdown-item:focus, .dropdown-item:focus-within, .dropdown-item:hover {
+    outline: 0;
+    background-color: #ebf0f9;
+    color: #4c5a73;
+}
+
+#page-login-signup .login-container {
+  background: #fff url(/update/local/trainer/amd/image/login-graphic.svg) -150px -110px no-repeat;
+  background-size: 60%;
+  padding: 160px 50px 20px;
+}
+@media (min-width: 768px) {
+  #page.drawers {
+      padding-left: 10rem !important;
+      padding-right: 3rem !important;
+  }
+}

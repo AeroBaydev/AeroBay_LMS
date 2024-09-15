@@ -1,0 +1,33 @@
+
+#addcontrols {
+	margin-top: 68px;
+	margin-bottom: 22px;
+}
+
+.btn-secondary {
+	background-color: #d9d9d9;
+	margin-left: 5px;
+	margin-top: -2px;
+}
+
+.positioned {
+	position: relative; /*position:absolute in .load won't work without this*/
+}
+
+.load {
+	border: 5px solid #f3f3f3; 
+	border-top: 5px solid #ccc; 
+	border-radius: 50%;
+	width: 50px;
+	height: 50px;
+	animation: spin 1s linear infinite;
+	position: absolute;
+	top: 0; right: 0; bottom:0; left: 0;
+	margin: auto !important;
+	z-index: 3;
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}

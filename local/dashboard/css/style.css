@@ -1,0 +1,298 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+#inst9 , nav.fixed-top.navbar.navbar-bootswatch.navbar-expand.moodle-has-zindex {
+    background-color: #C0D6E4;
+} 
+#inst9 span {
+    color: #000000; 
+}
+#inst9 a {
+    color: #000000; 
+    text-decoration: none;
+}
+div#usernavigation i {
+    color: black;
+}
+.action-menu.moodle-actionmenu.nowrap-items a {
+    color: black;
+}
+/* .col-12.pt-3.pb-3 .card {
+    display: none; 
+} */
+body {
+    font-family: "Poppins", sans-serif;
+    font-weight: 300;
+    font-style: normal;
+    font-size: 14px;
+} 
+/* a.canvasjs-chart-credit {
+    display: none;
+} */
+
+.bg-color {
+    background-color: #39261F;
+}
+
+.f-60 {
+    font-size: 60px;
+}
+
+.f-45 {
+    font-size: 45px;
+}
+
+.f-25 {
+    font-size: 25px;
+}
+
+.f-20 {
+    font-size: 20px;
+}
+
+.f-12 {
+    font-size: 12px;
+}
+
+.navbar-brand {
+    font-size: 26px;
+    font-weight: bold;
+    padding: 0px;
+    color: #F4D837;
+}
+
+.navbar-text a {
+    color: #F4D837;
+    font-size: 18px;
+}
+
+.side-nav {
+    background-color: #2A381E;
+}
+
+.nav-pills li a {
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.main-tab .nav-item.show .nav-link,
+.nav-tabs .nav-link.active {
+    color: #495057;
+    background-color: #fff;
+    border-color: #CDCDCD #CDCDCD #fff;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.nav-item.show .nav-link,
+.nav-tabs .nav-link {
+    color: #fff;
+    background-color: #2863ae;
+    border-color: #CDCDCD #CDCDCD #fff;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    margin: 0px 12px;
+}
+
+.text-green {
+    color: #2863ae;
+}
+
+.bg-color-blue {
+    background-color: #C0D6E4;
+}
+
+.bx-shadow {
+    box-shadow: 0px 4px 8px #0000002e;
+}
+
+.dash-box {
+    background-color: #fff;
+    box-shadow: 0px 4px 8px #0000002e;
+    border: 1px solid #CDCDCD;
+    border-radius: 10px;
+    margin: 30px;
+    padding: 25px;
+}
+
+.dash-box p {
+    margin: 0px;
+}
+
+.img-graph {
+    height: 75px;
+}
+
+.bg-gray {
+    background-color: #E8E8E8;
+}
+
+.graph-box {
+    background-color: white;
+    box-shadow: 0px 4px 8px #0000002e;
+    border: 1px solid #CDCDCD;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.graph-box img {
+    width: auto;
+    height: 280px;
+}
+
+.drp-graph button {
+    border: 1px solid #00000030;
+    font-size: 12px;
+}
+
+.btn:focus {
+    outline: 0;
+    box-shadow: 0 0 0 0rem rgba(13, 110, 253, .25);
+}
+
+.text-black {
+    color: #000;
+}
+
+.sb-table thead tr th {
+    text-transform: uppercase;
+    font-weight: normal;
+    text-align: center;
+    border: 0;
+}
+
+.heading-table {
+    color: #2863ae;
+    text-transform: uppercase;
+    font-size: 19px;
+    font-weight: 500;
+}
+
+.sb-table tbody tr td {
+    text-align: center;
+    background: #F9F9F9;
+    border: 0;
+}
+
+.hr-tbl {
+    height: 2px !important;
+    background-color: #2863ae;
+    opacity: inherit;
+}
+
+.wdth-70 {
+    width: 80px;
+}
+
+a.btn.d-lg-none.menu_btn {
+    color: #F4D837;
+    font-size: 25px;
+    padding: 0px;
+}
+
+.mbl-side-menu {
+    background-color: #2A381E!important;
+}
+
+.mbl-menu-close {
+    color: #F4D837 !important;
+    background: none;
+    font-size: 25px;
+    padding: 0;
+    border: 0;
+}
+
+.offcanvas-body ul li {
+    list-style-type: none;
+}
+
+.offcanvas-body ul li a {
+    color: #fff;
+}
+
+.offcanvas-body ul li a:hover,
+.offcanvas-body ul li a:focus {
+    color: #F4D837;
+}
+
+button#nav-home-tab i {
+    display: none;
+}
+
+.pt-50 {
+    padding-top: 50px;
+}
+
+/* Media Queries */
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+    .dash-box {
+        margin: 15px 0px;
+        padding: 23px;
+    }
+
+    .navbar-text a {
+        font-size: 16px;
+    }
+
+    .graph-box img {
+        width: 100%;
+        height: auto;
+    }
+
+    .navbar-brand {
+        font-size: 22px;
+    }
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+    /* Add your styles for small devices here */
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+    /* Add your styles for medium devices here */
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+    /* Add your styles for large devices here */
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+    /* Add your styles for extra large devices here */
+}
+.custom-form-class {
+    margin-left: 15%;
+    display: grid;
+    grid-template: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+}
+#page-local-students-student_form .fdescription.required {
+    display: none;
+}
+/* @media (min-width: 768px) {
+    .custom-form-class .col-md-9 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    .custom-form-class .col-md-3 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+} */
+/* Add this CSS to your stylesheet */
+.button-group-center {
+    display: flex;
+    justify-content: center; 
+    align-items: center;    
+}
+
+.button-group-center .d-flex.flex-wrap.align-items-center {
+    flex-wrap: unset !important;
+}
+.button-group-center .row {
+    margin-right: 5% !important;
+}

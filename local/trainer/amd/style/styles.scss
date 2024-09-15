@@ -1,0 +1,152 @@
+:root {
+    --color-primary: #6858A1;
+    --color-primary-hover: #3e3277;
+    --color-secondary: #b2dfd1;
+    --text-color: #1C1C1C;
+    --color-secondary: #017CAD;
+    --color-secondary-darken: #015a90;
+    --light-gray: #F2F2F2;
+    --darker-gray: #F2F2F2;
+    --white: #ffffff;
+   }
+
+body{
+    color: var(--text-color);
+    .page-header-headings h1{
+        font-weight: 600;
+    }
+    .generaltable tbody tr td:last-child{
+        display: flex;
+    }
+    .form-inline{
+        margin-bottom: 20px;
+    }
+    .form-inline form{
+        margin-bottom: 0;
+    }
+    .form-inline .singleselect select{
+        margin-right: 10px;
+    }
+    .card-title{
+        font-weight: 600;
+    }
+    .block_navigation .block_tree p.hasicon, .block_settings .block_tree p.hasicon{
+        padding-left: 0;
+    }
+    .block_navigation .block_tree .active_tree_node {
+        font-weight: 700;
+    }
+    .block_navigation .block_tree .active_tree_node a{
+        color:#0d6efd;
+    }
+    .block_navigation .item_with_icon{
+        font-weight: 400;
+    }
+    .block_navigation .item_with_icon a{
+        color: #212529;
+    }
+    /*---Login screen----*/
+    .login-container{
+        max-width: 1440px;
+        width: 1440px !important;
+        border-radius: 54px;
+        padding: 30px;
+        background:#fff url(/update/local/trainer/amd/image/login-graphic.svg) -120px -120px no-repeat;
+        
+        img{
+            max-width: 100%;
+        }
+        .login-heading{
+            display: none;
+        }
+        .btn-primary{
+            background: var(--color-primary);
+            border: none;
+            height: 50px;
+            text-transform: uppercase;
+            &:hover{
+                background: var(--color-primary-hover);
+            }
+        }
+        .login-form{
+            margin-top: 270px;
+            max-width: 445px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .left-column{
+            background: url(/update/local/trainer/amd/image/stars.svg) 0 bottom no-repeat;
+            background-size: 17%;
+        }
+        .form-control {
+            height: 50px;
+            border: none;
+            background: var(--light-gray);
+        }
+
+    }
+} 
+
+
+.login-form-submit .btn, .avg .btn {
+    font-weight: 600;
+}
+button#loginbtn {
+    background: #3e3277 !important;
+}
+.login-form-forgotpassword.form-group a {
+    font-size: 18px;
+    font-weight: 600;
+    color: #585858;
+    display: block;
+    margin: 10px 0 0;
+    border: 1px solid #ccc;
+    padding: 6px 20px;
+    border-radius: 50px;
+    text-align: center;
+}
+.login-container .login-identityproviders .login-identityprovider-btn {
+    border: 1px solid #ccc;
+    width: 66%;
+    margin: 0 auto;
+    padding: 10px;
+    border-radius: 50px;
+}
+.login-container .login-divider {
+    display: none;
+}
+
+#page-login-index div#page {
+    background: black;
+    position: relative;
+}
+
+#page-login-index div#page::before{
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: url(https://i.imgur.com/YKY28eT.png);
+    width: 100%;
+    height: 100vh;
+}
+#page-content{
+    z-index: 1;
+	background:transparent url('https://i.imgur.com/XYMF4ca.png') repeat top center;
+	animation: move-twink-back 200s linear infinite;
+}
+
+@keyframes move-twink-back {
+	from {background-position:0 0;}
+	to {background-position:-10000px 5000px;}
+}
+
+/*---Side navigation bar styles---*/
+/*.block_navigation .block_tree li:first-child .tree_item:before{
+    content: "\f105";
+}*/
+
+
+
+
+

@@ -1,0 +1,52 @@
+<?php
+$string['pluginname'] = 'Student';
+$string['firstname'] = 'First Name';
+$string['lastname'] = 'Last Name';
+$string['dob'] = 'Date of Birth';
+$string['email'] = 'E-mail ID';
+$string['contactnumber'] = 'Contact Number';
+$string['address'] = 'Address';
+$string['save'] = 'Register';
+$string['savechanges'] = 'Save Change';
+$string['username'] = 'Username';
+$string['password'] = 'Password';
+$string['parent'] = 'Parent/Guardian';
+$string['deleteconfirm'] = 'Are you sure want to delete data';
+$string['studentsuccess'] = 'Student Created Successfully!';
+$string['deletesuccess'] = 'Student data deleted successfully';
+$string['updatesuccess'] = 'Student data updated successfully';
+$string['userexists'] = 'Username already exist';
+$string['selectschool'] = 'Select School';
+$string['selectgrade'] = 'Select Grade';
+$string['selectcourse'] = 'Select Course';
+$string['selectsection'] = 'Select Section';
+$string['permanentaddress'] = 'Address';
+$string['hobbies'] = 'Hobbies';
+$string['interest'] = 'Interest';
+$string['studentregistration'] = 'Student Registration';
+$string['phonenumberlength'] = 'Please enter a valid mobile number (10 digits)';
+$string['required'] = 'This field is required';
+$string['emailerror'] = 'Please enter a valid email address';
+$string['register'] = 'Register';
+$string['school'] = 'School';
+$string['grade'] = 'Grade';
+$string['course'] = 'Course';
+$string['mobilenumber'] = 'Mobile Number';
+$string['mobilenumbererror'] = 'Please enter a valid mobile number (10)';
+$string['emailexists'] = 'An account with this email already exists';
+$string['schoolerror'] = 'Please select a school';
+$string['gradeerror'] = 'Please select a grade';
+$string['courseerror'] = 'Please select a course';
+$string['pleaseselectschool'] = 'Please select  school';
+$string['pleaseselectgrade'] = 'Please select  grade';
+$string['pleaseselectcourse'] = 'Please select  course';
+$string['section']='Section';
+$string['registrationsuccess'] = 'Registration Success';
+$string['registrationsuccessmessage'] = 'You have registered successfully! Your user ID has been sent to your email.';
+$string['ok'] = 'OK';
+$string['update'] = 'Update';
+$string['updatesuccessmessage'] = 'You have profile update successfuly ! Your confirmation has been sent to your email';
+$string['Permissiondenied'] = 'Permission Denied';
+
+
+?>

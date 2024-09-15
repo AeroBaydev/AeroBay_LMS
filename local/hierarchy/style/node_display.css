@@ -1,0 +1,19 @@
+dt {
+    display: block;
+    float: left;
+    min-width: 100px;
+	font-weight: 600; 
+	margin-right: 15px;
+}
+
+dt, dd {
+	padding-top: 10px;
+}
+
+.a-heading{
+	margin-left: 20px;
+}
+
+.div-heading{
+	margin-left: 50px;
+}

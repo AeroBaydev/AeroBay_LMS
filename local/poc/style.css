@@ -1,0 +1,64 @@
+.select-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    height: 500px;
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: 1.5em;
+}
+.top-container {
+    background-color: #F7F7F7;
+    padding-top: 1.5em;
+}
+.select-box {
+    min-height: 100%;
+    border-radius: 5px;
+    width: 42%;
+    padding: 20px;
+    border: 1px solid #000;
+    display: flex;
+    flex-direction: column;
+    margin: 1em;
+}
+
+.left-box {
+    background-color: #fff;
+}
+
+.right-box {
+    background-color: #fff;
+}
+
+.middle-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 11.25rem;
+}
+
+.middle-controls button {
+    margin: 10px;
+    padding: 5px 50px;
+    width: 100%;
+    cursor: pointer;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.scrollable-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 300px; /* Adjust the max-height as needed */
+}

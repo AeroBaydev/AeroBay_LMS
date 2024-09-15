@@ -1,0 +1,309 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core/loginform
+
+    Moodle template for the login page.
+
+    Context variables required for this template:
+    * autofocusform: Auto focus on form ?,
+    * canloginasguest - Is guest login allowed?,
+    * canloginbyemail - Is login by email allowed?,
+    * cansignup - Signup allowed?,
+    * cookieshelpicon - cookies help icon details
+    * error - Any errors in the form?,
+    * forgotpasswordurl - Forgot password url,
+    * hasidentityproviders - Flag, set to true to hide identity providers,
+    * hasinstructions - Flag, set to true to show instructions,
+    * identityproviders - List of identiy providers,
+    * instructions - Instructions,
+    * instructionsformat - Format of instructions,
+    * loginurl - Login url,
+    * signupurl - Signup url,
+    * errorformatted - Formatted error,
+    * logourl - Flag, logo url,
+    * sitename - Name of site.,
+    * logintoken - Random token to protect login request.,
+    * maintenance - Maintenance message
+
+    Example context (json):
+    {
+        "autofocusform": false,
+        "canloginasguest": "1",
+        "canloginbyemail": false,
+        "cansignup": true,
+        "cookieshelpicon": {
+            "heading": "Cookies must be enabled in your browser",
+            "text": "<div class=\"no-overflow\">Two cookies are used on this site. Both died..</div>",
+            "icon": {
+                "attributes": [
+                    {
+                        "name": "class",
+                        "value": "iconhelp"
+                    },
+                    {
+                        "name": "alt",
+                        "value": "Help with Cookies must be enabled in your browser"
+                    },
+                    {
+                        "name": "title",
+                        "value": "Help with Cookies must be enabled in your browser"
+                    },
+                    {
+                        "name": "src",
+                        "value": "http://localhost/stable_master/theme/image.php?theme=boost&component=core&image=help"
+                    }
+                ]
+            },
+            "linktext": null,
+            "title": "Help with Cookies must be enabled in your browser",
+            "url": "http://localhost/stable_master/help.php?component=core&identifier=cookiesenabled&lang=en",
+            "ltr": true
+        },
+        "error": "",
+        "forgotpasswordurl": "http://localhost/stable_master/login/forgot_password.php",
+        "hasidentityproviders": false,
+        "hasinstructions": true,
+        "identityproviders": [],
+        "instructions": "For full access to this site, you first need to create an account.",
+        "instructionsformat": "1",
+        "loginurl": "http://localhost/stable_master/login/index.php",
+        "signupurl": "http://localhost/stable_master/login/signup.php",
+        "cookieshelpiconformatted": "",
+        "errorformatted": "",
+        "logourl": false,
+        "sitename": "Beer & Chips",
+        "logintoken": "randomstring",
+        "maintenance": "For full access to this site, you need to login in as an admin.",
+        "languagemenu": "Choose language"
+    }
+}}
+<style>
+
+.logo2{
+    max-width: 365px;
+    margin-left: auto;
+    margin-right: auto;
+img{
+ max-width: 56% !important;
+  margin-left: 25%;
+}
+ }
+#page-login-index #loginlogo {
+    display: none;
+}
+.turneditingoff {
+    position: fixed;
+    top: 90%;
+    left: 50%;
+    z-index: 999;
+}
+.form-inline.text-xs-right.action-button-container {
+    margin-left: auto !important;
+    margin-bottom: 8px;
+    display: flex !important;
+    justify-content: flex-end !important;
+}
+ #page-local-media-media_form h2.upload-school-media {
+    margin-bottom: 3%;
+}
+.custom-heading {
+  font-weight: 600;
+}
+#inst10 ,#inst9 , nav.fixed-top.navbar.navbar-bootswatch.navbar-expand.moodle-has-zindex {
+    background-color: #C0D6E4;
+} 
+#inst9 h5 {
+  display: none !important;
+}
+#inst10 span, #inst9 span {
+    color: #000000; 
+    font-weight: 600;
+}
+#inst10 a, #inst9 a {
+    color: #000000; 
+font-weight: 600;
+    text-decoration: none;
+}
+div#usernavigation i {
+font-weight: 600;
+    color: black;
+}
+.action-menu.moodle-actionmenu.nowrap-items a {
+font-weight: 600;
+    color: black;
+}
+.col-12.pt-3.pb-3 .card {
+    /*display: none; */
+background-color: #C0D6E4;
+a {
+    color: #000000;
+        font-weight: 500;
+}
+.btn-secondary {
+    border-color: #000 !important;
+}
+h1, .h1 {
+    font-size: 2.0rem;
+}
+}
+#page-site-index .columnleft {
+display: none !important;
+}
+.links-wrapper {
+ margin-left: auto !important;
+    display: flex;
+    justify-content: flex-end;
+}
+#page-login-index {
+    background: linear-gradient(-45deg, #ee7752, #3a2f5d, #487cbf, #54599b);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    height: 100vh;
+}
+.login-container {
+    z-index: 9999;
+}
+#page-login-index {
+            position: relative; / Ensure the position is relative to use absolute positioning /
+        }
+.category-listing-actions{
+    display: none;
+}
+
+.links-wrapper {
+    margin-left: 915px;
+}
+.form-inline.text-xs-right.action-button-container {
+    margin-left: 988px;
+    margin-bottom: 8px;
+}
+.cohort-tabs {
+    display: none;
+}
+
+ </style>
+ <link rel="stylesheet" href="{{config.wwwroot}}/local/trainer/amd/style/styles.scss">
+
+
+ 
+  <div class="loginform">
+	<div class="row">
+		<div class="col-md-6 left-column">
+			{{#logourl}}
+				<div id="loginlogo" class="login-logo">
+					<img id="logoimage" src="{{logourl}}" class="img-fluid" alt="{{sitename}}"/>
+					<h1 class="login-heading sr-only">{{#str}} loginto, core, {{sitename}} {{/str}}</h1>
+				</div>
+			{{/logourl}}
+			{{^logourl}}
+				<h1 class="login-heading mb-4">{{#str}} loginto, core, {{sitename}} {{/str}}</h1>
+			{{/logourl}}
+			{{#maintenance}}
+				<div class="alert alert-danger login-maintenance">
+					{{{maintenance}}}
+				</div>
+			{{/maintenance}}
+			{{#error}}
+				<a href="#" id="loginerrormessage" class="sr-only">{{error}}</a>
+				<div class="alert alert-danger" role="alert">{{error}}</div>
+			{{/error}}
+			{{#cansignup}}
+				<a href="{{signupurl}}" class="sr-only">{{#str}} tocreatenewaccount {{/str}}</a>
+			{{/cansignup}}
+			<form class="login-form" action="{{loginurl}}" method="post" id="login">
+				<input type="hidden" name="logintoken" value="{{logintoken}}">
+				<div class="login-form-username form-group">
+					<label for="username" class="sr-only">
+						{{^canloginbyemail}}
+							{{#str}} username {{/str}}
+						{{/canloginbyemail}}
+						{{#canloginbyemail}}
+							{{#str}} usernameemail {{/str}}
+						{{/canloginbyemail}}
+					</label>
+					<input type="text" name="username" id="username" {{!
+						!}}class="form-control form-control-lg" {{!
+						!}}value="{{username}}" {{!
+						!}}placeholder="{{^canloginbyemail}}{{#cleanstr}}username{{/cleanstr}}{{/canloginbyemail}}{{!
+						!}}{{#canloginbyemail}}{{#cleanstr}}usernameemail{{/cleanstr}}{{/canloginbyemail}}" {{!
+						!}}autocomplete="username">
+				</div>
+				<div class="login-form-password form-group">
+					<label for="password" class="sr-only">{{#str}} password {{/str}}</label>
+					<input type="password" name="password" id="password" value="" {{!
+						!}}class="form-control form-control-lg" {{!
+						!}}placeholder="{{#cleanstr}}password{{/cleanstr}}" {{!
+						!}}autocomplete="current-password">
+				</div>
+				<div class="login-form-submit form-group">
+					<button class="btn btn-primary btn-block" type="submit" id="loginbtn">{{#str}}login{{/str}}</button>
+				</div>
+                <div class="avg">
+                    <a class="btn btn-primary btn-block d-flex justify-content-center align-items-center" href="{{config.wwwroot}}/login/register-student.php">{{#str}}studentregistration{{/str}}</a>
+                </div>
+                <div class="login-form-forgotpassword form-group">
+                    <a href="{{forgotpasswordurl}}">{{#str}}forgotaccount{{/str}}</a>
+                </div>
+			</form>
+              {{#hasidentityproviders}}
+        <div class="login-divider"></div>
+        <div class="login-identityproviders">
+            <h2 class="login-heading">{{#str}} potentialidps, auth {{/str}}</h2>
+            {{#identityproviders}}
+                <a class="btn login-identityprovider-btn btn-block" href="{{url}}">
+                    {{#iconurl}}
+                        <img src="{{iconurl}}" alt="" width="24" height="24"/>
+                    {{/iconurl}}
+                    {{name}}
+                </a>
+            {{/identityproviders}}
+        </div>
+    {{/hasidentityproviders}}
+        <div class="logo2 col-md-6">
+            <img src="{{config.wwwroot}}/local/trainer/amd/image/logo2.png"/>
+		</div>
+		</div>
+		<div class="col-md-6">
+            <img src="{{config.wwwroot}}/local/trainer/amd/image/login-img.svg"/>
+		</div>
+	</div>
+</div>
+
+
+
+{{#js}}
+    {{^error}}
+        {{#autofocusform}}
+            var userNameField = document.getElementById('username');
+            if (userNameField.value.length == 0) {
+                userNameField.focus();
+            } else {
+                document.getElementById('password').focus();
+            }
+        {{/autofocusform}}
+    {{/error}}
+    {{#error}}
+        document.getElementById('loginerrormessage').focus();
+    {{/error}}
+    require(['core_form/submit'], function(Submit) {
+        Submit.init("loginbtn");
+        {{#canloginasguest}}
+            Submit.init("loginguestbtn");
+        {{/canloginasguest}}
+    });
+{{/js}}

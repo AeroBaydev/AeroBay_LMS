@@ -1,0 +1,10 @@
+
+add two columns 'branch' and 'dept' in 'user' table (of type int and default value 0) 
+
+add fields 'branch' and 'dept' in user edit form 
+
+modify code to upload users through csv, to add 'branch' and 'dept' idnumber columns in csv file 
+
+add two columns 'branchpoweruser' and 'deptpoweruser' in 'user' table (of type int and default value 0) 
+
+add 6 poweruser roles, 3 for branch and 3 for dept (unit_admin, enrollment_admin and reporting_admin)

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <div class="background-banner"
+        style="background-image: url(https://www.greatschools.org/gk/wp-content/uploads/2014/03/The-school-visit-what-to-look-for-what-to-ask-1-750x325.jpg);">
+        <h1 class=" heading-school font-bold">The Mother's International School.</h1>
+
+    </div>
+    <div class="schooldetails gap-x-4 my-5">
+        <div class="card">
+            <h1 class="text-lg">School deatils</h1>
+            <table>
+
+                <tbody>
+                    <tr>
+                        <td>Schoo ID</td>
+                        <td>{{school.school_id}}</td>
+                    </tr>
+                    <tr>
+                        <td>Name</td>
+                        <td>{{school.school_name}}</td>
+                    </tr>
+                     <tr>
+                        <td>School Address</td>
+                        <td>{{school.school_address}}</td>
+                    </tr>
+                      <tr>
+                        <td>Prinicipal Name</td>
+                        <td>{{school.principal_name}}</td>
+                    </tr>
+                  
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <p>{{school.about}}</p>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

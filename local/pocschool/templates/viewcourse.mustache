@@ -1,0 +1,103 @@
+<style>
+  .card {
+    margin-bottom: 20px; /* Adjust this value as needed */
+  }
+</style>
+
+
+<div class="modal fade bd-example-modal-lg" id="courseiframe" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+       
+        <i class="fa fa-times" aria-hidden="true" onclick="Remove()" style="text-align:right; display:block; cursor: pointer;  margin-top: -10px;  font-size: 20px;"></i>
+    
+       <iframe id="frame" class="rmv" src= "{{url}}" width="100%" height="900"></iframe>
+      </div>
+      <div class="modal-footer text-center">
+        <button type="button" class="btn btn-secondary" onclick="Remove()" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="main-containt">
+    <div class="page-center">
+      <div class="title-main">
+        <h3>Chapter Overview</h3>
+ {{{badcrudurl}}}
+      </div>
+      <div class="course-header">
+        <form class="sa-search sa-search--state--pending">
+          <div class="sa-search__body"><label class="visually-hidden" for="input-search">Search for:</label>
+            <div class="sa-search__icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
+                viewBox="0 0 16 16" fill="currentColor">
+                <path
+                  d="M16.243 14.828C16.243 14.828 16.047 15.308 15.701 15.654C15.34 16.015 14.828 16.242 14.828 16.242L10.321 11.736C9.247 12.522 7.933 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.933 12.522 9.247 11.736 10.321L16.243 14.828ZM6.5 2C4.015 2 2 4.015 2 6.5C2 8.985 4.015 11 6.5 11C8.985 11 11 8.985 11 6.5C11 4.015 8.985 2 6.5 2Z">
+                </path>
+              </svg></div><input type="text" id="input-search" class="sa-search__input" placeholder="Search"
+              autocomplete="off">
+          </div>
+        </form>
+        <div class="main-btn create-course-mobile">
+       
+        </div>
+      </div>
+      <div class="course-items-main">
+        <div class="main-box">
+
+ 
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+	<!-- end subject -->
+
+<div class="row">
+   {{#courses}}
+  <div class="col-sm-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">{{coursename}}</h5>
+        
+        <p class="card-text">Delivery duration : {{delivery}}</p>
+         <p class="card-text">Create at : {{createdate}}</p>
+        <a href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}" class="btn btn-primary">View Details</a>
+        {{#enrolButton}}
+        <a href="{{{config.wwwroot}}}/local/pocschool/enrolluser/studentlist.php?id={{courseid}}" class="btn btn-primary">Enroll Course</a>
+        {{/enrolButton}}
+      </div>
+    </div>
+  </div>
+     {{/courses}}
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+
+function Remove()
+{
+
+location.reload();
+
+}
+
+
+$(document).ready(function(){
+  $("#input-search").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $(".row .col-sm-6").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+  $(".side-menu__item").removeClass("active");
+  $("#cst-admin-course").addClass("active");
+});
+
+
+
+
+</script>
+
+<!-- Repeat the above HTML structure for additional rows and columns -->

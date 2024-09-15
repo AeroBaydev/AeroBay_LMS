@@ -1,0 +1,64 @@
+<?php
+namespace local_send_email_id_and_password\task;
+require_once($CFG->dirroot.'/local/emailtemplates/email_sender.php');
+class send_email_task extends \core\task\scheduled_task {
+    public function get_name() {
+        return get_string('sendemailtask', 'local_send_email_id_and_password');
+    }
+
+    public function execute() {
+        global $DB;
+        mtrace("Executing send_email_task...");
+
+        // Example user IDs to send emails to
+        //$userids = [124]; // Replace with your own logic to fetch user IDs
+       // Fetch records where email_status is not 0
+       $sql = "SELECT * FROM {student} WHERE status = :status AND email_status =:status1";
+
+       // Define parameters with unique keys for each placeholder
+       $params = ['status' => 1, 'status1' => 0];
+       
+       // Execute the SQL query
+       $userids = $DB->get_records_sql($sql, $params);
+//  print_r($userids);
+//  die;
+        foreach ($userids as $userid) {
+            // Fetch user details
+            $user = $DB->get_record('user', ['id' => $userid->userid]);
+
+            if ($user) {
+                // Generate a random password
+                $newpassword = $this->generate_random_password();
+                // $subject = "Your Updated Moodle Password";
+              
+                // Update the user's password
+                if (update_internal_user_password($user, $newpassword)) {
+                    // Prepare and send the email
+                    $subject = "Your Updated Moodle Password";
+                    $message = "Dear {$user->firstname},\n\nYour new password is: {$newpassword}\n\nYour username is: {$user->username}\n\nPlease change this password after your first login.";
+                    
+                    // Send email
+                  //  email_to_user($user, \core_user::get_noreply_user(), $subject, $message);
+                 $result= \local_emailtemplates\email_sender::send_email("student",$userid->userid, $newpassword,0);
+                  
+                 if($result){
+                    $DB->set_field('student', 'email_status', 1, array('userid' => $userid->userid));
+                 }
+                 else{
+                    $DB->set_field('student', 'email_status', 2, array('userid' => $userid->userid));
+                 }
+                }
+            }
+        }
+    }
+
+    /**
+     * Generates a random password.
+     * @return string
+     */
+    public function generate_random_password() {
+        // Define a pool of characters to use for the password
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+        return substr(str_shuffle($chars), 0, 10); // Generate a 10-character password
+    }
+}

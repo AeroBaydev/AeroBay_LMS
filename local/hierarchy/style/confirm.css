@@ -1,0 +1,29 @@
+.confirm-h4 {
+	margin: 20px 0px 0px 20px;
+}
+
+.confirm-p {
+	margin: 20px 0px 0px 20px;
+}
+
+.table-bordered-canvas tr th{
+    white-space:nowrap;
+    text-align:center;
+    vertical-align: top;
+}
+
+.table-bordered-canvas tr td{
+    text-align:center;
+}
+
+.bcheadingsaves {
+    border: 1px solid #ccc;
+    padding: 0 15px;
+}
+
+.bcheadingsaves .main-hed {
+    background: #ccc;
+    margin: 0 -15px 15px;
+    padding: 10px 15px;
+    border-bottom: 5px solid #9f9f9f;
+}

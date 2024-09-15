@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preloader Example</title>
+
+    <style>
+        .card {
+            margin-bottom: 20px; /* Adjust this value as needed */
+        }
+        .modal-body {
+            position: relative !important;
+            flex: 1 1 auto !important;
+            padding: 0.5rem !important;
+        }
+        .d-md-inline-block.mr-md-2.position-relative {
+            display: none !important;
+        }
+        a.btn.btn-success {
+            pointer-events: none;
+        }
+        /* Preloader styles */
+        #preloader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            text-align: center; /* Center content horizontally */
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3em;
+            border-radius: 50%;
+            border-top-color: #fff; /* Color of the spinner */
+        }
+        #success-modal {
+    pointer-events: auto;
+}
+    </style>
+</head>
+<body>
+    <div class="modal fade bd-example-modal-lg" id="courseiframe" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <i class="fa fa-times" aria-hidden="true" onclick="Remove()" style="text-align:right; display:block; cursor: pointer; margin-top: -10px; font-size: 20px;"></i>
+                    <iframe id="frame" class="rmv" src="{{url}}" width="100%" height="900"></iframe>
+                </div>
+                <div class="modal-footer text-center">
+                    <button type="button" class="btn btn-secondary" onclick="Remove()" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-containt">
+        <div class="page-center">
+            <div class="title-main">
+                {{{badcrudurl}}}
+            </div>
+            <div class="course-header">
+ <!-- Success Modal -->
+<div id="success-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background: #fff; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1); z-index: 1000;">
+    <div id="success-message" style="font-size: 16px; color: #333;">Congratulations! Your action was successful.</div>
+    <button id="close-modal" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+</div>
+
+
+                <form class="sa-search sa-search--state--pending">
+                    <div class="sa-search__body">
+                        <label class="visually-hidden" for="input-search">Search for:</label>
+                        <div class="sa-search__icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M16.243 14.828C16.243 14.828 16.047 15.308 15.701 15.654C15.34 16.015 14.828 16.242 14.828 16.242L10.321 11.736C9.247 12.522 7.933 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.933 12.522 9.247 11.736 10.321L16.243 14.828ZM6.5 2C4.015 2 2 4.015 2 6.5C2 8.985 4.015 11 6.5 11C8.985 11 11 8.985 11 6.5C11 4.015 8.985 2 6.5 2Z"></path>
+                            </svg>
+                        </div>
+                        <input type="text" id="input-search" class="sa-search__input" placeholder="Search" autocomplete="off">
+                    </div>
+                </form>
+                <div class="main-btn create-course-mobile">
+                    <!-- Uncomment the following line if needed -->
+                    <!-- <a href="javascript:void();" data-toggle="modal" data-target="#courseiframe"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg><span>Create school</span></a> -->
+                </div>
+            </div>
+            <div class="course-items-main">
+                <div class="main-box">
+                    <!-- Course items will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preloader Icon -->
+    <div id="preloader">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+    <div class="row">
+        {{#categories}}
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{name}}</h5>
+                    <p class="card-text">Course Name : {{name}}</p>
+
+                  
+                    <a href="javascript:void(0)" onclick="copycourse({{id}},'{{{config.wwwroot}}}/local/copycourse/copy.php',{{schoolid}})" class="btn btn-primary">Copy Course</a>
+                </div>
+            </div>
+        </div>
+        {{/categories}}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("#input-search").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $(".row .col-sm-6").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+
+            $(".side-menu__item").removeClass("active");
+            $("#cst-admin-course").addClass("active");
+        });
+
+
+
+ function showModal(message) {
+        document.getElementById("success-message").innerText = message;
+        document.getElementById("success-modal").style.display = "block";
+    }
+
+    // Function to hide the modal
+    function hideModal() {
+
+        document.getElementById("success-modal").style.display = "none";
+        location.reload();
+    }
+
+    document.getElementById("close-modal").addEventListener("click", function() {
+        hideModal();
+    });
+     const page = document.getElementById('page');
+        function copycourse(id,url,schoolid) {
+            // Show preloader
+            document.getElementById("preloader").style.display = "flex";
+   $.ajax({
+        url: url,
+        type: 'GET', 
+        async: false,
+        data: {
+            CatId: id,schoolid:schoolid 
+        },
+        success: function(response) {
+
+             if (response.status === 'success') {
+                showModal("Congratulations! Your grade was successful copy");
+               page.style.pointerEvents = 'none';
+            } else {
+                showModal(response.message);
+            }
+            
+        },
+        complete: function() {
+            document.getElementById("preloader").style.display = "none";
+        },
+       
+    });
+
+
+               
+          
+        }
+    </script>
+</body>
+</html>
