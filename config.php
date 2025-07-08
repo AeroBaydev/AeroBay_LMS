@@ -6,10 +6,10 @@ $CFG = new stdClass();
 
 $CFG->dbtype    = 'mysqli';
 $CFG->dblibrary = 'native';
-$CFG->dbhost    = 'edutechspark.com';
-$CFG->dbname    = 'update1';
-$CFG->dbuser    = 'admin';
-$CFG->dbpass    = 'root@root123';
+$CFG->dbhost    = 'localhost';
+$CFG->dbname    = 'aerobay';
+$CFG->dbuser    = 'moodle-user';
+$CFG->dbpass    = '$Re#@!$%^becv';
 $CFG->prefix    = 'mdl_';
 $CFG->dboptions = array (
   'dbpersist' => 0,
@@ -27,7 +27,7 @@ $CFG->dboptions = array (
 // // for these users only.
 // $CFG->debugusers = '2';
  // $CFG->debug = 32767; $CFG->debugdisplay = 1;
-$CFG->wwwroot   = 'https://edutechspark.com/update';
+$CFG->wwwroot   = 'https://lms.aerobay.in';
 $CFG->dataroot  = '/var/www/updatedata';
 $CFG->admin     = 'admin';
 

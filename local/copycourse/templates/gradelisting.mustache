@@ -142,7 +142,7 @@
                     <p class="card-text">Course Name : {{name}}</p>
              
                   
-                    <a href="javascript:void(0)" onclick="copycourse({{id}},'{{{config.wwwroot}}}/local/pocschool/copy.php',{{schoolid}})" class="btn btn-primary">Copy Course</a>
+                    <a href="javascript:void(0)" onclick="copycourse({{id}},'{{{config.wwwroot}}}/local/copycourse/copy.php',{{schoolid}})" class="btn btn-primary">Copy Course</a>
                 </div>
             </div>
         </div>
@@ -256,7 +256,7 @@
             complete: function() {
                 // Hide the preloader once the request is complete
                  $('#loadingIndicator').remove();
-                 window.location.reload();
+                window.location.reload();
             },
         });
     }

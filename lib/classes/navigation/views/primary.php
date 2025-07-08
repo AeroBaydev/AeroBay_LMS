@@ -43,8 +43,17 @@ class primary extends view {
         $showhomenode = empty($this->page->theme->removedprimarynavitems) ||
             !in_array('home', $this->page->theme->removedprimarynavitems);
         // We do not need to change the text for the home/dashboard depending on the set homepage.
+
+          // Add the dashboard link.
+          $showmyhomenode = !empty($CFG->enabledashboard) && (empty($this->page->theme->removedprimarynavitems) ||
+          !in_array('myhome', $this->page->theme->removedprimarynavitems));
+      if ($showmyhomenode) {
+          $this->add(get_string('myhome'), new \moodle_url('/mydashboard/'),
+              self::TYPE_SETTING, null, 'myhome', new \pix_icon('i/dashboard', ''));
+      }
+
         if ($showhomenode) {
-            $sitehome = $this->add(get_string('home'), new \moodle_url('/'), self::TYPE_SYSTEM,
+            $sitehome = $this->add('My Course', new \moodle_url('/'), self::TYPE_SYSTEM,
                 null, 'home', new \pix_icon('i/home', ''));
         }
         if (isloggedin() && !isguestuser()) {
@@ -56,14 +65,7 @@ class primary extends view {
                 }
             }
 
-            // Add the dashboard link.
-            $showmyhomenode = !empty($CFG->enabledashboard) && (empty($this->page->theme->removedprimarynavitems) ||
-                !in_array('myhome', $this->page->theme->removedprimarynavitems));
-            if ($showmyhomenode) {
-                $this->add(get_string('myhome'), new \moodle_url('/mydashboard/'),
-                    self::TYPE_SETTING, null, 'myhome', new \pix_icon('i/dashboard', ''));
-            }
-
+          
             // Add the mycourses link.
             if(is_siteadmin()){
             $showcoursesnode = empty($this->page->theme->removedprimarynavitems) ||

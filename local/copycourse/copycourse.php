@@ -65,5 +65,5 @@ $sql = "UPDATE {course} SET fullname = TRIM(SUBSTRING_INDEX(fullname, 'copy', 1)
 $DB->execute($sql);
 
 echo  $OUTPUT->header();
-echo  $OUTPUT->render_from_template('local_pocschool/gradelisting', $templatecontext);
+echo  $OUTPUT->render_from_template('local_copycourse/gradelisting', $templatecontext);
 echo $OUTPUT->footer();

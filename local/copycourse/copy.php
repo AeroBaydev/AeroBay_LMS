@@ -20,14 +20,14 @@ if (isset($_SESSION['userIdPoc'])) {
     $userid= $USER->id;
  }
 
-$poc_session_date_id = $DB->get_record('poc_session_date', ['pocid' => $userid,'status'=>1], '*', MUST_EXIST);
+// $poc_session_date_id = $DB->get_record('poc_session_date', ['pocid' => $userid,'status'=>1], '*', MUST_EXIST);
 
-$checkCourseCopy = $DB->record_exists('poc_copy_course',  ['pocid' => $userid,'status'=>1,'gradeid'=>$categoryid,'sessionid'=>$poc_session_date_id->id]);
+// $checkCourseCopy = $DB->record_exists('poc_copy_course',  ['pocid' => $userid,'status'=>1,'gradeid'=>$categoryid,'sessionid'=>$poc_session_date_id->id]);
 
 //  $checkCourse = $DB->get_record('course', ['category' => $categoryid]);
 
 
-if (!empty($courseid  && !$checkCourseCopy)) {
+if (!empty($courseid )) {
 
     $checkCourse = $DB->get_records('course', ['category' => $categoryid]);
 
@@ -73,16 +73,16 @@ if (!empty($courseid  && !$checkCourseCopy)) {
              
 
                if (isset($success)) {
-                $coursie = $DB->get_record('backup_controllers', ['backupid' => $success['restoreid']]);
-                $poc_session_date_id = $DB->get_record('poc_session_date', ['pocid' => $userid,'status'=>1], '*', MUST_EXIST);
-                $record = new stdClass();
-                $record->schoolid = $schoolid;
-                $record->gradeid = $categoryid;
-                $record->courseid = $coursie->itemid;
-                $record->sessionid = $poc_session_date_id->id;
-                $record->pocid = $userid;
-                $record->status = 1;
-                $insertedId = $DB->insert_record('poc_copy_course', $record);
+                // $coursie = $DB->get_record('backup_controllers', ['backupid' => $success['restoreid']]);
+                // $poc_session_date_id = $DB->get_record('poc_session_date', ['pocid' => $userid,'status'=>1], '*', MUST_EXIST);
+                // $record = new stdClass();
+                // $record->schoolid = $schoolid;
+                // $record->gradeid = $categoryid;
+                // $record->courseid = $coursie->itemid;
+                // $record->sessionid = $poc_session_date_id->id;
+                // $record->pocid = $userid;
+                // $record->status = 1;
+                // $insertedId = $DB->insert_record('poc_copy_course', $record);
             }
 
                 ignore_user_abort(true);

@@ -1,0 +1,6 @@
+    th.header.c1 {
+        width: 50%; /* or whatever you want */
+       
+        white-space: normal; /* allows wrapping */
+        word-wrap: break-word;
+    }

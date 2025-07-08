@@ -13,7 +13,7 @@ window.addEventListener("load", () => {
         }
 
         $.ajax({
-            url: baseUrl + "/login/style/fetch_grade.php",
+            url: baseUrl + "/style/fetch_grade.php",
             method: "post",
             data,
             dataType: "json",
@@ -41,7 +41,7 @@ window.addEventListener("load", () => {
         $("#id_course").html("<option id='0'>Please select course</option");
       }
       $.ajax({
-          url: baseUrl + "/login/style/fecth_course.php",
+          url: baseUrl + "/style/fecth_course.php",
           method: "post",
           data,
           dataType: "json",

@@ -1,0 +1,63 @@
+<!-- Modal Structure -->
+<div id="welcomeModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Welcome</h2>
+    <p>Welcome to your student dashboard!</p>
+  </div>
+</div>
+
+<!-- JavaScript for Handling Modal -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var modal = document.getElementById("welcomeModal");
+    var closeButton = document.querySelector(".close");
+
+    // Show modal on page load
+    modal.style.display = "block";
+
+    // Close modal content but keep the black background
+    closeButton.onclick = function () {
+      document.querySelector(".modal-content").style.display = "none";
+    };
+
+    // Optional: Close everything when clicking outside
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        modal.style.display = "none"; // Hide everything
+      }
+    };
+  });
+</script>
+
+<!-- Modal Styling -->
+<style>
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Black overlay */
+  }
+
+  .modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+    text-align: center;
+    position: relative;
+  }
+
+  .close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+</style>

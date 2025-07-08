@@ -1,0 +1,429 @@
+<div class="dashboard-main-wrapper">
+        <div class="dashboard-wr apper">
+            <div class="container-fluid">
+                <div class="row row-sm">
+                    <div class="col-lg-12 pl-0 pr-0">
+                        <div class="row row-sm">
+                            <!-- line chart  -->
+                            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12">
+                                <div class="card">
+                                    <h5 class="card-header">Time Table</h5>
+                                    <div class="card-body pt-0">
+                                        <!--<canvas id="chartjs_line"></canvas>-->
+                                        <!--<canvas id="myChart" style="width:100%;max-width:600px"></canvas>-->
+                                        D-Week Days
+                                        <table style="width:100%" cell-spacing="4" class="table-bordered">
+                                            <tr>
+                                                <th>D</th>
+                                                <th>I</th>
+                                                <th>II</th>
+                                                <th>III</th>
+                                                <th>IV</th>
+                                                <th>V</th>
+                                                <th>VI</th>
+                                            </tr>
+                                            <tr>
+                                                <td class="mon">M</td>
+                                                <td>Maths</td>
+                                                <td>Hindi</td>
+                                                <td>Sci</td>
+                                                <td rowspan="6" class="break">
+                                                    B<br>R</br>E</br>A</br>K
+                                                </td>
+                                                <td>SST</td>
+                                                <td>English</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="tue">T</td>
+                                                <td>Maths</td>
+                                                <td>Hindi</td>
+                                                <td>Sci</td>
+                                                <!--<td>B</td>-->
+                                                <td>SST</td>
+                                                <td>English</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="wed">W</td>
+                                                <td>Maths</td>
+                                                <td>Hindi</td>
+                                                <td>Sci</td>
+                                                <!--<td>R</td>-->
+                                                <td>SST</td>
+                                                <td>English</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="thu">T</td>
+                                                <td>Maths</td>
+                                                <td>Hindi</td>
+                                                <td>Sci</td>
+                                                <!--<td>E</td>-->
+                                                <td>SST</td>
+                                                <td>English</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fri">F</td>
+                                                <td>Maths</td>
+                                                <td>Hindi</td>
+                                                <td>Sci</td>
+                                                <!--<td>A</td>-->
+                                                <td>SST</td>
+                                                <td>English</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="sat">S</td>
+                                                <td>Maths</td>
+                                                <td>Hindi</td>
+                                                <td>Sci</td>
+                                                <!--<td>K</td>-->
+                                                <td>SST</td>
+                                                <td>English</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- bar chart  -->
+                            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12">
+                                <div class="card">
+                                    <h5 class="card-header">Attendance</h5>
+                                    <div class="card-body">
+                                        <!--<canvas id="chartjs_bar"></canvas>-->
+                                        <canvas id="myChart" style="width:100%;max-width:600px; height:300px"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Achievements-->
+                            <div class="col-lg-4">
+                                <div class="card">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="card-header">Notifications</h5>
+                                        <a href="javscript:void(0)" class="mr-4">View All</a>
+                                    </div>
+                                    <div class="card-body">
+                                        <!--<canvas id="chartjs_bar"></canvas>-->
+                                        <div class="list_It ems">
+                                            <div class="d-flex list_Items">
+                                                <div class="ticks odd"><i class="fa fa-bell"></i></div>
+                                                <div>Assignment 1 Submission</div>
+                                            </div>
+                                            <div class="d-flex list_Items">
+                                                <div class="ticks even"><i class="fa fa-bell"></i></div>
+                                                <div>Holiday on 25th December, 2024</div>
+                                            </div>
+                                            <div class="d-flex list_Items">
+                                                <div class="ticks odd"><i class="fa fa-bell"></i></div>
+                                                <div>Complete Course Assignment</div>
+                                            </div>
+                                            <div class="d-flex list_Items">
+                                                <div class="ticks even"><i class="fa fa-bell"></i></div>
+                                                <div>Assignment Submission</div>
+                                            </div>
+                                            <div class="d-flex list_Items">
+                                                <div class="ticks odd"><i class="fa fa-bell"></i></div>
+                                                <div>Assignment 2 Submission</div>
+                                            </div>
+                                            <div class="d-flex list_Items">
+                                                <div class="ticks even"><i class="fa fa-bell"></i></div>
+                                                <div>Call Admin to review the Assignment</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row row-sm mt-3">
+                            <div class="col-lg-8">
+                                <div class="row">
+                                    <!-- line chart  -->
+                                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12 pr-2">
+                                        <div class="card">
+                                            <h5 class="card-header">Overall Participation</h5>
+                                            <div class="card-body">
+                                                <!--<canvas id="chartjs_line"></canvas>-->
+                                                <canvas id="myPieChart" style="width:100%;max-width:600px; height:300px"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- bar chart  -->
+                                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12 pl-2">
+                                        <div class="card">
+                                            <h5 class="card-header">Extra Co-curricular Activities</h5>
+                                            <div class="card-body">
+                                                <!--<canvas id="chartjs_bar"></canvas>-->
+                                                <canvas id="myDougnutChart" style="width:100%;max-width:600px; height:300px"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- bar chart  -->
+                                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 mt-3">
+                                        <div class="card">
+                                            <h5 class="card-header">Courses</h5>
+                                            <div class="card-body">
+                                                <!--<canvas id="chartjs_bar"></canvas>-->
+                                                <canvas id="myLineChart" style="width:100%;max-width:100%; height:300px"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Achievements-->
+                            <div class="col-lg-4">
+                                <div class="card bgImg">
+                                    <h5 class="card-header">Achievements</h5>
+                                    <div class="card-body pt-0">
+                                        <ul class="list-unstyled">
+                                            <li class="media">
+                                                <i class="fa fa-trophy" aria-hidden="true"></i>
+                                                <div class="media-body">
+                                                <h5 class="mt-0 mb-1">Congratulations!!</h5>
+                                                <p>Tean xyz won 1 prize in Basktetball competiton</p>
+                                                </div>
+                                            </li>
+                                            <li class="media">
+                                                <i class="fa fa-trophy green" aria-hidden="true"></i>
+                                                <div class="media-body">
+                                                <h5 class="mt-0 mb-1">Congratulations!!</h5>
+                                                <p>Pqr has backed 1st prize in quiz competiton</p>
+                                                </div>
+                                            </li>
+                                            <li class="media">
+                                                <i class="fa fa-trophy navblue" aria-hidden="true"></i>
+                                                <div class="media-body">
+                                                <h5 class="mt-0 mb-1">Congratulations!!</h5>
+                                                <p>You have completed the courses fastest this week</p>
+                                                </div>
+                                            </li>
+                                            <li class="media">
+                                                <i class="fa fa-trophy teal" aria-hidden="true"></i>
+                                                <div class="media-body">
+                                                <h5 class="mt-0 mb-1">Congratulations!!</h5>
+                                                <p>You have completed 100% attendance</p>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               
+            </div>
+            <!-- footer -->
+            <div class="footer" style="display:none">
+                <div class="container-fluid">
+                    <div class="row">
+                        <!--<div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+                            Copyright © 2018 Concept. All rights reserved. Dashboard by <a href="https://colorlib.com/wp/">Colorlib</a>.
+                        </div>-->
+                        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+                            <div class="text-md-right footer-links d-none d-sm-block">
+                                <a href="javascript: void(0);">About</a>
+                                <a href="javascript: void(0);">Support</a>
+                                <a href="javascript: void(0);">Contact Us</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
+    <script>
+        var xValues = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+        var offlineValues = [100, 49, 44, 40, 45,90];
+        var onlineValues =  [30, 30, 90, 20, 30,50];
+
+        new Chart("myChart", {
+        type: "bar",
+        //type: "horizontalBar",
+        data: {
+            labels: xValues,
+            datasets: [
+                
+                {
+                    backgroundColor: "#3f00c4",
+                    data: offlineValues,
+                    label: "Offline",
+                },
+                {
+                    backgroundColor: "#f59c15",
+                    data: onlineValues,
+                    label: "Online",
+                }
+            ]
+        },
+         options: {
+                barValueSpacing: 20,
+                scales: {
+                yAxes: [{
+                    ticks: {
+                    min: 0,
+                    }
+                }]
+            },
+            plugins: {
+                labels: {
+                render: () => {}
+                }
+            },
+            legend: {
+                display: true,
+                position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                    }
+                },
+            }
+        });
+    </script>
+    <script>
+        var xValues = ["Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5"];
+        var yValues = [55, 49, 44, 24, 15];
+        var barColors = [
+        "#eb5f1a",
+        "#2a54a1",
+        "#438ac9",
+        "#f6a417",
+        "#fecf16"
+        ];
+
+        new Chart("myPieChart", {
+        type: "pie",
+        data: {
+            labels: xValues,
+            datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                labels: {
+                render: 'percentage',
+                fontColor: "#fff",
+                //precision: 2
+                }
+            },
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    boxWidth: 12,
+                }
+            },
+            title: {
+                display: false,
+                text: "World Wide Wine Production 2018"
+            }
+        }
+        });
+    </script>
+    <script>
+        var xValues = ["Dance", "Drama", "Sports", "Singing", "Literature"];
+        var yValues = [55, 49, 44, 24, 15];
+        var barColors = [
+        "#104c9c",
+        "#4bb160",
+        "#843a8e",
+        "#e7274f",
+        "#fecf16"
+        ];
+
+        new Chart("myDougnutChart", {
+        type: "doughnut",
+        data: {
+            labels: xValues,
+            datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                labels: {
+                render: 'percentage',
+                fontColor: "#fff",
+                //precision: 2
+                }
+            },
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    boxWidth: 12,
+                }
+            },
+            title: {
+            display: false,
+            text: "World Wide Wine Production 2018"
+            }
+        }
+        });
+    </script>
+    <script>
+        var xValues = ["Course 1", "Course 2", "Course 3", "Course 4", "Course 5" ,"Course 6"];
+        var yValues = [55, 49, 44, 24, 35, 40];
+        var barColors = ["#1363ff", "#20d4fa","#d03eff","#3ee5d2","#f2d913", "#f29a1c"];
+
+        new Chart("myHorizontalChart", {
+        type: "horizontalBar",
+        data: {
+        labels: xValues,
+        datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+        }]
+        },
+        options: {
+            plugins: {
+                labels: {
+                render: 'value',
+                fontColor: "#000",
+                //precision: 2
+                }
+            },
+            legend: {display: false},
+            title: {
+            display: false,
+            text: "World Wine Production 2018"
+            },
+            scales: {
+            xAxes: [{ticks: {min: 10, max:60}}]
+            }
+        }
+        });
+    </script>
+    <script>
+        const xAxisValues = ["Course 1","Course 2","Course 3","Course 4","Course 5","Course 6"];
+        new Chart("myLineChart", {
+        type: "line",
+        data: {
+            labels: xAxisValues,
+            datasets: [{ 
+            data: [200,300,100,160,110,0],
+            backgroundColor:"rgba(255,0,0,0.3)",
+            borderColor: "red",
+            fill: true
+            }, { 
+            data: [10,130,200,300,150,140],
+            backgroundColor:"rgba(58,193,99,0.2)",
+            borderColor: "green",
+            fill: true
+            }, { 
+            data: [100,260,140,160,200,300],
+            backgroundColor:"rgba(0,0,255,0.4)",
+            borderColor: "blue",
+            fill: true
+            }]
+        },
+        options: {
+            legend: {display: false}
+        }
+        });
+    </script>

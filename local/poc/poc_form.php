@@ -15,7 +15,7 @@ $PAGE->set_title('poc Registration');
 $PAGE->navbar->add('POC Management', "$CFG->wwwroot/local/poc/poc_management.php");
 $PAGE->navbar->add('Add POC', "$CFG->wwwroot/local/poc/poc_form.php");
 
-
+echo $OUTPUT->header();
 $mform = new poc_form();
 
 if ($mform->is_cancelled()) {
@@ -88,7 +88,7 @@ $contextid = $context->id;
         print_error('usercreationerror', 'local_poc'); 
     }
 } else {
-    echo $OUTPUT->header();
+  
     $mform->display();
     echo $OUTPUT->footer();
 }

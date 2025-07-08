@@ -367,3 +367,14 @@ if ($completion->is_enabled()) {
 }
 
 echo $OUTPUT->footer();
+?>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const drawer = document.getElementById('theme_boost-drawers-primary');
+    if (drawer) {
+        drawer.classList.remove('show');
+    }
+});
+
+
+</script>

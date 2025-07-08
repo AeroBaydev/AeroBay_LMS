@@ -95,7 +95,7 @@ if ($mform->is_cancelled()) {
     if($categoryid->id){
         // Create school
         $data->course_cat_id = $categoryid->id;
-        $school->about = $data->about;
+        $data->about = $data->about;
         $id = $DB->insert_record('school', $data);
        // end Create school
         // Create sub category

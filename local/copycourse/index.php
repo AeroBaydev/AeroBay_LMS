@@ -8,7 +8,7 @@
   return redirect(new moodle_url('/login'));
 }
 GLOBAL $DB,$USER,$OUTPUT;
-
+echo  $OUTPUT->header();
 $PAGE->set_url('/local/copycourse/index.php');
 
 //grade 
@@ -152,7 +152,7 @@ $data['is_true'] = true;
 }
 
 
-echo  $OUTPUT->header();
+
 echo  $OUTPUT->render_from_template('local_copycourse/copycourse', $data);
 echo $OUTPUT->footer();
 

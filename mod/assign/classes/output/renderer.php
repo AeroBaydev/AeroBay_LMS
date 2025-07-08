@@ -1365,60 +1365,85 @@ class renderer extends \plugin_renderer_base {
      * @param array $dir
      * @return string
      */
-    protected function htmllize_tree(\assign_files $tree, $dir) {
-        global $CFG;
-        $yuiconfig = array();
-        $yuiconfig['type'] = 'html';
+       protected function htmllize_tree(\assign_files $tree, $dir) {
+    global $CFG;
+    $yuiconfig = array();
+    $yuiconfig['type'] = 'html';
 
-        if (empty($dir['subdirs']) and empty($dir['files'])) {
-            return '';
-        }
-
-        $result = '<ul>';
-        foreach ($dir['subdirs'] as $subdir) {
-            $image = $this->output->pix_icon(file_folder_icon(),
-                                             $subdir['dirname'],
-                                             'moodle',
-                                             array('class'=>'icon'));
-            $result .= '<li yuiConfig=\'' . json_encode($yuiconfig) . '\'>' .
-                       '<div>' . $image . ' ' . s($subdir['dirname']) . '</div> ' .
-                       $this->htmllize_tree($tree, $subdir) .
-                       '</li>';
-        }
-
-        foreach ($dir['files'] as $file) {
-            $filename = $file->get_filename();
-            if ($CFG->enableplagiarism) {
-                require_once($CFG->libdir.'/plagiarismlib.php');
-                $plagiarismlinks = plagiarism_get_links(array('userid'=>$file->get_userid(),
-                                                             'file'=>$file,
-                                                             'cmid'=>$tree->cm->id,
-                                                             'course'=>$tree->course));
-            } else {
-                $plagiarismlinks = '';
-            }
-            $image = $this->output->pix_icon(file_file_icon($file),
-                                             $filename,
-                                             'moodle',
-                                             array('class'=>'icon'));
-            $result .= '<li yuiConfig=\'' . json_encode($yuiconfig) . '\'>' .
-                '<div>' .
-                    '<div class="fileuploadsubmission">' . $image . ' ' .
-                    html_writer::link($tree->get_file_url($file), $file->get_filename(), [
-                        'target' => '_blank',
-                    ]) . ' ' .
-                    $plagiarismlinks . ' ' .
-                    $this->get_portfolio_button($tree, $file) . ' ' .
-                    '</div>' .
-                    '<div class="fileuploadsubmissiontime">' . $tree->get_modified_time($file) . '</div>' .
-                '</div>' .
-            '</li>';
-        }
-
-        $result .= '</ul>';
-
-        return $result;
+    if (empty($dir['subdirs']) and empty($dir['files'])) {
+        return '';
     }
+
+    $result = '<ul>';
+
+    // Handle subdirectories
+    foreach ($dir['subdirs'] as $subdir) {
+        $image = $this->output->pix_icon(file_folder_icon(),
+                                         $subdir['dirname'],
+                                         'moodle',
+                                         array('class'=>'icon'));
+        $result .= '<li yuiConfig=\'' . json_encode($yuiconfig) . '\'>' .
+                   '<div>' . $image . ' ' . s($subdir['dirname']) . '</div> ' .
+                   $this->htmllize_tree($tree, $subdir) .
+                   '</li>';
+    }
+
+    // Handle files
+    foreach ($dir['files'] as $file) {
+        $filename = $file->get_filename();
+        $fileurl = $tree->get_file_url($file);
+        $mimetype = $file->get_mimetype();
+        $isvideo = strpos($mimetype, 'video/') === 0;
+
+        if ($CFG->enableplagiarism) {
+            require_once($CFG->libdir.'/plagiarismlib.php');
+            $plagiarismlinks = plagiarism_get_links([
+                'userid' => $file->get_userid(),
+                'file' => $file,
+                'cmid' => $tree->cm->id,
+                'course' => $tree->course
+            ]);
+        } else {
+            $plagiarismlinks = '';
+        }
+
+        $image = $this->output->pix_icon(file_file_icon($file),
+                                         $filename,
+                                         'moodle',
+                                         array('class'=>'icon'));
+
+        $result .= '<li yuiConfig=\'' . json_encode($yuiconfig) . '\'>' .
+            '<div>' .
+                '<div class="fileuploadsubmission">' . $image . ' ';
+
+        // Show video player if it's a video
+        if ($isvideo) {
+            $result .= html_writer::tag('video',
+                            html_writer::empty_tag('source', [
+                                'src' => $fileurl,
+                                'type' => $mimetype
+                            ]),
+                            [
+                                'controls' => 'controls',
+                                'width' => '320',
+                                'style' => 'margin-top: 10px; display: block;'
+                            ]);
+        } else {
+            // Show normal link
+            $result .= html_writer::link($fileurl, $filename, ['target' => '_blank']);
+        }
+
+        $result .= ' ' . $plagiarismlinks . ' ' .
+                   $this->get_portfolio_button($tree, $file) . ' ' .
+                '</div>' .
+                '<div class="fileuploadsubmissiontime">' . $tree->get_modified_time($file) . '</div>' .
+            '</div>' .
+        '</li>';
+    }
+
+    $result .= '</ul>';
+    return $result;
+}
 
     /**
      * Get the portfolio button content for the specified file.

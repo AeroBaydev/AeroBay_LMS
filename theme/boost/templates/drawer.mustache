@@ -15,6 +15,12 @@
 .drawer-open-left-my{
     margin-left:262px;
 }
+body#page-course-management, #page-course-editcategory, #page-course-index-category{ 
+    margin-left: 0px !important;
+}
+
+
+
 </style>
 
 {{!
@@ -110,6 +116,26 @@ require(['theme_boost/drawers']);
                     } else if (href.includes('emailtemplates')) {
                          iconClass = 'fas fa-envelope'; // Icon for Email Management
                   }
+                     else if (href.includes('news')) {
+                        iconClass = 'fas fa-newspaper'; // Icon for Manage News
+                    } else if (href.includes('attendance')) {
+                        iconClass = 'fas fa-calendar-check'; // Icon for Manage Attendance
+                    } else if (href.includes('badgecard')) {
+                        iconClass = 'fas fa-id-card'; // Icon for BadgeCard
+                    }
+                    else if (href.includes('timetable')) {
+                        iconClass = 'fas fa-calendar-alt'; // Icon for Time Table
+                    }
+                        else if (href.includes('sessioncard')) {
+                        iconClass = 'fas fa-chalkboard-teacher'; // Icon for Manage Session Card
+                    }
+                    else if (href.includes('assessmentcard')) {
+                        iconClass = 'fas fa-clipboard-list'; // Icon for Assessment Card
+                    }
+                        else if (href.includes('attendancecard')) {
+                            iconClass = 'fas fa-clipboard-list'; // Icon for Attendance Card
+                        }
+
                    else if (href.includes('trainer')) {
                     iconClass = 'fas fa-chalkboard-teacher'; // Icon for Trainer
                 } else if (href.includes('student')) {
@@ -139,7 +165,7 @@ require(['theme_boost/drawers']);
 document.addEventListener('DOMContentLoaded', function () {
     var drawerPrimary = document.getElementById('menu_btn_show');
     var formatSite = document.querySelector('.format-site');
-    var initialized = document.querySelector('.not-initialized');
+    var initialized = document.querySelector('.drawer-primary');
     
     // Function to get a cookie by name
     function getCookie(name) {

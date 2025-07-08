@@ -76,6 +76,7 @@ class auth_plugin_manual extends auth_plugin_base {
         if (!$user = $DB->get_record('user', array('username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id))) {
             return false;
         }
+
         if (!validate_internal_user_password($user, $password)) {
             return false;
         }
@@ -211,5 +212,3 @@ class auth_plugin_manual extends auth_plugin_base {
     }
 
 }
-
-

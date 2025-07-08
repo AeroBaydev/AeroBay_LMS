@@ -1,0 +1,714 @@
+<style>
+@keyframes seeking {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(2px); } /* Move slightly right */
+    100% { transform: translateX(0); } /* Move back */
+}
+.fa-bell {
+    display: inline-block;
+    animation: seeking 0.5s infinite alternate ease-in-out;
+}
+<style>
+/* News container */
+.txt_ellipse {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    width: 80%;
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    margin: 10px 0;
+   
+}
+
+/* Popup styling */
+.popuptext {
+    visibility: hidden;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 10;
+   
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+/* Popup arrow */
+.popuptext::after {
+    content: "";
+    position: absolute;
+    
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+}
+
+/* Modal Wrapper */
+.news-popup-modal-wrapper {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+}
+
+/* Modal Box News */
+.news-popup-modal {
+  background: #ffffff;
+  margin: 5% auto;
+  padding: 25px 30px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  animation: slideUp 0.4s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Close Button */
+.news-popup-close {
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  font-size: 28px;
+  color: #444;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.news-popup-close:hover {
+  color: #e74c3c;
+}
+
+/* Title */
+.news-popup-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+/* Content Area */
+.news-popup-content {
+  font-size: 16px;
+  color: #555;
+  max-height: 400px;
+  overflow-y: auto;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+/* Modal Box News */
+</style>
+
+<div class="dashboard-main-wrapper">
+        <div class="dashboard-wr apper">
+            <div class="container-fluid">
+                <div class="row row-sm">
+                    <div class="col-lg-12 pl-0 pr-0">
+                        <div class="row row-sm">
+                            <!-- line chart  -->
+                            <div class="col-xl-8 col-md-12 col-sm-12 col-12">
+                                <div class="card table-responsive">
+                                    <h5 class="card-header">Time Table</h5>
+                                    <div class="card-body pt-0">
+                                        <table class="table-bordered" style="width:100%">
+                                            <tr>
+                                                <th>D</th>
+                                                <th>I</th>
+                                                <th>II</th>
+                                                <th>III</th>
+                                                <th>IV</th>
+                                                <th>V</th>
+                                                <th>VI</th>
+                                                <th>VII</th>
+                                                <th>VIII</th>
+                                                <th>IX</th>
+                                            </tr>
+                                        {{#timetable.days}}
+                                            <tr>
+                                                <td class="{{day}}">{{day}}</td>
+                                                {{#periods}}
+                                                <td>{{checked}}</td>
+                                                {{/periods}}
+                                            </tr>
+                                        {{/timetable.days}}
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- bar chart  -->
+                            <div class="col-xl-4 col-md-12 col-sm-12 col-12">
+                                <div class="card">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="card-header">Notifications</h5>
+                                        <a href="javscript:void(0)" class="mr-4">View All</a>
+                                    </div>
+                                    <div class="card-body">
+                                        {{#newslist}}
+                                            <div class="d-flex list_Items">
+                                                <div class="ticks"><i class="fa fa-bell"></i></div>
+                                               <div class="txt_ellipse" onclick="openNewsModal(`{{{news}}}`)" style="width:80%; cursor:pointer;">{{news}}</div>
+                                                <span class="popuptext" id="myPopupnew_{{id}}" > {{news}}</span>
+                                            </div>
+
+                                          <!-- Enhanced News Modal -->
+                                            <div id="newsModal" class="news-popup-modal-wrapper">
+                                            <div class="news-popup-modal">
+                                                <span class="news-popup-close" title="Close">&times;</span>
+                                                <h2 class="news-popup-title">📰 News</h2>
+                                                <div id="newsModalContent" class="news-popup-content"></div>
+                                            </div>
+                                            </div>
+                                             <!-- End News Modal -->
+
+                                        {{/newslist}}
+                                    </div>
+                                </div>
+                            </div>
+                            <!--newslist-->
+                        </div>
+                        <div class="row row-sm ">
+                            <div class="col-lg-8 mt-3">
+                                <div class="row">
+                                    <div class="col-xl-12 col-md-12">
+                                        <div class="card">
+                                            <h5 class="card-header">Attendance</h5>
+                                            <div class="card-body">
+                                                <!--<canvas id="chartjs_bar"></canvas>-->
+                                                <canvas id="myChart" style="width:100%;max-width:850px; height:360px"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Activity chart  -->
+                                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12 pr-2 mt-3">
+                                        <div class="card">
+                                            <h5 class="card-header">Activity Progress</h5>
+                                            <div class="card-body">
+                                                <!--<canvas id="chartjs_line"></canvas>-->
+                                                <canvas id="myActivityChart" style="width:100%;max-width:600px; height:300px"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Radar chart  -->
+                                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12 pl-2 mt-3">
+                                        <div class="card">
+                                            <h5 class="card-header">Extra Co-curricular Activities</h5>
+                                            <div class="card-body">
+                                                <canvas id="radarChart" style="width:100%;max-width:600px; height:300px"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--<div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12 pl-2 mt-3">
+                                        <div class="card">
+                                            <h5 class="card-header">Extra Co-curricular Activities</h5>
+                                            <div class="card-body">
+                                                <canvas id="myDougnutChart" style="width:100%;max-width:600px; height:300px"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>-->
+                                    <!-- bar chart  -->
+                                    <!-- <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 mt-3">
+                                        <div class="card">
+                                            <h5 class="card-header">Courses</h5>
+                                            <div class="card-body">
+                                                <canvas id="myLineChart" style="width:100%;max-width:100%; height:300px"></canvas>
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                </div>
+                            </div>
+                            <!--Achievements-->
+                            <div class="col-lg-4 mt-3">
+                                <div class="card bgImg">
+                                    <h5 class="card-header">Achievements</h5>
+                                    <div class="card-body pt-0">
+                                        <ul class="list-unstyled">
+                                            {{#milestones}}
+                                            {{#imgpath}} 
+                                                <li class="media">
+                                                <img src="{{imgpath}}" class="imgSizedFixd" alt="">
+                                                    <div class="media-body">
+                                                    <h5 class="mt-0 mb-1">Congratulations!!</h5>
+                                                    <p>{{text}}</p>
+                                                    </div>
+                                                </li>
+                                                 {{/imgpath}}
+                                            {{/milestones}}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- footer -->
+            <div class="footer" style="display:none">
+                <div class="container-fluid">
+                    <div class="row">
+                        <!--<div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+                            Copyright © 2018 Concept. All rights reserved. Dashboard by <a href="https://colorlib.com/wp/">Colorlib</a>.
+                        </div>-->
+                        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+                            <div class="text-md-right footer-links d-none d-sm-block">
+                                <a href="javascript: void(0);">About</a>
+                                <a href="javascript: void(0);">Support</a>
+                                <a href="javascript: void(0);">Contact Us</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{#first_login}}
+    <!--Modal Popup-->
+    <div class='popup-onload'>
+		<div class='popupConatiner'>
+			<div class="d-flex justify-content-between">
+                <h2 class="pb-0">
+			        Everything is impossible, until it is done.
+			    </h2>
+                <a href='' class='close d-none'><i class="fa fa-times"></i></a>
+            </div>
+            <hr class="mt-2">
+            <h3 class="pb-3">Welcome to the AeroBay Program, {{username}}!</h3>
+            <p>
+                <span class="font-weight-bold">In the AeroBay program</span>, we believe that no idea is too big to explore! Just like the 
+                pioneers who pushed the boundaries of what's possible, you'll be inspired to ask bold 
+                questions, try new things, and unlock the amazing potential inside you.
+            </p>
+            <p>
+                <span class="font-weight-bold">The journey you're</span> about to take is filled with hands-on projects, fascinating experiments, and exciting challenges in the world of STEAM (Science, Technology, Engineering, Arts, and Mathematics).
+            </p>
+            <p>
+               <span class="font-weight-bold">What may seem impossible</span> today—whether it’s building a flying machine, solving a real world problem, or creating something new—will become possible as you push the boundaries of your creativity and knowledge.
+            </p>
+            <p>
+              <span class="font-weight-bold">We’re thrilled</span> to see what you’ll achieve and how you’ll turn the impossible into possible! Let’s embark on this amazing adventure and make your discoveries come to life. 
+            </p>
+            <p class="text_weight_color">Welcome aboard, {{username}}, and let’s make magic happen!</p>
+			<div class="d-flex justify-content-center">
+                <a href='' class='close btn btnDefault mr-2'>Cancel</a>
+                <a href='' class='close btn btnPrimary'>Continue</a>
+            </div>
+         {{/first_login}}
+		</div>
+	</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
+    <script src="https://code.jquery.com/jquery-1.8.2.js"></script>
+  {{#first_login}}
+    <script>
+        $(document).ready(function(){
+        $('body').addClass('overflow');
+        });
+        
+        $(function(){
+            var overlay = $('<div id="overlay"></div>');
+            overlay.show();
+            overlay.appendTo(document.body);
+            $('.popup-onload').show();
+            $('.close').click(function(){
+            $('.popup-onload').hide();
+            $('body').removeClass('overflow');
+            overlay.appendTo(document.body).remove();
+            return false;
+            });
+        });
+    </script>
+    {{/first_login}}
+    <script>
+        var offlineValues = {{{ attendance.offlineValues }}};
+        var onlineValues = {{{ attendance.onlineValues }}};
+        var xValues = {{{ attendance.months  }}};
+
+        new Chart("myChart", {
+        type: "bar",
+        //type: "horizontalBar",
+        data: {
+            labels: xValues,
+            datasets: [
+                
+                {
+                    backgroundColor: "#3f00c4",
+                    data: onlineValues,
+                    label: "present",
+                    
+                },
+                {
+                    backgroundColor: "#f59c15",
+                    data: offlineValues,
+                    label: "absent",
+                    
+                }
+            ]
+        },
+         options: {
+                barValueSpacing: 20,
+                scales: {
+                yAxes: [{
+                    ticks: {
+                    min: 0,
+                    max: 30,
+                    }
+                }]
+            },
+            plugins: {
+                labels: {
+                render: () => {}
+                }
+            },
+            legend: {
+                display: true,
+                position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                    }
+                },
+            }
+        });
+    </script>
+    <script>
+        var xValues = ["Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5"];
+        var yValues = [55, 49, 44, 24, 15];
+        var barColors = [
+        "#eb5f1a",
+        "#2a54a1",
+        "#438ac9",
+        "#f6a417",
+        "#fecf16"
+        ];
+
+        new Chart("myPieChart", {
+        type: "pie",
+        data: {
+            labels: xValues,
+            datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                labels: {
+                render: 'percentage',
+                fontColor: "#fff",
+                //precision: 2
+                }
+            },
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    boxWidth: 12,
+                }
+            },
+            title: {
+                display: false,
+                text: "World Wide Wine Production 2018"
+            }
+        }
+        });
+    </script>
+    <script>
+        var xValues = ["Dance", "Drama", "Sports", "Singing", "Literature"];
+        var yValues = [55, 49, 44, 24, 15];
+        var barColors = [
+        "#104c9c",
+        "#4bb160",
+        "#843a8e",
+        "#e7274f",
+        "#fecf16"
+        ];
+
+        new Chart("myDougnutChart", {
+        type: "doughnut",
+        data: {
+            labels: xValues,
+            datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                labels: {
+                render: 'percentage',
+                fontColor: "#fff",
+                //precision: 2
+                }
+            },
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    boxWidth: 12,
+                }
+            },
+            title: {
+            display: false,
+            text: "World Wide Wine Production 2018"
+            }
+        }
+        });
+    </script>
+    <script>
+        var xValues = ["Course 1", "Course 2", "Course 3", "Course 4", "Course 5" ,"Course 6"];
+        var yValues = [55, 49, 44, 24, 35, 40];
+        var barColors = ["#1363ff", "#20d4fa","#d03eff","#3ee5d2","#f2d913", "#f29a1c"];
+
+        new Chart("myHorizontalChart", {
+        type: "horizontalBar",
+        data: {
+        labels: xValues,
+        datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+        }]
+        },
+        options: {
+            plugins: {
+                labels: {
+                render: 'value',
+                fontColor: "#000",
+                //precision: 2
+                }
+            },
+            legend: {display: false},
+            title: {
+            display: false,
+            text: "World Wine Production 2018"
+            },
+            scales: {
+            xAxes: [{ticks: {min: 10, max:60}}]
+            }
+        }
+        });
+    </script>
+    <script>
+        const xAxisValues2 = ["Course 1","Course 2","Course 3","Course 4","Course 5","Course 6"];
+        new Chart("myLineChart", {
+        type: "line",
+        data: {
+            labels: xAxisValues2,
+            datasets: [{ 
+            data: [200,300,100,160,110,0],
+            backgroundColor:"rgba(255,0,0,0.3)",
+            borderColor: "red",
+            fill: true
+            }, { 
+            data: [10,130,200,300,150,140],
+            backgroundColor:"rgba(58,193,99,0.2)",
+            borderColor: "green",
+            fill: true
+            }, { 
+            data: [100,260,140,160,200,300],
+            backgroundColor:"rgba(0,0,255,0.4)",
+            borderColor: "blue",
+            fill: true
+            }]
+        },
+        options: {
+            legend: {display: false}
+        }
+        });
+    </script>
+    
+    <script>
+
+     var quizData = {{{jsondata}}};
+        //Activity Progress Chart
+       var x_AxisValues = quizData.map(q => q.name);
+        var y_AxisValues = quizData.map(q => q.score);
+         function generateColors(count) {
+            var colors = [];
+            for (var i = 0; i < count; i++) {
+                var randomColor = `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`;
+                colors.push(randomColor);
+            }
+            return colors;
+        }
+
+        var barColors = generateColors(x_AxisValues.length);
+
+        new Chart("myActivityChart", {
+        type: "bar",
+        data: {
+            labels: x_AxisValues,
+            datasets: [{
+            backgroundColor: barColors,
+            data: y_AxisValues
+            }]
+        },
+        options: {
+            scales: {
+            yAxes: [{
+                ticks: {
+                min: 0,
+                max: 10,
+                }
+            }]
+            },
+            plugins: {
+                labels: {
+                render: () => {}
+                }
+            },
+            legend: {display: false},
+            title: {
+            display: false,
+            text: "Activity Porgress 2025"
+            }
+        }
+        });
+    </script>
+    <Script>
+        // Radar Chart
+        var canvas = document.getElementById("radarChart");
+        var ctx = canvas.getContext('2d');
+
+        // Global Options:
+        // Chart.defaults.global.defaultFontColor = 'black';
+        // Chart.defaults.global.defaultFontSize = 16;
+
+        var options = {
+                responsive: true,
+                maintainAspectRadio: true,
+                legend: {
+                    display: false,
+                    position: 'bottom',
+                    },
+                title: {
+                    display: false,
+                    text: 'Radar Chart'
+                    },
+                scale: {
+                     //pointLabels: {
+                        //fontSize: 14
+                    //},
+                    reverse: false,
+                    ticks: {
+                        max:100,
+                        min: 0,
+                        beginAtZero: false,
+                        },
+                    pointLabels: {
+                        callback: function (pointLabel) {
+                                if (pointLabel.length > 10)
+                                return pointLabel.substring(0, 10) + '...';
+                                else
+                                return pointLabel
+                                
+                            }
+                        }
+
+                },
+                scaleOverride: true,
+                scaleSteps: 5,
+                scaleStepWidth: 20,
+                scaleStartValue: 100,
+                };
+
+            var radarChartData = {
+                labels: ["Dance", "Drama", "Sports", "Singing", "Literature", "Coding", "Design"],
+                datasets: [
+                {
+                    label: "My First dataset",
+                    backgroundColor: "rgba(179,181,198,0.2)",
+                    borderColor: "rgba(179,181,198,1)",
+                    pointBackgroundColor: "rgba(179,181,198,1)",
+                    pointBorderColor: "#fff",
+                    pointHoverBackgroundColor: "#fff",
+                    pointHoverBorderColor: "rgba(179,181,198,1)",
+                    data: [65, 59, 90, 81, 56, 55, 40]
+                },
+                {
+                    label: "My Second dataset",
+                    backgroundColor: "rgba(255,99,132,0.2)",
+                    borderColor: "rgba(255,99,132,1)",
+                    pointBackgroundColor: "rgba(255,99,132,1)",
+                    pointBorderColor: "#fff",
+                    pointHoverBackgroundColor: "#fff",
+                    pointHoverBorderColor: "rgba(255,99,132,1)",
+                    data: [28, 48, 40, 19, 96, 27, 100]
+                }
+            ]
+        };
+
+        var myRadarChart = new Chart(ctx, {
+            type: 'radar',
+            data: radarChartData,
+            options: options
+        });
+    </script>
+
+    <script>
+function showPopupNews(id) {
+    var popup = document.getElementById("myPopupnew_" + id);
+    if (popup) {
+        popup.style.visibility = "visible";
+        popup.style.opacity = "1";
+    }
+}
+
+function hidePopupNews(id) {
+    var popup = document.getElementById("myPopupnew_" + id);
+    if (popup) {
+        popup.style.visibility = "hidden";
+        popup.style.opacity = "0";
+    }
+}
+</script>
+<script>
+function openNewsModal(content) {
+    document.getElementById("newsModalContent").innerHTML = content;
+    document.getElementById("newsModal").style.display = "block";
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const closeBtn = document.querySelector(".news-popup-close");
+    closeBtn.onclick = function() {
+        document.getElementById("newsModal").style.display = "none";
+    };
+
+    window.onclick = function(event) {
+        if (event.target == document.getElementById("newsModal")) {
+            document.getElementById("newsModal").style.display = "none";
+        }
+    };
+});
+</script>
+
+
+    

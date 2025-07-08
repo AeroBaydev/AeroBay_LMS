@@ -18,25 +18,28 @@ if (isloggedin() and !isguestuser()) {
     echo $OUTPUT->footer();
     exit;
 }
-function generate_code_from_name($firstname, $lastname, $iteration) {
+function generate_code_from_name($firstname, $lastname, $iteration = 1) {
     global $DB;
-    // Remove non-alphabetic characters
-    $firstname_name = preg_replace('/[^a-zA-Z]/', '', $firstname);
-    $lastname_name = preg_replace('/[^a-zA-Z]/', '', $lastname);
-    $lastNumber = $DB->get_field_sql('SELECT MAX(id) FROM {user}', null);
-    $newLastNumber = $lastNumber + $iteration;
-    // Get the first two characters
-    $firstname_name_prefix = substr($firstname_name, 0, 2);
-    $lastname_name_prefix = substr($lastname_name, 0, 2);
-    
-    // Convert to lowercase
-    $prefix = strtolower($firstname_name_prefix . $lastname_name_prefix);
-    
-    // Append "pocs" to the prefix
-    $code = $prefix . 'pocs' . $newLastNumber;
-    
-    return $code;
+
+    // Clean names: Keep only letters
+    $firstname = preg_replace('/[^a-zA-Z]/', '', $firstname);
+    $lastname = preg_replace('/[^a-zA-Z]/', '', $lastname);
+
+    // Get the highest user ID and increment it for uniqueness
+    $lastUserId = (int) $DB->get_field_sql('SELECT MAX(id) FROM {user}');
+    $uniqueId = $lastUserId + $iteration;
+
+    // Ensure the first name and last name have valid lengths
+    $firstPart = substr($firstname, 0, 3); // First 3 chars of first name
+    $lastPart = substr($lastname, 0, 3);   // First 3 chars of last name
+    $uniqueSuffix = substr(str_shuffle("abcdefghijklmnopqrstuvwxyz"), 0, 3);
+    // Convert to lowercase and format the final username
+    $username = strtolower("{$firstPart}{$lastPart}{$uniqueSuffix}");
+
+    return $username;
 }
+
+
 function generate_random_password($length = 12) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+';
     $charactersLength = strlen($characters);

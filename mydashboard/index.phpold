@@ -1,0 +1,50 @@
+<?php
+
+require_once('../config.php');
+
+global $DB, $USER;
+require_login();
+
+// Set up the page layout and metadata.
+$PAGE->set_pagelayout('course');
+$PAGE->set_url('/mydashboard/index.php');
+$PAGE->set_title('My Dashboard');
+$PAGE->set_heading('My Dashboard');
+
+// Role ID for 'Student' (default is 5, verify in mdl_role table).
+$studentroleid = $DB->get_field('role', 'id', ['shortname' => 'student'], MUST_EXIST);
+
+// Initialize template data.
+$somdata = [];
+
+// Fetch all courses where the user is enrolled as a Student.
+$sql = "
+    SELECT DISTINCT ctx.id AS contextid
+    FROM {context} ctx
+    JOIN {role_assignments} ra ON ra.contextid = ctx.id
+    WHERE ra.userid = :userid
+      AND ra.roleid = :roleid
+      AND ctx.contextlevel = :contextlevel
+";
+$params = [
+    'userid' => $USER->id,
+    'roleid' => $studentroleid,
+    'contextlevel' => CONTEXT_COURSE, // Course-level context.
+];
+
+$courses = $DB->get_records_sql($sql, $params);
+
+// Check if the user is a Student in any course.
+if (!empty($courses)) {
+    // Render the student dashboard.
+    echo $OUTPUT->header();
+    
+   // echo  $OUTPUT->render_from_template('local_mydashboard/welcome_student', $somdata);
+    echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $somdata);
+    echo $OUTPUT->footer();
+} else {
+    // Render the default dashboard.
+    echo $OUTPUT->header();
+    echo $OUTPUT->render_from_template('local_mydashboard/mydashboard', $somdata);
+    echo $OUTPUT->footer();
+}

@@ -31,7 +31,7 @@ body {
 }
 
 #page-login-signup .login-container {
-  background: #fff url(/update/local/trainer/amd/image/login-graphic.svg) -150px -110px no-repeat;
+  background: #fff url(/local/trainer/amd/image/login-graphic.svg) -150px -110px no-repeat;
   background-size: 60%;
   padding: 160px 50px 20px;
 }
