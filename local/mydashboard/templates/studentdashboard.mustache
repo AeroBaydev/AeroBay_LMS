@@ -400,7 +400,7 @@
     </div>
     {{#first_login}}
     <!--Modal Popup-->
-    <div class='popup-onload'>
+   <div class='popup-onload'  style="display: none;">
 		<div class='popupConatiner'>
 			<div class="d-flex justify-content-between">
                 <h2 class="pb-0">
@@ -409,7 +409,7 @@
                 <a href='' class='close d-none'><i class="fa fa-times"></i></a>
             </div>
             <hr class="mt-2">
-            <h3 class="pb-3">Welcome to the AeroBay Program, {{username}}!</h3>
+            <h3 class="pb-3">Welcome to the AeroBay Program, {{userfullname}}!</h3>
             <p>
                 <span class="font-weight-bold">In the AeroBay program</span>, we believe that no idea is too big to explore! Just like the 
                 pioneers who pushed the boundaries of what's possible, you'll be inspired to ask bold 
@@ -424,10 +424,10 @@
             <p>
               <span class="font-weight-bold">We’re thrilled</span> to see what you’ll achieve and how you’ll turn the impossible into possible! Let’s embark on this amazing adventure and make your discoveries come to life. 
             </p>
-            <p class="text_weight_color">Welcome aboard, {{username}}, and let’s make magic happen!</p>
+            <p class="text_weight_color">Welcome aboard, {{userfullname}}, and let’s make magic happen!</p>
 			<div class="d-flex justify-content-center">
-                <a href='' class='close btn btnDefault mr-2'>Cancel</a>
-                <a href='' class='close btn btnPrimary'>Continue</a>
+                 <a href="javascript:void(0)" class="close btn btnDefault mr-2" id="cancelBtn">Cancel</a>
+            <a href="javascript:void(0)" class="close btn btnPrimary" id="cancelBtn">Continue</a>
             </div>
          {{/first_login}}
 		</div>
@@ -435,26 +435,55 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
     <script src="https://code.jquery.com/jquery-1.8.2.js"></script>
-  {{#first_login}}
-    <script>
-        $(document).ready(function(){
+ {{#first_login}} 
+<script>
+$(document).ready(function() {
+    // Check if popup already dismissed
+    if (!sessionStorage.getItem('popup_dismissed')) {
         $('body').addClass('overflow');
+
+        // Create and append overlay
+        const overlay = $('<div id="overlay"></div>').css({
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.6)',
+            zIndex: 1000
+        }).appendTo('body');
+
+        // Show modal
+        $('.popup-onload').css({
+            display: 'block',
+            position: 'fixed',
+            top: '10%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: 'white',
+            zIndex: 1001,
+            padding: '30px',
+            borderRadius: '10px'
         });
-        
-        $(function(){
-            var overlay = $('<div id="overlay"></div>');
-            overlay.show();
-            overlay.appendTo(document.body);
-            $('.popup-onload').show();
-            $('.close').click(function(){
+
+        // Handle close buttons
+        $('.close').click(function() {
             $('.popup-onload').hide();
             $('body').removeClass('overflow');
-            overlay.appendTo(document.body).remove();
+            $('#overlay').remove();
+
+            // Set dismissed flag if "Cancel" clicked
+            if ($(this).attr('id') === 'cancelBtn') {
+                sessionStorage.setItem('popup_dismissed', 'true');
+            }
+
             return false;
-            });
         });
-    </script>
-    {{/first_login}}
+    }
+});
+</script>
+{{/first_login}}
+
     <script>
         var offlineValues = {{{ attendance.offlineValues }}};
         var onlineValues = {{{ attendance.onlineValues }}};

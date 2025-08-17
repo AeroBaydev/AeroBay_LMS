@@ -374,17 +374,20 @@ if ($progress >= 100) {
     ];
 }
 $data['username'] = $user->username;
-if (empty($user->firstaccess)) {
-    // First time login
-    $data['first_login'] = 1;
+$data['userfullname'] = $user->firstname." ".$user->lastname;
+
+if (empty($user->lastlogin))  {
+    // If 'firstaccess' is empty, it means the user hasn't accessed before, thus it's their first login.
+    $data['first_login'] = 1; // Set to 1 (true) for first login
 } else {
-    $data['first_login'] = 0;
+    // If 'firstaccess' has a value, they've accessed before.
+    $data['first_login'] = 0; // Set to 0 (false) for not first login
 }
 
 // echo $user->firstaccess;
-// echo '<pre>'; print_r($data); echo '</pre>';
-// //   print_r($progress);
-//  die;
+// //echo '<pre>'; print_r($data); echo '</pre>';
+//  print_r($user);
+//   die;
    // echo  $OUTPUT->render_from_template('local_mydashboard/welcome_student', $somdata);
     echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $data);
     echo $OUTPUT->footer();
