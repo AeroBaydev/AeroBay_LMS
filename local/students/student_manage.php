@@ -85,7 +85,7 @@ if ($table->is_downloading()) {
     exit;
 } else {
     $table->out($perpage, true);
-    echo html_writer::tag('button', 'Balk Approve', array('id' => 'batch-approve-btn', 'class' => 'btn btn-success'));
+    echo html_writer::tag('button', 'Bulk Approve', array('id' => 'batch-approve-btn', 'class' => 'btn btn-success'));
     echo $OUTPUT->footer();
 }
 ?>

@@ -53,21 +53,21 @@ class primary extends view {
       }
 
         if ($showhomenode) {
-            $sitehome = $this->add('My Course', new \moodle_url('/'), self::TYPE_SYSTEM,
-                null, 'home', new \pix_icon('i/home', ''));
+            // $sitehome = $this->add('My Course', new \moodle_url('/'), self::TYPE_SYSTEM,
+            //     null, 'home', new \pix_icon('i/home', ''));
         }
         if (isloggedin() && !isguestuser()) {
             $homepage = get_home_page();
             if ($homepage == HOMEPAGE_MY || $homepage == HOMEPAGE_MYCOURSES) {
                 // We need to stop automatic redirection.
                 if ($showhomenode) {
-                    $sitehome->action->param('redirect', '0');
+                   // $sitehome->action->param('redirect', '0');
                 }
             }
 
           
             // Add the mycourses link.
-            if(is_siteadmin()){
+            if(1){
             $showcoursesnode = empty($this->page->theme->removedprimarynavitems) ||
                 !in_array('courses', $this->page->theme->removedprimarynavitems);
             }

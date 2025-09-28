@@ -57,7 +57,7 @@ $perpage = 10;
 $DB->execute('SET @row_number := ' . (($perpage * $page)), []);
 
 $table->set_sql($fields, $from, $where, $params);
-$table->define_baseurl("$CFG->wwwroot/local/timetable/index.php?page=$page");
+$table->define_baseurl("$CFG->wwwroot/local/attendance_new/index.php?page=$page");
 
 if ($table->is_downloading()) {
     $table->out($perpage, true);

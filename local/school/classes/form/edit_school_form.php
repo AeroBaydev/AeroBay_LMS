@@ -38,7 +38,7 @@ class edit_school_form extends moodleform
             SELECT cc.id, cc.name, cc.description
             FROM {course_categories} cc
             WHERE
-            cc.visible = 1 and cc.parent=171
+            cc.visible = 1 and cc.parent=325
           ");
 
         foreach ($categories as $category) {
@@ -104,6 +104,7 @@ class edit_school_form extends moodleform
         // Apply rules for required fields.
         $mform->addRule('school_name', get_string('required'), 'required', null, 'client');
         $mform->addRule('school_sortname', get_string('required'), 'required', null, 'client');
+        $mform->addRule('selectsubcategory', get_string('required'), 'required', null, 'client');
         $mform->addRule('school_address', get_string('required'), 'required', null, 'client');
         $mform->addRule('principal_name', get_string('required'), 'required', null, 'client');
         $mform->addRule('principal_email', get_string('required'), 'required', null, 'client');

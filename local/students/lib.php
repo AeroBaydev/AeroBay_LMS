@@ -27,5 +27,27 @@ if(is_siteadmin()){
                              Attendance Managment  | /local/attendance_new/index.php
             ";
 }
+function is_student_anywhere(?int $userid): bool {
+    global $DB;
+    if (empty($userid)) {
+        return false;
+    }
+    $sql = "SELECT 1
+              FROM {role_assignments} ra
+              JOIN {role} r   ON r.id = ra.roleid
+              JOIN {context} c ON c.id = ra.contextid
+             WHERE ra.userid = :uid
+               AND c.contextlevel = :level
+               AND r.archetype = 'student'";
+    return $DB->record_exists_sql($sql, ['uid' => $userid, 'level' => CONTEXT_COURSE]);
+}
+global $USER, $CFG, $DB;
+if (isset($USER->id) && is_numeric($USER->id)) {
+     
+    if (is_student_anywhere((int)$USER->id)) {
+      
+        $CFG->custommenuitems = "video upload media | /local/videohub/index.php";
+    }
+}
 
 ?>

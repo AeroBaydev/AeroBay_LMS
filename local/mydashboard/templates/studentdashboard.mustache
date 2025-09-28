@@ -400,35 +400,254 @@
     </div>
     {{#first_login}}
     <!--Modal Popup-->
-   <div class='popup-onload'  style="display: none;">
-		<div class='popupConatiner'>
-			<div class="d-flex justify-content-between">
-                <h2 class="pb-0">
-			        Everything is impossible, until it is done.
-			    </h2>
-                <a href='' class='close d-none'><i class="fa fa-times"></i></a>
-            </div>
-            <hr class="mt-2">
-            <h3 class="pb-3">Welcome to the AeroBay Program, {{userfullname}}!</h3>
-            <p>
-                <span class="font-weight-bold">In the AeroBay program</span>, we believe that no idea is too big to explore! Just like the 
-                pioneers who pushed the boundaries of what's possible, you'll be inspired to ask bold 
-                questions, try new things, and unlock the amazing potential inside you.
-            </p>
-            <p>
-                <span class="font-weight-bold">The journey you're</span> about to take is filled with hands-on projects, fascinating experiments, and exciting challenges in the world of STEAM (Science, Technology, Engineering, Arts, and Mathematics).
-            </p>
-            <p>
-               <span class="font-weight-bold">What may seem impossible</span> today—whether it’s building a flying machine, solving a real world problem, or creating something new—will become possible as you push the boundaries of your creativity and knowledge.
-            </p>
-            <p>
-              <span class="font-weight-bold">We’re thrilled</span> to see what you’ll achieve and how you’ll turn the impossible into possible! Let’s embark on this amazing adventure and make your discoveries come to life. 
-            </p>
-            <p class="text_weight_color">Welcome aboard, {{userfullname}}, and let’s make magic happen!</p>
-			<div class="d-flex justify-content-center">
-                 <a href="javascript:void(0)" class="close btn btnDefault mr-2" id="cancelBtn">Cancel</a>
-            <a href="javascript:void(0)" class="close btn btnPrimary" id="cancelBtn">Continue</a>
-            </div>
+   <div class="popup-onload" style="display: none;">
+  <div class="popupConatiner">
+  <span class="popup-icon icon-tl">🛰️</span>
+  <span class="popup-icon icon-tr">🚀</span>
+  <span class="popup-icon icon-bl">✈️</span>
+  <span class="popup-icon icon-br">🛸</span>
+  <span class="rocket-launch1">🚀</span>
+<div class="loading-container">
+   
+    <div class="loading-plane">🛫</div>
+  </div>
+
+   
+    <div class="popupHeader d-flex justify-content-between align-items-center">
+      <h2>Everything is impossible, until it is done.</h2>
+      <a href="javascript:void(0)" id="cancelBtn" class="close "><i class="fa fa-times"></i></a>
+    </div>
+    <hr>
+    <h3>Welcome to the AeroBay Program, {{userfullname}}!</h3>
+    <p>
+      <span class="font-weight-bold">In the AeroBay program</span>, we believe that no idea is too big to explore! Just like the 
+      pioneers who pushed the boundaries of what's possible, you'll be inspired to ask bold 
+      questions, try new things, and unlock the amazing potential inside you.
+    </p>
+    <p>
+      <span class="font-weight-bold">The journey you're</span> about to take is filled with hands-on projects, fascinating experiments, and exciting challenges in the world of STEAM (Science, Technology, Engineering, Arts, and Mathematics).
+    </p>
+    <p>
+      <span class="font-weight-bold">What may seem impossible</span> today—whether it’s building a flying machine, solving a real world problem, or creating something new—will become possible as you push the boundaries of your creativity and knowledge.
+    </p>
+    <p>
+      <span class="font-weight-bold">We’re thrilled</span> to see what you’ll achieve and how you’ll turn the impossible into possible! Let’s embark on this amazing adventure and make your discoveries come to life. 
+    </p>
+    <p class="text_weight_color">
+      Welcome aboard, {{userfullname}}, and let’s make magic happen!
+    </p>
+    <div class="d-flex justify-content-center mt-4">
+      <a href="javascript:void(0)" id="cancelBtn" class="close btn btnDefault mr-2 ">Cancel</a>
+      <a href="javascript:void(0)" id="cancelBtn" class="close btn btnPrimary">Continue</a>
+    </div>
+  </div>
+</div>
+
+<style>
+
+
+/* Overlay */
+.popup-onload {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;   /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  z-index: 1050;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Container (Popup Box) */
+/* Popup container */
+.popupConatiner {
+  position: relative;  /* Needed so ::before/::after stay inside */
+      background: linear-gradient(45deg, #6388a5, #fafcfd);
+  color: #000; /* switched to dark text for readability */
+  max-width: 650px;
+  width: 90%;
+  padding: 2rem;
+  border-radius: 18px;
+  box-shadow: 0px 12px 30px rgba(0,0,0,0.3);
+  animation: fadeInUp 0.4s ease-out;
+  text-align: left;
+  top: 12% !important;
+  overflow: hidden; /* keep animation inside */
+}
+
+/* Floating aerospace icons */
+.popupConatiner::before,
+.popupConatiner::after {
+  position: absolute;
+  font-size: 2rem;
+  opacity: 1;
+  animation: floatIcons 4s linear infinite;
+}
+
+@keyframes floatIcons {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  50% { opacity: 2; }
+  100% { transform: translateY(-120%) rotate(360deg); opacity: 1; }
+}
+
+/* Default styles for icon spans */
+.popup-icon {
+  position: absolute;
+  font-size: 2rem;
+  animation: floatIcons 4s linear infinite;
+  opacity: 2;
+}
+
+/* Position each one */
+.icon-tl { content: "🛰️"; top: 5%; left: 5%; animation-delay: 0s; }
+.icon-tr { content: "🚀"; top: 5%; right: 5%; animation-delay: 3s; }
+.icon-bl { content: "✈️"; bottom: 5%; left: 5%; animation-delay: 6s; }
+.icon-br { content: "🛸"; bottom: 5%; right: 5%; animation-delay: 9s; }
+
+.rocket-launch {
+  position: absolute;
+  bottom: -10%;   /* start below popup */
+  left: 50%;      /* center horizontally */
+  transform: translateX(-50%);
+  font-size: 3rem; /* bigger rocket */
+  opacity: 1;
+  animation: launchRocket 4s linear infinite;
+}
+
+/* Rocket going up animation */
+@keyframes launchRocket {
+  0% {
+    bottom: -10%;
+    opacity: 1;
+    transform: translateX(-50%) scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.2) rotate(-5deg);
+  }
+  100% {
+    bottom: 110%;  /* move out of top */
+    opacity: 0;
+    transform: translateX(-50%) scale(1) rotate(0deg);
+  }
+}
+ .loading-container {
+      width: 80%;
+      max-width: 600px;
+      position: relative;
+    }
+
+    /* Line */
+    .loading-line {
+      position: relative;
+      width: 100%;
+      height: 6px;
+      background: #fff;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    /* Plane */
+    .loading-plane {
+      position: absolute;
+      top: 2.28rem;   /* moves plane UP from the line */
+      left: 0;
+      font-size: 2.8rem;   /* bigger plane */
+      animation: planeMove 6s linear infinite;
+    }
+
+    @keyframes planeMove {
+      0% { left: 0; }
+      100% { left: calc(100% - 2.8rem); } /* stops before going outside */
+    }
+
+
+/* Keyframes for the bar fill */
+@keyframes loadBar {
+  0%   { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* Keyframes for the plane */
+@keyframes planeMove {
+  0%   { left: 0%; transform: translateX(0) rotate(0deg); }
+  100% { left: 100%; transform: translateX(-100%) rotate(0deg); }
+}
+
+@media (max-width: 1370px) {
+  .popupConatiner {
+    width: 70%;
+    top: 6% !important;
+    padding: 1.8rem;
+    height: 99% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .popupConatiner {
+    padding: 1.5rem;
+    font-size: 0.95rem;
+  }
+  .popupConatiner h2 {
+    font-size: 1.2rem;
+  }
+  .popupConatiner h3 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .popupConatiner {
+    padding: 1rem;
+    font-size: 0.9rem;
+    border-radius: 12px;
+  }
+  .popupConatiner h2 {
+    font-size: 1rem;
+  }
+  .popupConatiner h3 {
+    font-size: 0.9rem;
+  }
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+@media (max-width: 992px) {
+  .popupConatiner {
+    width: 75%;
+    top: 8%;                 /* less top spacing */
+    padding: 1.5rem;
+  }
+}
+
+/* Mobile (≤ 768px) */
+@media (max-width: 768px) {
+  .popupConatiner {
+    width: 85%;
+    top: 5%;
+    padding: 1.2rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Small Mobile (≤ 480px) */
+@media (max-width: 480px) {
+  .popupConatiner {
+    width: 95%;
+    top: 3%;
+    padding: 1rem;
+    font-size: 0.9rem;
+    border-radius: 12px;
+  }
+}
+
+
+
+
+</style>
+
          {{/first_login}}
 		</div>
 	</div>
@@ -457,10 +676,10 @@ $(document).ready(function() {
         $('.popup-onload').css({
             display: 'block',
             position: 'fixed',
-            top: '10%',
+            top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            background: 'white',
+            
             zIndex: 1001,
             padding: '30px',
             borderRadius: '10px'

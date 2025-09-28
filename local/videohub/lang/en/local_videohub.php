@@ -1,0 +1,27 @@
+<?php
+$string['pluginname'] = 'Video Hub';
+$string['addvideo'] = 'Add video';
+$string['myvideos'] = 'My videos';
+$string['classfeed'] = 'Class feed';
+$string['allvideos'] = 'All videos';
+$string['title'] = 'Title';
+$string['description'] = 'Description';
+$string['videofile'] = 'Video file';
+$string['visibility'] = 'Visibility';
+$string['visibility:private'] = 'Only me';
+$string['visibility:class'] = 'School + Grade (classmates)';
+$string['visibility:site'] = 'Site wide (everyone)';
+$string['savechanges'] = 'Save changes';
+$string['updatevideo'] = 'Update video';
+$string['deletevideo'] = 'Delete video';
+$string['confirmdelete'] = 'Are you sure you want to delete this video?';
+$string['novideos'] = 'No videos to show yet.';
+$string['postedby'] = 'Posted by {$a->name} on {$a->date}';
+$string['settings'] = 'Settings';
+$string['perpage'] = 'Videos per page';
+$string['allowedmimetypes'] = 'Allowed video MIME types (comma separated). Leave empty for all video/*';
+$string['schoolfield'] = 'Custom profile field shortname for School ID';
+$string['gradefield'] = 'Custom profile field shortname for Grade ID';
+$string['defaultfield_school'] = 'schoolid';
+$string['defaultfield_grade'] = 'gradeid';
+$string['managefiles'] = 'Manage files';
