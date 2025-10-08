@@ -1,116 +1,82 @@
 <?php
+
 require_once "../../config.php";
-require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
-require_once($CFG->libdir . '/cronlib.php');
 
- $categoryid = $_GET['CatId']; //grade id sub categoryid
-$schoolid= $_GET['schoolid']; //parent categoryid id
-$courseid= $_GET['option'];
+global $DB, $USER;
+
 header('Content-Type: application/json');
-global $DB,$USER;
-// $category = \core_course_category::get($categoryid);
-// $categorymain = $DB->get_record('course_categories', ['name' => $category->name ,'parent'=>171]);
-// $category_schoolid = \core_course_category::get($categorymain->id);
-// $maincourses = $category_schoolid->get_courses();
+
+// 1. Get and validate required parameters.
+$categoryid = required_param('CatId', PARAM_INT);
+$schoolid   = required_param('schoolid', PARAM_INT);
+$courseid   = required_param('option', PARAM_INT);
+
+// 2. Identify the user.
+$userid = $USER->id;
 if (isset($_SESSION['userIdPoc'])) {
-    $userid=$_SESSION['userIdPoc'];
-  
- }
- else{
-    $userid= $USER->id;
- }
-
-// $poc_session_date_id = $DB->get_record('poc_session_date', ['pocid' => $userid,'status'=>1], '*', MUST_EXIST);
-
-// $checkCourseCopy = $DB->record_exists('poc_copy_course',  ['pocid' => $userid,'status'=>1,'gradeid'=>$categoryid,'sessionid'=>$poc_session_date_id->id]);
-
-//  $checkCourse = $DB->get_record('course', ['category' => $categoryid]);
-
-
-if (!empty($courseid )) {
-
-    $checkCourse = $DB->get_records('course', ['category' => $categoryid]);
-
-    $course_exit = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-    
-        foreach ($checkCourse as $key => $value) {
-            if($value->fullname==$course_exit->fullname){
-                   
-                $response = [
-                    'status' => 'success', // or 'error'
-                    'message' => ' Same Course not copy .' // or an error message
-                ];
-                
-                echo json_encode($response);
-            
-                    exit();
-
-
-
-
-            }     
-
-        }
-
-
-                $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-                $copyCourse = (object) [
-                    'courseid' => $course->id,
-                    'fullname' => $course->fullname,
-                    'shortname' => $course->shortname,
-                    'category' => $categoryid,
-                    'visible' => $course->visible,
-                    'startdate' => $course->startdate,
-                    'enddate' => $course->enddate,
-                    'idnumber' => $course->idnumber,
-                    'timecreated'=> time(),
-                    'userdata' => '0',
-                    'keptroles' => []
-                ];
-               $success = \copy_helper::create_copy($copyCourse);
-                
-            
-             
-
-               if (isset($success)) {
-                // $coursie = $DB->get_record('backup_controllers', ['backupid' => $success['restoreid']]);
-                // $poc_session_date_id = $DB->get_record('poc_session_date', ['pocid' => $userid,'status'=>1], '*', MUST_EXIST);
-                // $record = new stdClass();
-                // $record->schoolid = $schoolid;
-                // $record->gradeid = $categoryid;
-                // $record->courseid = $coursie->itemid;
-                // $record->sessionid = $poc_session_date_id->id;
-                // $record->pocid = $userid;
-                // $record->status = 1;
-                // $insertedId = $DB->insert_record('poc_copy_course', $record);
-            }
-
-                ignore_user_abort(true);
-                $cron_command = 'php ' . escapeshellarg($CFG->dirroot . '/admin/cli/cron.php') . ' > /dev/null 2>&1 &';
-                
-                exec($cron_command);
-                if (!$success) {
-                    $OUTPUT->notification('Failed to copy the course to category: ' . $newCategory->name, \core\output\notification::NOTIFY_ERROR);
-                }
-                else{
-                    $response['status'] = 'success';
-                    $response['message'] = 'Course copy action performed successfully.';
-                    echo json_encode($response);
-    
-                        exit();
-                }
-               
-          
+    $userid = $_SESSION['userIdPoc'];
 }
-else{
-    $response = [
-        'status' => 'success', // or 'error'
-        'message' => 'you have already copy course current session.' // or an error message
+
+// 3. Check for an active session.
+$poc_session_date = $DB->get_record('poc_session_date', ['pocid' => $userid, 'status' => 1]);
+if (empty($poc_session_date)) {
+    echo json_encode(['status' => 'error', 'message' => 'No active session was found for you.']);
+    exit();
+}
+
+// 4. Prevent duplicate entries.
+$conditions = [
+    'pocid'     => $userid,
+    'status'    => 1,
+    'gradeid'   => $categoryid,
+    'courseid'  => $courseid,
+    'sessionid' => $poc_session_date->id
+];
+if ($DB->record_exists('poc_copy_course', $conditions)) {
+    echo json_encode(['status' => 'error', 'message' => 'You have already selected this course in the current session.']);
+    exit();
+}
+
+// 5. Try to assign role and trigger event (table entry will be handled by observer).
+try {
+    // --- STEP 1: SYSTEM ROLE ASSIGN KAREIN ---
+    $pocschool_role = $DB->get_record('role', ['shortname' => 'pocschool']);
+    $systemcontext = \context_system::instance(); 
+    
+    if (!empty($userid) && !empty($pocschool_role->id)) {
+        role_assign($pocschool_role->id, $userid, $systemcontext->id);
+    }
+    // --- ROLE ASSIGNMENT KHATAM ---
+
+    // --- STEP 2: TRIGGER EVENT (Observer will handle enrollment + table entry) ---
+    $eventdata = [
+        'courseid'      => $courseid,
+        'relateduserid' => $userid,
+        'objectid'      => $courseid, // Pass courseid as objectid
+        'context'       => \context_course::instance($courseid),
+        'other'         => [
+            'schoolid'  => $schoolid,
+            'gradeid'   => $categoryid,
+            'sessionid' => $poc_session_date->id,
+            'pocid'     => $userid
+        ]
     ];
-    
+    $event = \local_pocenrol\event\poc_course_selected::create($eventdata);
+    $event->trigger();
+
+    // Send success response (observer will handle the rest)
+    $response = [
+        'status'  => 'success',
+        'message' => 'Your Mapping has been successfully Completed.'
+    ];
     echo json_encode($response);
+    exit();
 
-        exit();
+} catch (Exception $e) {
+    $response = [
+        'status'  => 'error',
+        'message' => 'An error occurred: ' . $e->getMessage()
+    ];
+    echo json_encode($response);
+    exit();
 }
-
-

@@ -8,6 +8,7 @@ function local_pocschool_extend_navigation(global_navigation $navigation) {
     $context = context_system::instance();
 
     if (has_capability('local/pocschool:view', $context, $USER)) {
+        
         if(!is_siteadmin()){
         $CFG->custommenuitems = "Alloted School | /local/pocschool
                         Trainer Management | /local/trainer/trainer_manage.php

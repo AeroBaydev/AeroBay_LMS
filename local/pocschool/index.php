@@ -67,7 +67,7 @@ foreach ($category_listing as $key => $value_list) {
   $course_url=$url."=".$value_list->id;
 
 
-  $countCatlist=  $DB->count_records("course",['category'=>$value_list->id , 'visible'=>1]);
+  $countCatlist=  $DB->count_records("poc_copy_course",['gradeid'=>$value_list->id , 'status'=>1]);
   $countCatlist="<h5 class='card-title'>Total no of course: $countCatlist</h5>";
 
   $urlCat = new moodle_url("/local/pocschool/index.php?parent=$value_list->id");

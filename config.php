@@ -6,10 +6,10 @@ $CFG = new stdClass();
 
 $CFG->dbtype    = 'mysqli';
 $CFG->dblibrary = 'native';
-$CFG->dbhost    = 'localhost';
-$CFG->dbname    = 'aerobay';
-$CFG->dbuser    = 'moodle-user';
-$CFG->dbpass    = '$Re#@!$%^becv';
+$CFG->dbhost    = 'db';
+$CFG->dbname    = 'update_mapping';
+$CFG->dbuser    = 'root';
+$CFG->dbpass    = 'rootpass';
 $CFG->prefix    = 'mdl_';
 $CFG->dboptions = array (
   'dbpersist' => 0,
@@ -26,9 +26,10 @@ $CFG->dboptions = array (
 // // debug messages, this overrides the debug flag in $CFG->debug and $CFG->debugdisplay
 // // for these users only.
 // $CFG->debugusers = '2';
- // $CFG->debug = 32767; $CFG->debugdisplay = 1;
-$CFG->wwwroot   = 'https://lms.aerobay.in';
-$CFG->dataroot  = '/var/www/updatedata';
+//  $CFG->debug = 32767; $CFG->debugdisplay = 1;
+
+$CFG->wwwroot   = 'http://88.222.214.159:8000/update';
+$CFG->dataroot  = '/var/www/moodledata/updatedata';
 $CFG->admin     = 'admin';
 
 $CFG->directorypermissions = 0777;

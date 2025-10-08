@@ -2,9 +2,8 @@ window.addEventListener("load", () => {
     const school = document.getElementById("id_school");
     const grade = document.getElementById("id_grade");
     const course = document.getElementById("id_course");
-    const baseUrl = window.location.origin + "/" + window.location.pathname.split("/")[1];
-    
-    console.log(baseUrl)
+    const baseUrl = M.cfg.wwwroot+"/login";
+   
     school.addEventListener('change', function() {
         const data = {};
         data.id = this.value;

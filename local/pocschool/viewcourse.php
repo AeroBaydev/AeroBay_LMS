@@ -20,7 +20,9 @@ else{
 
 
 
-$allCourses = $DB->get_records_sql("SELECT * FROM {course} where visible=1  and category=$catId");
+$allCourses = $DB->get_records_sql("SELECT * FROM {course} where visible=1  and 
+id in( select courseid from {poc_copy_course} where gradeid=$catId and status=1)");
+
 $courseArray=array();
 foreach ($allCourses as $course) {
     $course_name = $course->fullname;
@@ -28,7 +30,8 @@ foreach ($allCourses as $course) {
     $createdate = date('l, F d', $course->startdate);
     
     
-    $field_data = $DB->get_record_sql("SELECT c.value as fee FROM {customfield_data} c JOIN {customfield_field} f ON f.id = c.fieldid WHERE c.instanceid = $course->id AND f.shortname = 'fee' ");
+    $field_data = $DB->get_record_sql("SELECT c.value as fee FROM {customfield_data} c 
+    JOIN {customfield_field} f ON f.id = c.fieldid WHERE c.instanceid = $course->id AND f.shortname = 'fee' ");
     $course_price=$field_data->fee;
   
    //course image
@@ -81,6 +84,7 @@ foreach ($allCourses as $course) {
     'enrolButton'=>$enrolButton,
     'count'=>$enroll_user, 
     'course_category' => $course->category,
+    'gradeid'=>$catId,
     'course_price'=>$course_price, 'delivery'=>$delivery,'createdate'=>$createdate);
 
 }

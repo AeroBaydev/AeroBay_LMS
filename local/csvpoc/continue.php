@@ -33,7 +33,7 @@ foreach ($users as $user) {
         $newuser->lastname = $user->lastname;
         $newuser->email = $user->email;
         $newuser->password = 'ChangeMe!123'; // Set a default password, or generate one
-        $newuser->confirmed = 0; // Confirm the user account
+        $newuser->confirmed = 1; // Confirm the user account
         $newuser->mnethostid = $CFG->mnet_localhost_id; // Set to the local Moodle host ID
 
         // Attempt to create the user

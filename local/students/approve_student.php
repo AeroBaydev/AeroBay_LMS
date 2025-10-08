@@ -24,7 +24,10 @@ else{
     $DB->set_field('student', 'approvedby', "poc", array('userid' => $id));
     $approvedby="POC";
 }
-
+\local_studentapproval\event\user_approved::create([
+    'context'  => context_system::instance(),
+    'objectid' => $id, // The ID of the user being approved.
+])->trigger();
 
 $studentdata = $DB->get_record('user', array('id' => $id));
 // $result = \local_emailtemplates\email_sender::send_email("approved", $id,"0",$approvedby);

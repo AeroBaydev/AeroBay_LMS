@@ -39,9 +39,7 @@
               autocomplete="off">
           </div>
         </form>
-        <div class="main-btn create-course-mobile">
        
-        </div>
       </div>
       <div class="course-items-main">
         <div class="main-box">
@@ -66,7 +64,7 @@
          <p class="card-text">Create at : {{createdate}}</p>
         <a href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}" class="btn btn-primary">View Details</a>
         {{#enrolButton}}
-        <a href="{{{config.wwwroot}}}/local/pocschool/enrolluser/studentlist.php?id={{courseid}}" class="btn btn-primary">Enroll Course</a>
+        <a href="{{{config.wwwroot}}}/local/pocschool/enrolluser/studentlist.php?id={{gradeid}}" class="btn btn-primary">Enroll Course</a>
         {{/enrolButton}}
       </div>
     </div>

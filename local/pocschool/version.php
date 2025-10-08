@@ -1,6 +1,6 @@
 <?php
 
 $plugin->component = 'local_pocschool';
-$plugin->version = 2024062104;
+$plugin->version = 2024062105;
 
 ?>

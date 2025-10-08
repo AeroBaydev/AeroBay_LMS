@@ -30,12 +30,12 @@ FROM {course_categories} cc
 WHERE
   cc.visible = 1 and cc.parent=$schoolid 
 ");
-
+$parentid = $DB->get_record('course_categories', ['idnumber' => 1], 'id');
 foreach ($categories as $category) {
   $courses = $DB->get_records_sql("
       SELECT c.id, c.fullname
       FROM {course} c join {course_categories} cc on cc.id= c.category
-      WHERE cc.name = '$category->name' AND cc.visible = 1 ANd cc.parent=171 " );
+      WHERE cc.name = '$category->name' AND cc.visible = 1 ANd cc.parent=$parentid->id " );
       $category->courses = array_values($courses);
 }
 

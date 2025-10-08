@@ -32,6 +32,7 @@ class school_form extends moodleform
     // </script>');
 
 
+        $parentid = $DB->get_record('course_categories', ['idnumber' => 1], 'id');
 
 
         $optionSubCat=[];
@@ -39,7 +40,7 @@ class school_form extends moodleform
             SELECT cc.id, cc.name, cc.description
             FROM {course_categories} cc
             WHERE
-            cc.visible = 1 and cc.parent=325
+            cc.visible = 1 and cc.parent=$parentid->id
           ");
 
 foreach ($categories as $category) {

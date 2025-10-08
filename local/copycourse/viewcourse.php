@@ -14,7 +14,8 @@ GLOBAL $DB,$USER;
 
 $id = $USER->id;
 
-$allCourses = $DB->get_records_sql("SELECT * FROM {course} where visible=1  and category=$catId");
+$allCourses = $DB->get_records_sql("SELECT * FROM {course} where visible=1  and 
+id in( select courseid from {poc_copy_course} where gradeid=$catId and status=1)");
 $courseArray=array();
 foreach ($allCourses as $course) {
     $course_name = $course->fullname;

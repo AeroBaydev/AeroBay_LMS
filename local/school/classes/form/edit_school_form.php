@@ -32,13 +32,13 @@ class edit_school_form extends moodleform
 
         $mform->addElement('text', 'school_sortname', get_string('school_sortname', 'local_school'));
         $mform->setType('school_sortname', PARAM_TEXT);
-
+        $parentid = $DB->get_record('course_categories', ['idnumber' => 1], 'id');
         $optionSubCat=[];
         $categories = $DB->get_records_sql("
             SELECT cc.id, cc.name, cc.description
             FROM {course_categories} cc
             WHERE
-            cc.visible = 1 and cc.parent=325
+            cc.visible = 1 and cc.parent=$parentid->id
           ");
 
         foreach ($categories as $category) {

@@ -21,14 +21,16 @@ $schoolid = required_param('schoolid', PARAM_INT);
 $gradeid = required_param('gradeid', PARAM_INT);
 function get_category_details($gradeid) {
     global $DB;
-    $category = $DB->get_record('course', array('category' => $gradeid ,'visible'=>1));
+    $getcourseid=$DB->get_record('poc_copy_course', array('gradeid' => $gradeid ,'status'=>1));
+    $category = $DB->get_record('course', array('id' => $getcourseid->courseid ,'visible'=>1));
     return $category;
   }
+
   if($getcourseid=get_category_details($gradeid)){
     $courseid=$getcourseid->id;
   }
   else{
-
+   
     
     echo $OUTPUT->header();
     echo $OUTPUT->notification('The following required course id no course found'); 

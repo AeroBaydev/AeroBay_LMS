@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/pocstudnetenroll/db" VERSION="20251002" COMMENT="XMLDB file for Moodle local_pocstudnetenroll plugin. Added gradeid and pocid.">
+  <TABLES>
+    <TABLE NAME="pocstudnetenroll_queue" COMMENT="Queue for processing student enrollments and unenrollments.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="The user to be actioned."/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="The Moodle course ID for the action."/>
+        <FIELD NAME="gradeid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" COMMENT="The grade ID from the student table."/>
+        <FIELD NAME="pocid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" COMMENT="The POC ID for tracking."/>
+        <FIELD NAME="action" TYPE="char" LENGTH="10" NOTNULL="true" COMMENT="Action to perform: 'enroll' or 'unenroll'."/>
+        <FIELD NAME="status" TYPE="char" LENGTH="15" NOTNULL="true" DEFAULT="pending" COMMENT="Processing status: pending, processed, error."/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
