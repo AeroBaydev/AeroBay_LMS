@@ -5,15 +5,13 @@ defined('MOODLE_INTERNAL') || die();
 
 class observer {
     public static function handle_user_approved(\local_studentapproval\event\user_approved $event) {
-        //mtrace("Observer triggered for userid: {$event->objectid}");
+        // 1. Create the Ad-hoc task
+        $task = new \local_studentapproval\task\process_approval();
         
-        // Instead of adhoc task, directly call the processing function
-        global $CFG;
-        require_once($CFG->dirroot . '/local/send_email_id_and_password/lib.php');
+        // 2. Pass the User ID (optional, but good for debugging)
+        $task->set_custom_data(['userid' => $event->objectid]);
         
-        //mtrace("Calling student processing function directly...");
-        local_send_email_id_and_password_run_process();
-        
-        //mtrace("Student processing completed for userid: {$event->objectid}");
+        // 3. Queue the task (This is fast!)
+        \core\task\manager::queue_adhoc_task($task);
     }
 }

@@ -30,10 +30,11 @@ $PAGE->requires->css(new moodle_url('/local/timetable/customedit.css'));
 
 // Fetch existing timetable data based on schoolid and gradeid
 $timetable_records = $DB->get_records('timetable', ['schoolid' => $schoolid, 'gradeid' => $gradeid]);
-$courseid = $gradeid; // Example course ID
-$coursename = get_course_name($courseid);
+$catId = $gradeid; // Example course ID
 
-
+$courseid = $DB->get_record_sql("SELECT * FROM {course} where visible=1  and 
+id in( select courseid from {poc_copy_course} where gradeid=$catId and status=1)");
+$coursename = get_course_name($courseid->id);
 // Convert records into an array for pre-checking checkboxes
 $checked_timetable = [];
 foreach ($timetable_records as $record) {

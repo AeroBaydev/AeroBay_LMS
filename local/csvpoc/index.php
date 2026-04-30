@@ -185,7 +185,7 @@ if ($mform->is_cancelled()) {
     $continueurl1 = new moodle_url('/local/pocschool/index.php', array('parent' => $schoolid));
     echo $OUTPUT->single_button($continueurl1, get_string('cancel'),'get');
     echo $OUTPUT->footer();
-    echo $OUTPUT->footer();
+    // echo $OUTPUT->footer();
 } else {
     echo $OUTPUT->header();
     $student_data = [

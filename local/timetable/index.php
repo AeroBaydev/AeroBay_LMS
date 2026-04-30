@@ -52,8 +52,8 @@ $params = [];
 if ($search) {
    
 }
-$where .= ' ORDER BY cc.id ';
-$perpage = 10;
+$where .= ' ORDER BY cc.id  desc ';
+$perpage = 50;
 $DB->execute('SET @row_number := ' . (($perpage * $page)), []);
 
 $table->set_sql($fields, $from, $where, $params);

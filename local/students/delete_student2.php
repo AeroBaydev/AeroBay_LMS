@@ -11,7 +11,7 @@ global $DB;
 
 
 if ($user = $DB->get_record('user', array('id' => $id))) {
-    $deleted1 = user_delete_user($user);
     $deleted = $DB->delete_records('student', array('userid' => $id));
+    $deleted1 = user_delete_user($user);
     echo json_encode(['status' => 'success']);
     }

@@ -1,42 +1,34 @@
 <?php
-require_once('../../config.php');  // Include Moodle configuration
+require_once('../../config.php');
 
-// Check if the user has the appropriate capability
 require_login();
-//require_capability('local/studentadmin:approve', context_system::instance());
 
-// Get the incoming data from the AJAX request
 $ids = required_param('ids', PARAM_RAW);
-
-// Decode the JSON data
 $student_ids = json_decode($ids, true);
 
-// Check if the student_ids array is not empty
 if (empty($student_ids)) {
-    echo json_encode(array('status' => 'error', 'message' => 'No students selected.'));
+    echo json_encode(['status' => 'error', 'message' => 'No students selected.']);
     exit;
 }
+
 global $DB;
 
-// FIRST: Update the database status for the selected students
-$sql = "UPDATE {student} SET status = 1 WHERE userid IN (" . implode(',', array_map('intval', $student_ids)) . ")";
+// 1) Bulk DB update – this is already good and fast
+list($insql, $params) = $DB->get_in_or_equal($student_ids, SQL_PARAMS_NAMED, 'uid');
+$sql = "UPDATE {student} SET status = 1 WHERE userid $insql";
+$DB->execute($sql, $params);
 
-// Execute the SQL
-$DB->execute($sql);
+// 2) Single bulk event instead of one per user
+$event = \local_studentapproval\event\user_approved::create([
+    'context'  => context_system::instance(),
+    'objectid' => (int) reset($student_ids) ?: 0,
+    'other'    => [
+        'studentids' => $student_ids,
+        'count'      => count($student_ids),
+    ],
+]);
+$event->trigger();
 
-// THEN: Trigger an event for each student AFTER database update
-foreach ($student_ids as $userid) {
-    $userid = (int)$userid;
-    if ($userid > 0) {
-        // This is the most important part. It creates and triggers the event.
-        \local_studentapproval\event\user_approved::create([
-            'context'  => context_system::instance(),
-            'objectid' => $userid, // The ID of the user being approved.
-        ])->trigger();
-    }
-}
-
-// Return a success message
-echo json_encode(array('status' => 'success', 'message' => 'Selected students approved successfully.'));
+// 3) Return response quickly
+echo json_encode(['status' => 'success', 'message' => 'Selected students approved successfully.']);
 exit;
-?>

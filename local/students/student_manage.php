@@ -1,90 +1,198 @@
 <?php
+require_once("../../config.php");
+require_once($CFG->libdir . "/tablelib.php");
+require_once("classes/table/student_table.php");
 
-require_once "../../config.php";
-require_once $CFG->libdir . "/tablelib.php";
-require_once "classes/table/student_table.php";
 $PAGE->requires->js(new moodle_url("$CFG->wwwroot/local/students/main.js"));
+
 global $DB;
+
+// Moodle login
 require_login();
 
-// $context = context_user::instance($USER->id);
-// $PAGE->set_context($context);
+// --------- PARAMS ----------
+$download    = optional_param('download', '', PARAM_ALPHA);
+$search      = optional_param('search', '', PARAM_TEXT);
+$userIdPoc   = optional_param('userid', '', PARAM_TEXT);
+$perpage_in  = optional_param('perpage', null, PARAM_ALPHANUM);
 
-$page = optional_param('page', 0, PARAM_INT);
-$download = optional_param('download', '', PARAM_ALPHA);
-$search = optional_param('search', '', PARAM_TEXT);
+// --- PAGE SESSION LOGIC START ---
+// User ne pagination me jo page click kiya vo `page` param se aata hai
+$page_input = optional_param('page', null, PARAM_INT);
 
-$userIdPoc = optional_param('userid', '', PARAM_TEXT);
+if ($page_input !== null) {
+    // URL se page mila -> session me save kar do
+    $_SESSION['student_manage_page'] = $page_input;
+    $page = $page_input;
+} else if (isset($_SESSION['student_manage_page'])) {
+    // URL me page nahi hai -> session wala use karo
+    $page = (int)$_SESSION['student_manage_page'];
 
-if(is_siteadmin()){
-    if (!isset($_SESSION['userIdPoc'])) {
-     
-    $_SESSION['userIdPoc'] = $userIdPoc;
-    $userid =$userIdPoc;
+    // IMPORTANT PART:
+    // Tablelib andhar optional_param('page', 0, PARAM_INT) call karta hai.
+    // Isko same value dikhane ke liye hum $_GET/$_REQUEST me bhi inject kar rahe hain.
+    if (!isset($_GET['page']) && !isset($_POST['page'])) {
+        $_GET['page']     = $page;
+        $_REQUEST['page'] = $page;
     }
-
+} else {
+    // Pehli baar aaya hai -> page 0
+    $page = 0;
+    $_GET['page']     = 0;
+    $_REQUEST['page'] = 0;
 }
-else{
-    $userid=$USER->id;
+// --- PAGE SESSION LOGIC END ---
+
+// --- PERPAGE SESSION LOGIC START ---
+if ($perpage_in) {
+    // User ne dropdown se change kiya
+    $_SESSION['student_manage_perpage'] = $perpage_in;
+    $perpage_display = $perpage_in;
+
+    // Per page change hua -> page reset 0 pe
+    $page = 0;
+    $_SESSION['student_manage_page'] = 0;
+    $_GET['page']     = 0;
+    $_REQUEST['page'] = 0;
+} elseif (isset($_SESSION['student_manage_perpage'])) {
+    $perpage_display = $_SESSION['student_manage_perpage'];
+} else {
+    $perpage_display = '10';
+}
+
+// Convert to Integer for Database
+if ($perpage_display === 'all') {
+    $perpage_sql = 50000; // Set a high limit to show "All"
+} else {
+    $perpage_sql = (int)$perpage_display;
+    if ($perpage_sql < 1) $perpage_sql = 10; // Safety fallback
+}
+// --- PERPAGE SESSION LOGIC END ---
+
+
+// --------- USER / POC LOGIC ----------
+if (is_siteadmin()) {
+    if (!isset($_SESSION['userIdPoc']) && !empty($userIdPoc)) {
+        $_SESSION['userIdPoc'] = $userIdPoc;
+        $userid = $userIdPoc;
+    }
+} else {
+    $userid = $USER->id;
 }
 
 if (isset($_SESSION['userIdPoc'])) {
-     $userid=$_SESSION['userIdPoc'];
-   
+    $userid = $_SESSION['userIdPoc'];
 }
 
 
+// --------- TABLE SETUP ----------
 $table = new student_table('uniqueid');
-
 $table->is_downloading($download, 'student_data', 'student_data');
 
 if (!$table->is_downloading()) {
-    
-   // $PAGE->set_context(context_system::instance());
+
     $PAGE->set_pagelayout('course');
-   $PAGE->set_title('Student');
-   $PAGE->navbar->add('POC Control', "$CFG->wwwroot/local/poc/pocmange/?userid=$userid");
-   $PAGE->navbar->add('POC Student list', "");
-    // $PAGE->requires->css('/local/students/amd/css/styles.css');
+    $PAGE->set_title('Student');
+    $PAGE->navbar->add('POC Control', "$CFG->wwwroot/local/poc/pocmange/?userid=$userid");
+    $PAGE->navbar->add('POC Student list', "");
+
     echo $OUTPUT->header();
 
-   $heading_text = "Student Management";
+    $heading_text = "Student Management";
     echo html_writer::tag('h2', $heading_text, array('class' => 'custom-heading add-student'));
 
     echo html_writer::start_div('d-flex justify-content-between mb-2');
 
-    echo html_writer::link(new moodle_url('/local/students/student_form.php'), 'Add New Student', array('class' => 'btn btn-primary mr-10'));
+    echo html_writer::link(
+        new moodle_url('/local/students/student_form.php'),
+        'Add New Student',
+        array('class' => 'btn btn-primary mr-10')
+    );
+
     echo html_writer::start_div('d-flex');
-    
-    echo "<form method='post' class='d-flex' action='$CFG->wwwroot/local/students/student_manage.php'>";
-    echo "<input type='search' class='ml-auto form-control rounded mr-2' name='search' placeholder='Search...' value='" . ($search) . "'>";
+
+    // --- FORM (PERPAGE + SEARCH) ---
+    echo "<form method='post' class='d-flex align-items-center' action='$CFG->wwwroot/local/students/student_manage.php'>";
+
+    // userid preserve
+    echo html_writer::empty_tag('input', [
+        'type'  => 'hidden',
+        'name'  => 'userid',
+        'value' => $userid
+    ]);
+
+    $perpage_options = array(
+        '10'  => '10',
+        '20'  => '20',
+        '50'  => '50',
+        '100' => '100',
+        'all' => 'Show All'
+    );
+
+    echo html_writer::label('Show:', 'perpage_select', false, array('class' => 'mr-1 font-weight-bold'));
+    echo html_writer::select(
+        $perpage_options,
+        'perpage',
+        $perpage_display,
+        false,
+        array(
+            'id'    => 'perpage_select',
+            'class' => 'form-control mr-3',
+            'style' => 'width: auto;',
+            'onchange' => 'this.form.submit()'
+        )
+    );
+
+    echo "<input type='search' class='ml-auto form-control rounded mr-2' name='search' placeholder='Search...' value='" . s($search) . "'>";
     echo '<input type="submit" value="Search" class="btn btn-primary mr-2">';
     echo '<a href="' . $CFG->wwwroot . '/local/students/student_manage.php" class="btn btn-secondary mr-2">Clear</a>';
     echo '</form>';
-    echo html_writer::end_div();
-    echo html_writer::end_div();
+
+    echo html_writer::end_div(); // inner d-flex
+    echo html_writer::end_div(); // outer d-flex
 }
 
-$fields = "(@row_number := @row_number + 1) as serialno, st.userid as id,st.status, u.firstname as firstname, u.lastname as lastname, st.address as address , st.student_id as studentid";
-$from = "{student} as st JOIN {user} u ON st.userid = u.id join {schoolassign} sa on sa.schoolid=st.schoolid ";
-$where = "1=1  and sa.userid=$userid and u.deleted=0";
-$params = [];
+
+// --------- SQL FOR TABLE ----------
+$fields = "(@row_number := @row_number + 1) as serialno,
+           st.userid as id,
+           st.status,
+           u.firstname as firstname,
+           u.lastname as lastname,
+           st.address as address,
+           st.student_id as studentid";
+
+$from = "{student} as st
+         JOIN {user} u ON st.userid = u.id
+         JOIN {schoolassign} sa ON sa.schoolid = st.schoolid";
+
+$safe_userid = (int)$userid;
+$where = "1=1 AND sa.userid = :pocuserid AND u.deleted = 0";
+$params = ['pocuserid' => $safe_userid];
 
 if ($search) {
     $where .= " AND (u.firstname LIKE :search1 OR u.lastname LIKE :search2 OR st.student_id LIKE :search3)";
-    $params = ['search1' => "%$search%", 'search2' => "%$search%",'search3' => "%$search%"];
+    $params['search1'] = "%$search%";
+    $params['search2'] = "%$search%";
+    $params['search3'] = "%$search%";
 }
 
-$perpage = 10;
 $table->set_sql($fields, $from, $where, $params);
-$DB->execute('SET @row_number := ' . ($perpage * $page));
-$table->define_baseurl("$CFG->wwwroot/local/students/student_manage.php?page=$page?userid=$userid");
 
+// Row number base
+$DB->execute('SET @row_number := ' . ($perpage_sql * $page));
+
+// Yaha tum pehle galat baseurl use kar rahe the (?page=?userid)
+// usko thik kar diya:
+$baseurl = $CFG->wwwroot . '/local/students/student_manage.php?userid=' . $userid;
+$table->define_baseurl($baseurl);
+
+// --------- OUTPUT ----------
 if ($table->is_downloading()) {
-    $table->out($perpage, true);
+    $table->out($perpage_sql, true);
     exit;
 } else {
-    $table->out($perpage, true);
+    $table->out($perpage_sql, true);
     echo html_writer::tag('button', 'Bulk Approve', array('id' => 'batch-approve-btn', 'class' => 'btn btn-success'));
     echo $OUTPUT->footer();
 }
@@ -92,6 +200,8 @@ if ($table->is_downloading()) {
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var select = document.getElementById('downloadtype_download');
+        if (!select) return;
+
         var options = select.options;
         var valuesToRemove = ['pdf', 'ods', 'json', 'html'];
 

@@ -88,7 +88,7 @@ foreach ($category_listing as $key => $value_list) {
       $data['is_true'] = false;
       $view_text="View course";
       $courseUrl= new moodle_url("/local/pocschool/viewcourse.php?catId=$value_list->id");
-      $uploadetext="Uploade Users";
+      $uploadetext="Upload Users";
 
       //  $category = get_category_details($catId);
 

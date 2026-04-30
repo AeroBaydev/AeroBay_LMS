@@ -13,14 +13,16 @@ class send_email_task extends scheduled_task {
      * The main execution method for the task.
      */
     public function execute() {
-        global $CFG;
+         global $CFG;
+        require_once($CFG->dirroot . '/local/send_email_id_and_password/lib.php');
+       
         // mtrace("Executing send_email_task...");
 
         // Step 1: Include the library file.
         // require_once($CFG->dirroot . '/local/send_email_id_and_password/test_enrollment.php');
 
         // // Step 2: Call the single main function with no parameters.
-        // local_send_email_id_and_password_run_process();
+         local_send_email_id_and_password_run_process();
 
       
     }

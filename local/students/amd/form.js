@@ -2,7 +2,7 @@ window.addEventListener("load", () => {
     const school = document.getElementById("id_schoolid");
     const grade = document.getElementById("id_gradeid");
     const course = document.getElementById("id_courseid");
-    const baseUrl = window.location.origin + "/" + window.location.pathname.split("/")[1];
+    const baseUrl = M.cfg.wwwroot;
     
     console.log(baseUrl)
     school.addEventListener('change', function() {

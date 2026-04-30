@@ -118,8 +118,14 @@ function confirmDelete(id,i) {
         complete: function() {
             // Remove the loading indicator
             $('#uniqueid_r'+i).remove();
+               updateSerialNumbers(); 
             $('#loadingIndicator').remove();
         }
+    });
+}
+function updateSerialNumbers() {
+    $('tr[id^="uniqueid_r"]').each(function(index) {
+        $(this).find('td.cell.c1').text(index + 1);
     });
 }
 
@@ -143,36 +149,55 @@ function closeStatusPopup() {
 ///checkbox code
 document.addEventListener('DOMContentLoaded', function () {
     // Select/Deselect all checkboxes
-    document.getElementById('select-all').addEventListener('click', function (event) {
-        var isChecked = this.checked;
-        document.querySelectorAll('.student-select').forEach(function (checkbox) {
+    // document.getElementById('select-all').addEventListener('click', function (event) {
+    //     var isChecked = this.checked;
+    //     document.querySelectorAll('.student-select').forEach(function (checkbox) {
+    //         checkbox.checked = isChecked;
+    //     });
+
+    document.getElementById('select-all').addEventListener('click', function () {
+    var isChecked = this.checked;
+
+    document.querySelectorAll('.student-select').forEach(function (checkbox) {
+        if (!checkbox.disabled) {          // 🔥 IMPORTANT
             checkbox.checked = isChecked;
-        });
+        }
+    });
+
+
     });
 
     // Handle the batch approve button click event
-    document.getElementById('batch-approve-btn').addEventListener('click', function () {
-        // Collect all selected student IDs
-        var selectedStudents = [];
-        document.querySelectorAll('.student-select:checked').forEach(function (checkbox) {
-            selectedStudents.push(checkbox.value);
-        });
+document.getElementById('batch-approve-btn').addEventListener('click', function () {
 
-        if (selectedStudents.length > 0) {
-            // Send AJAX request to approve.php
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'approved.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    alert('Selected students approved successfully!');
-                    location.reload(); // Refresh the page to reflect changes
-                }
-            };
-            xhr.send('ids=' + JSON.stringify(selectedStudents));
-        } else {
-            alert('Please select at least one student to approve.');
-        }
+    var selectedStudents = [];
+
+    // 🔥 ONLY enabled + checked
+    document.querySelectorAll('.student-select:checked:not(:disabled)').forEach(function (checkbox) {
+        selectedStudents.push(checkbox.value);
     });
+
+    if (selectedStudents.length === 0) {
+        alert('Please select at least one student to approve.');
+        return;
+    }
+
+    console.log('selectedStudents', selectedStudents);
+    // return; // ❌ remove this in production
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'approved.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            alert('Selected students approved successfully!');
+            location.reload(); // Moodle-safe refresh
+        }
+    };
+
+    xhr.send('ids=' + encodeURIComponent(JSON.stringify(selectedStudents)));
+});
+
 });
 ///checkbox code end

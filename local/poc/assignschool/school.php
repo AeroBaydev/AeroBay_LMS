@@ -37,7 +37,9 @@ else{
 	$getpocid=$pocId;
 	$_SESSION['caturlid']=$getpocid;
 }
-
+if($pocId){
+	$getpocid=$pocId;
+}
 
 //get existing school
 $result=$DB->get_records_sql("SELECT cc.* FROM {course_categories} cc  join {schoolassign} sa on sa.schoolid=cc.id where sa.userid=$getpocid"); //get records of all users that are enrolled in the dept

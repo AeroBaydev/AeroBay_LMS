@@ -35,9 +35,27 @@ class student_table extends table_sql
 
     // Define the checkbox column content
     function col_checkbox($values)
-    {
-        return '<input type="checkbox" class="student-select" value="'.$values->id.'" />';
+{
+    global $DB;
+
+    // Get student record by userid
+    $student = $DB->get_record('student', ['userid' => $values->id], 'status');
+
+    $checked  = '';
+    $disabled = '';
+
+    if ($student && ($student->status == 1 || $student->status == 0)) {
+        $checked  = 'checked';
+        $disabled = 'disabled';
     }
+
+    return '<input type="checkbox"
+            class="student-select"
+            value="'.$values->id.'"
+            '.$checked.'
+            '.$disabled.' />';
+}
+
 
     function col_edit($values)
     {

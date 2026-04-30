@@ -12,17 +12,30 @@ $schoolid   = required_param('schoolid', PARAM_INT);
 $courseid   = required_param('option', PARAM_INT);
 
 // 2. Identify the user.
-$userid = $USER->id;
-if (isset($_SESSION['userIdPoc'])) {
-    $userid = $_SESSION['userIdPoc'];
+
+// if (isset($_SESSION['userIdPoc'])) {
+//     $userid = $_SESSION['userIdPoc'];
+// }
+//get poc id by cat id 
+$poc_school_id_date = $DB->get_record('schoolassign', ['schoolid' => $schoolid]);
+
+if (empty($poc_school_id_date )) {
+    echo json_encode(['status' => 'error', 'message' => 'POC not found in this School']);
+    exit();
 }
 
+$userid = $poc_school_id_date->userid;
+
+
+// echo $userid;
+// die("userid");
 // 3. Check for an active session.
 $poc_session_date = $DB->get_record('poc_session_date', ['pocid' => $userid, 'status' => 1]);
 if (empty($poc_session_date)) {
     echo json_encode(['status' => 'error', 'message' => 'No active session was found for you.']);
     exit();
 }
+
 
 // 4. Prevent duplicate entries.
 $conditions = [

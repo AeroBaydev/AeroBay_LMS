@@ -6,7 +6,7 @@ function get_course_name($courseid) {
         return "Invalid Course ID";
     }
 
-    $course = $DB->get_record('course', ['category' => $courseid], 'fullname');
+    $course = $DB->get_record('course', ['id' => $courseid], 'fullname');
 
     return $course ? $course->fullname : "Course Not Found";
 }

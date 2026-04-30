@@ -44,7 +44,8 @@ if (!empty($courses)) {
  
 
     $student_records = $DB->get_record('student', ['userid' => $USER->id]);
-    $courseid = $student_records->gradeid; 
+     $student_Course = $DB->get_record('poc_copy_course', ['gradeid' => $student_records->gradeid,'schoolid'=>$student_records->schoolid]);
+    $courseid = $student_Course->courseid; 
     $coursename = get_course_name($courseid);
 
     $gradeid=$student_records->gradeid;
@@ -187,7 +188,7 @@ $sql = "SELECT q.name AS quiz_name, qg.grade AS score
         JOIN {quiz} q ON qg.quiz = q.id
         WHERE q.course = :courseid AND qg.userid = :userid";
 
-$params = ['courseid' => 276, 'userid' => $userid];
+$params = ['courseid' => $courseid, 'userid' => $userid];
 $results = $DB->get_records_sql($sql, $params);
 
 
@@ -231,7 +232,7 @@ $data = [
 
 
 
-$milestones = $DB->get_records('assessment_milestone', ['userid' => $USER->id, 'courseid' => 276]);
+$milestones = $DB->get_records('assessment_milestone', ['userid' => $USER->id, 'courseid' => $courseid]);
 
 $matched_image = null;
 $matched_id=[];
@@ -337,7 +338,7 @@ foreach ($newArray as $key => $value) {
 }
 //course completed
 
-$course = $DB->get_record('course', ['id' => 276]);
+$course = $DB->get_record('course', ['id' => $courseid]);
 $progress = \core_completion\progress::get_course_progress_percentage($course, $USER->id);
 
 

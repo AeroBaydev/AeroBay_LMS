@@ -1,3 +1,17 @@
+<style>
+    .pagelayout-login #page div[role="main"] {
+    height: auto !important;
+}
+body#page-login-forgot_password #maincontent+.box {
+     display: block !important
+}
+
+#page-login-forgot_password .login-container {
+    border-radius: 50px;
+    background-color: #fff;
+    padding: 83px 30px 0 !important;
+}
+</style>
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
