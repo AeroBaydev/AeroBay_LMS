@@ -704,55 +704,49 @@ $(document).ready(function() {
 {{/first_login}}
 
     <script>
+    document.addEventListener("DOMContentLoaded", function () {
         var offlineValues = {{{ attendance.offlineValues }}};
-        var onlineValues = {{{ attendance.onlineValues }}};
-        var xValues = {{{ attendance.months  }}};
+        var onlineValues  = {{{ attendance.onlineValues }}};
+        var xValues       = {{{ attendance.months }}};
 
-        new Chart("myChart", {
-        type: "bar",
-        //type: "horizontalBar",
-        data: {
-            labels: xValues,
-            datasets: [
-                
-                {
-                    backgroundColor: "#3f00c4",
-                    data: onlineValues,
-                    label: "present",
-                    
-                },
-                {
-                    backgroundColor: "#f59c15",
-                    data: offlineValues,
-                    label: "absent",
-                    
-                }
-            ]
-        },
-         options: {
-                barValueSpacing: 20,
+        var canvas = document.getElementById("myChart");
+        if (!canvas) { return; }
+
+        new Chart(canvas, {
+            type: "bar",
+            data: {
+                labels: xValues,
+                datasets: [
+                    {
+                        label: "Present",
+                        backgroundColor: "#3f00c4",
+                        data: onlineValues
+                    },
+                    {
+                        label: "Absent",
+                        backgroundColor: "#f59c15",
+                        data: offlineValues
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
                 scales: {
-                yAxes: [{
-                    ticks: {
-                    min: 0,
-                    max: 30,
-                    }
-                }]
-            },
-            plugins: {
-                labels: {
-                render: () => {}
-                }
-            },
-            legend: {
-                display: true,
-                position: 'bottom',
-                    labels: {
-                        boxWidth: 12,
-                    }
+                    yAxes: [{
+                        ticks: { min: 0, stepSize: 1, beginAtZero: true }
+                    }]
                 },
+                plugins: {
+                    labels: { render: function() { return ''; } }
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { boxWidth: 12 }
+                }
             }
         });
+    });
     </script>
     <script>
         var xValues = ["Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5"];
@@ -765,37 +759,32 @@ $(document).ready(function() {
         "#fecf16"
         ];
 
-        new Chart("myPieChart", {
-        type: "pie",
-        data: {
-            labels: xValues,
-            datasets: [{
-            backgroundColor: barColors,
-            data: yValues
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                labels: {
-                render: 'percentage',
-                fontColor: "#fff",
-                //precision: 2
-                }
+        if (document.getElementById("myPieChart")) {
+            new Chart("myPieChart", {
+            type: "pie",
+            data: {
+                labels: xValues,
+                datasets: [{
+                backgroundColor: barColors,
+                data: yValues
+                }]
             },
-            legend: {
-                display: true,
-                position: 'bottom',
-                labels: {
-                    boxWidth: 12,
+            options: {
+                responsive: true,
+                plugins: {
+                    labels: {
+                    render: 'percentage',
+                    fontColor: "#fff"
+                    }
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { boxWidth: 12 }
                 }
-            },
-            title: {
-                display: false,
-                text: "World Wide Wine Production 2018"
             }
+            });
         }
-        });
     </script>
     <script>
         var xValues = ["Dance", "Drama", "Sports", "Singing", "Literature"];
@@ -808,98 +797,76 @@ $(document).ready(function() {
         "#fecf16"
         ];
 
-        new Chart("myDougnutChart", {
-        type: "doughnut",
-        data: {
-            labels: xValues,
-            datasets: [{
-            backgroundColor: barColors,
-            data: yValues
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                labels: {
-                render: 'percentage',
-                fontColor: "#fff",
-                //precision: 2
-                }
+        if (document.getElementById("myDougnutChart")) {
+            new Chart("myDougnutChart", {
+            type: "doughnut",
+            data: {
+                labels: xValues,
+                datasets: [{
+                backgroundColor: barColors,
+                data: yValues
+                }]
             },
-            legend: {
-                display: true,
-                position: 'bottom',
-                labels: {
-                    boxWidth: 12,
+            options: {
+                responsive: true,
+                plugins: {
+                    labels: {
+                    render: 'percentage',
+                    fontColor: "#fff"
+                    }
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { boxWidth: 12 }
                 }
-            },
-            title: {
-            display: false,
-            text: "World Wide Wine Production 2018"
             }
+            });
         }
-        });
     </script>
     <script>
         var xValues = ["Course 1", "Course 2", "Course 3", "Course 4", "Course 5" ,"Course 6"];
         var yValues = [55, 49, 44, 24, 35, 40];
         var barColors = ["#1363ff", "#20d4fa","#d03eff","#3ee5d2","#f2d913", "#f29a1c"];
 
-        new Chart("myHorizontalChart", {
-        type: "horizontalBar",
-        data: {
-        labels: xValues,
-        datasets: [{
-            backgroundColor: barColors,
-            data: yValues
-        }]
-        },
-        options: {
-            plugins: {
-                labels: {
-                render: 'value',
-                fontColor: "#000",
-                //precision: 2
+        if (document.getElementById("myHorizontalChart")) {
+            new Chart("myHorizontalChart", {
+            type: "horizontalBar",
+            data: {
+                labels: xValues,
+                datasets: [{
+                    backgroundColor: barColors,
+                    data: yValues
+                }]
+            },
+            options: {
+                plugins: {
+                    labels: { render: 'value', fontColor: "#000" }
+                },
+                legend: { display: false },
+                scales: {
+                    xAxes: [{ ticks: { min: 10, max: 60 } }]
                 }
-            },
-            legend: {display: false},
-            title: {
-            display: false,
-            text: "World Wine Production 2018"
-            },
-            scales: {
-            xAxes: [{ticks: {min: 10, max:60}}]
             }
+            });
         }
-        });
     </script>
     <script>
         const xAxisValues2 = ["Course 1","Course 2","Course 3","Course 4","Course 5","Course 6"];
-        new Chart("myLineChart", {
-        type: "line",
-        data: {
-            labels: xAxisValues2,
-            datasets: [{ 
-            data: [200,300,100,160,110,0],
-            backgroundColor:"rgba(255,0,0,0.3)",
-            borderColor: "red",
-            fill: true
-            }, { 
-            data: [10,130,200,300,150,140],
-            backgroundColor:"rgba(58,193,99,0.2)",
-            borderColor: "green",
-            fill: true
-            }, { 
-            data: [100,260,140,160,200,300],
-            backgroundColor:"rgba(0,0,255,0.4)",
-            borderColor: "blue",
-            fill: true
-            }]
-        },
-        options: {
-            legend: {display: false}
+        if (document.getElementById("myLineChart")) {
+            new Chart("myLineChart", {
+            type: "line",
+            data: {
+                labels: xAxisValues2,
+                datasets: [
+                { data: [200,300,100,160,110,0], backgroundColor:"rgba(255,0,0,0.3)", borderColor: "red",   fill: true },
+                { data: [10,130,200,300,150,140], backgroundColor:"rgba(58,193,99,0.2)", borderColor: "green", fill: true },
+                { data: [100,260,140,160,200,300], backgroundColor:"rgba(0,0,255,0.4)", borderColor: "blue",  fill: true }
+                ]
+            },
+            options: { legend: { display: false } }
+            });
         }
-        });
     </script>
     
     <script>
