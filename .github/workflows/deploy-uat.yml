@@ -20,7 +20,8 @@ jobs:
           script: |
             sudo git config --global --add safe.directory /var/www/lmstest
             cd /var/www/lmstest
-            sudo git pull origin development
+            sudo git fetch origin
+            sudo git reset --hard origin/development
             sudo chown -R www-data:www-data /var/www/lmstest
             sudo php /var/www/lmstest/admin/cli/purge_caches.php
             echo "UAT Deployment completed successfully"
