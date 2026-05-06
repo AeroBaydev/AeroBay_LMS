@@ -1,0 +1,25 @@
+name: Deploy to UAT
+
+on:
+  push:
+    branches:
+      - development
+
+jobs:
+  deploy:
+    name: Deploy to UAT Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.UAT_HOST }}
+          username: ${{ secrets.UAT_USER }}
+          key: ${{ secrets.UAT_SSH_KEY }}
+          script: |
+            cd /var/www/lmstest
+            sudo git pull origin development
+            sudo chown -R www-data:www-data /var/www/lmstest
+            sudo php /var/www/lmstest/admin/cli/purge_caches.php
+            echo "UAT Deployment completed successfully"
