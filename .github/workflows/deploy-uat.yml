@@ -18,6 +18,7 @@ jobs:
           username: ${{ secrets.UAT_USER }}
           key: ${{ secrets.UAT_SSH_KEY }}
           script: |
+            sudo git config --global --add safe.directory /var/www/lmstest
             cd /var/www/lmstest
             sudo git pull origin development
             sudo chown -R www-data:www-data /var/www/lmstest
