@@ -57,8 +57,12 @@
 }}
 <nav class="navbar fixed-top navbar-light bg-white navbar-expand" aria-label="{{#str}}sitemenubar, admin{{/str}}">
 
-    <button class="navbar-toggler menu_btn d-block d-md-none px-1 my-1 border-0" data-toggler="drawers" data-action="toggle" data-target="theme_boost-drawers-primary" data-action="toggle-drawer1" data-side="left"  >
-        <span id="menu_btn_show" class="navbar-toggler-icon" data-action="toggle-drawer1" data-side="left"></span>
+    <button class="navbar-toggler menu_btn px-1 my-1 border-0"
+            data-toggler="drawers"
+            data-action="toggle"
+            data-target="theme_boost-drawers-primary"
+            aria-label="{{#str}}sidepanel, core{{/str}}">
+        <span class="navbar-toggler-icon"></span>
         <span class="sr-only">{{#str}}sidepanel, core{{/str}}</span>
     </button>
 
