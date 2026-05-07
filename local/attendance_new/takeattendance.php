@@ -1,5 +1,6 @@
 <?php
 require('../../config.php');
+require_login();
 require_once($CFG->dirroot . '/local/attendance_new/lib.php');
 
 // Required parameters
@@ -27,10 +28,11 @@ foreach ($existing_badgecard as $record) {
 echo $OUTPUT->header();
 ?>
 
-<form method="get" action="saveattendance.php">
+<form method="post" action="saveattendance.php">
     <input type="hidden" name="schoolid" value="<?php echo $schoolid; ?>">
     <input type="hidden" name="catid" value="<?php echo $gradeid; ?>">
     <input type="hidden" name="attendanceid" value="<?php echo $attendanceid; ?>">
+    <input type="hidden" name="sesskey" value="<?php echo sesskey(); ?>">
     
     <table class="generaltable" style="width: 100%; text-align: left;">
         <thead>

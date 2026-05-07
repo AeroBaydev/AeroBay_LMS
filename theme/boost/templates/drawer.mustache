@@ -1,26 +1,50 @@
 <style>
-.format-site {
-    transition: margin-left 0.3s ease-in-out; /* Adjust the transition property */
-}
-
-
 .not-initialized {
     opacity: 0;
-    transition: opacity 0.3s ease-in-out; /* Adjust the transition property */
+    transition: opacity 0.3s ease-in-out;
 }
 
 .not-initialized.show {
     opacity: 1;
 }
-.drawer-open-left-my{
-    margin-left:262px;
+
+/* Smooth push transition on the main page container */
+#page {
+    transition: margin-left 0.3s ease-in-out;
 }
-body#page-course-management, #page-course-editcategory, #page-course-index-category{ 
-    margin-left: 0px !important;
+
+/* Push ALL content right when primary drawer is open — never overlaps */
+#page.show-drawer-primary {
+    margin-left: 262px;
 }
 
+/* Exclude admin/management pages that should stay full-width */
+body#page-course-management #page,
+body#page-course-editcategory #page,
+body#page-course-index-category #page {
+    margin-left: 0 !important;
+    transition: none;
+}
 
+/* Drawer nav item icons */
+.drawer-primary .list-group-item i {
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
 
+/* Active nav item highlight */
+.drawer-primary .list-group-item.active {
+    font-weight: 600;
+}
+
+/* Hover effect on nav items */
+.drawer-primary .list-group-item:hover:not(.active) {
+    background-color: #f0f4ff;
+    color: #0d6efd;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
 </style>
 
 {{!
@@ -85,182 +109,58 @@ body#page-course-management, #page-course-editcategory, #page-course-index-categ
 require(['theme_boost/drawers']);
 {{/js}}
 <script>
-        // Function to add icons to list items without icons
-        function addIconsToListItems() {
-            // Select all list items
-            var listItems = document.querySelectorAll('.list-group-item');
+document.addEventListener('DOMContentLoaded', function() {
 
-            // Iterate through the list items
-            listItems.forEach(function(item) {
-                // Check if the item already has an icon
-                if (!item.querySelector('i')) {
-                    // Determine the URL to set the icon based on the href or text content
-                    var href = item.getAttribute('href');
-                    var iconClass;
+    // Inject FontAwesome icons into drawer nav items based on their URL
+    function addIconsToListItems() {
+        document.querySelectorAll('.list-group-item').forEach(function(item) {
+            if (item.querySelector('i')) return;
+            var href = item.getAttribute('href');
+            if (!href) return;
 
-                    // Set icon classes based on href or text content
-                    if (href.includes('?redirect=0')) {
-                        iconClass = 'fas fa-home';
-                    } else if (href.includes('mydashboard')) {
-                        iconClass = 'fas fa-tachometer-alt';
-                    } else if (href.includes('courses.php')) {
-                        iconClass = 'fas fa-book';
-                    } else if (href.includes('search.php')) {
-                        iconClass = 'fas fa-cogs';
-                    } else if (href.includes('school')) {
-                        iconClass = 'fas fa-school'; // Example icon for School Management
-                    } else if (href.includes('poc_management.php')) {
-                        iconClass = 'fas fa-project-diagram'; // Example icon for POC Management
-                    } else if (href.includes('copycourse')) {
-                        iconClass = 'fas fa-copy'; // Example icon for Course Mapping
-                    } else if (href.includes('emailtemplates')) {
-                         iconClass = 'fas fa-envelope'; // Icon for Email Management
-                  }
-                     else if (href.includes('news')) {
-                        iconClass = 'fas fa-newspaper'; // Icon for Manage News
-                    } else if (href.includes('attendance')) {
-                        iconClass = 'fas fa-calendar-check'; // Icon for Manage Attendance
-                    } else if (href.includes('badgecard')) {
-                        iconClass = 'fas fa-id-card'; // Icon for BadgeCard
-                    }
-                    else if (href.includes('timetable')) {
-                        iconClass = 'fas fa-calendar-alt'; // Icon for Time Table
-                    }
-                        else if (href.includes('sessioncard')) {
-                        iconClass = 'fas fa-chalkboard-teacher'; // Icon for Manage Session Card
-                    }
-                    else if (href.includes('assessmentcard')) {
-                        iconClass = 'fas fa-clipboard-list'; // Icon for Assessment Card
-                    }
-                        else if (href.includes('attendancecard')) {
-                            iconClass = 'fas fa-clipboard-list'; // Icon for Attendance Card
-                        }
+            var iconClass;
+            if (href.includes('?redirect=0'))          { iconClass = 'fas fa-home'; }
+            else if (href.includes('mydashboard'))      { iconClass = 'fas fa-tachometer-alt'; }
+            else if (href.includes('courses.php'))      { iconClass = 'fas fa-book'; }
+            else if (href.includes('search.php'))       { iconClass = 'fas fa-cogs'; }
+            else if (href.includes('school'))           { iconClass = 'fas fa-school'; }
+            else if (href.includes('poc_management'))   { iconClass = 'fas fa-project-diagram'; }
+            else if (href.includes('copycourse'))       { iconClass = 'fas fa-copy'; }
+            else if (href.includes('emailtemplates'))   { iconClass = 'fas fa-envelope'; }
+            else if (href.includes('news'))             { iconClass = 'fas fa-newspaper'; }
+            else if (href.includes('attendance'))       { iconClass = 'fas fa-calendar-check'; }
+            else if (href.includes('badgecard'))        { iconClass = 'fas fa-id-card'; }
+            else if (href.includes('timetable'))        { iconClass = 'fas fa-calendar-alt'; }
+            else if (href.includes('sessioncard'))      { iconClass = 'fas fa-chalkboard-teacher'; }
+            else if (href.includes('assessmentcard'))   { iconClass = 'fas fa-clipboard-list'; }
+            else if (href.includes('attendancecard'))   { iconClass = 'fas fa-clipboard-list'; }
+            else if (href.includes('trainer'))          { iconClass = 'fas fa-chalkboard-teacher'; }
+            else if (href.includes('student'))          { iconClass = 'fas fa-user-graduate'; }
+            else if (href.includes('regionalpoc'))      { iconClass = 'fas fa-user-shield'; }
+            else if (href.includes('videohub'))         { iconClass = 'fas fa-video'; }
+            else if (href.includes('course'))           { iconClass = 'fas fa-book-open'; }
 
-                   else if (href.includes('trainer')) {
-                    iconClass = 'fas fa-chalkboard-teacher'; // Icon for Trainer
-                } else if (href.includes('student')) {
-                    iconClass = 'fas fa-user-graduate'; // Icon for Student
-                } else if (href.includes('regionalpoc')) {
-                    iconClass = 'fas fa-user-shield'; // Icon for Admin
-                }
-                else if (href.includes('course')) {
-                    iconClass = 'fas fa-user-shield'; // Icon for Admin
-                }
-                 else if (href.includes('videohub')) {
-                    iconClass = 'fas fa-video'; // Icon for Admin
-                }
-
-                    // If an icon class was set, create and insert the icon
-                    if (iconClass) {
-                        var icon = document.createElement('i');
-                        icon.className = iconClass;
-                        item.insertBefore(icon, item.firstChild); // Insert the icon before the text
-                    }
-                }
-            });
-        }
-
-        // Run the function after the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', addIconsToListItems);
-    </script>
-<script>
-
-document.addEventListener('DOMContentLoaded', function () {
-    var drawerPrimary = document.getElementById('menu_btn_show');
-    var formatSite = document.querySelector('.format-site');
-    var initialized = document.querySelector('.drawer-primary');
-    
-    // Function to get a cookie by name
-    function getCookie(name) {
-        var cookieArr = document.cookie.split(";");
-
-        for (var i = 0; i < cookieArr.length; i++) {
-            var cookiePair = cookieArr[i].split("=");
-            if (name === cookiePair[0].trim()) {
-                return decodeURIComponent(cookiePair[1]);
+            if (iconClass) {
+                var icon = document.createElement('i');
+                icon.className = iconClass;
+                icon.setAttribute('aria-hidden', 'true');
+                item.insertBefore(icon, item.firstChild);
             }
-        }
-
-        return null;
-    }
-
-    // Function to set a cookie
-    function setCookie(name, value, days) {
-        var expires = "";
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            expires = "; expires=" + date.toUTCString();
-        }
-        document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
-    }
-
-    // Function to delete a cookie
-    function deleteCookie(name) {
-        setCookie(name, "", -1);
-    }
-
-    // Check if the class should be applied based on the cookie
-    var isClassApplied = getCookie("drawerState") === "open";
-
-    // Apply or remove classes based on the cookie
-    if (isClassApplied) {
-        if (formatSite) {
-            formatSite.classList.add('drawer-open-left-my');
-        }
-        if (initialized) {
-            initialized.classList.add('show');
-        }
-    }
-
-    // Toggle the classes and update the cookie on button click
-    if (drawerPrimary && formatSite && initialized) {
-        drawerPrimary.addEventListener('click', function () {
-            if (isClassApplied) {
-                // Remove classes and update the cookie
-                formatSite.classList.remove('drawer-open-left-my');
-                initialized.classList.remove('show');
-                deleteCookie("drawerState");
-            } else {
-                // Add classes and set the cookie
-                formatSite.classList.add('drawer-open-left-my');
-                initialized.classList.add('show');
-                setCookie("drawerState", "open", 7); // Cookie expires in 7 days
-            }
-
-            // Toggle the state for the next click
-            isClassApplied = !isClassApplied;
         });
     }
 
-    
+    addIconsToListItems();
 
-
-
-});
-
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var menuButton = document.querySelector('.navbar-toggler.menu_btn');
-    
-    if (menuButton) {
-        var currentUrl = window.location.href;
-        
-        console.log('Current URL:', currentUrl); // Debugging: Log the current URL
-        
-        // Check if the URL contains 'course'
-        if (currentUrl.includes('course/view.php')) {
-            menuButton.setAttribute('data-toggler', 'drawers');
-        } else {
-            menuButton.setAttribute('data-toggler', 'drawers1');
+    // Close primary drawer with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            var primaryDrawer = document.getElementById('theme_boost-drawers-primary');
+            if (primaryDrawer && primaryDrawer.classList.contains('show')) {
+                var closeBtn = primaryDrawer.querySelector('[data-action="closedrawer"]');
+                if (closeBtn) closeBtn.click();
+            }
         }
-        
-        console.log('Data-toggler attribute set to:', menuButton.getAttribute('data-toggler')); // Debugging: Log the new attribute value
-    } else {
-        console.log('Menu button not found'); // Debugging: Log if the button is not found
-    }
-});
+    });
 
+});
 </script>

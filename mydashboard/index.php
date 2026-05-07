@@ -110,22 +110,23 @@ $params = [
     // echo $correct_timestamp;  // Should output 1743465600
     
 
-    $start_date = '2025-04-01 00:00:00';
-    $end_date = '2026-03-31 23:59:59';
-  
+    // Compute the current Indian fiscal year (Apr 1 – Mar 31) dynamically.
+    $now          = new DateTime('now', core_date::get_user_timezone_object());
+    $currentYear  = (int) $now->format('Y');
+    $currentMonth = (int) $now->format('n');
+    $fy_start_year = ($currentMonth >= 4) ? $currentYear : $currentYear - 1;
+    $fy_end_year   = $fy_start_year + 1;
 
-    $start_timestamp = strtotime($start_date);
-$end_timestamp = strtotime($end_date);
+    $start_timestamp = mktime(0,  0,  0,  4,  1,  $fy_start_year);
+    $end_timestamp   = mktime(23, 59, 59, 3,  31, $fy_end_year);
 
-// SQL query to retrieve attendance data for the specified student within the fiscal year range
- $sql = "SELECT  s.id , a.date,s.status
-FROM mdl_attendance_student s
-JOIN mdl_attendance a ON s.attendanceid = a.id
-WHERE s.studentid = ? 
-AND a.date BETWEEN ? AND ? 
-";  // Order by Unix timestamp (ascending)
+$sql = "SELECT ast.id, att.date, ast.status
+          FROM {attendance_student} ast
+          JOIN {attendance} att ON att.id = ast.attendanceid
+         WHERE ast.studentid = ?
+           AND att.date BETWEEN ? AND ?
+         ORDER BY att.date ASC";
 
-// Execute the query with the specified student ID and the fiscal year date range
 $result = $DB->get_records_sql($sql, [$USER->id, $start_timestamp, $end_timestamp]);
 // Define all months
 $allMonths = [
