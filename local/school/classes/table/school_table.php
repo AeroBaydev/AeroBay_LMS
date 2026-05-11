@@ -43,7 +43,7 @@ class school_class_table extends table_sql
     {
 
         global $CFG, $DB;
-        $school = $DB->get_record('course_categories', array('name' => $values->school_id), 'id, visible');
+        $school = $DB->get_record('course_categories', array('idnumber' => $values->school_code), 'id, visible');
 
         $button_html = "
         <a href='{$CFG->wwwroot}/local/school/edit_school.php?id={$values->schoolid}' class='btn btn-primary mr-2' title='Edit School'>
@@ -77,6 +77,16 @@ class school_class_table extends table_sql
     function col_serialno($values)
     {
         return sr($values);
+    }
+
+    function col_school_name($values)
+    {
+        $url = new moodle_url('/local/school/students.php', ['schoolid' => $values->schoolid]);
+
+        return html_writer::link($url, format_string($values->school_name), [
+            'class' => 'text-primary',
+            'title' => 'View students by grade',
+        ]);
     }
 
     function define_headers($headers)

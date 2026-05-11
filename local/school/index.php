@@ -11,6 +11,7 @@ $search = optional_param('search', '', PARAM_TEXT);
 
 $context = context_system::instance();
 $PAGE->set_context($context);
+require_capability('local/school:manage', $context);
 
 $table = new school_class_table('uniqueid');
 
