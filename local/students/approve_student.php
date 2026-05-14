@@ -2,6 +2,8 @@
 
 require_once "../../config.php";
 require_once($CFG->dirroot.'/local/emailtemplates/email_sender.php');
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
+require_once($CFG->dirroot . '/local/students/approval_lib.php');
 require_login();
 global $PAGE, $CFG, $DB;
 $id = required_param('id', PARAM_INT);
@@ -14,16 +16,21 @@ if (!$DB->record_exists('student', array('userid' => $id))) {
     print_error('invalidstudent', 'local_students');
 }
 
-$DB->set_field('student', 'status', 1, array('userid' => $id));
+if (local_pocschool_is_trainer_user()) {
+    throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
+}
 
 if(is_siteadmin()){
-$DB->set_field('student', 'approvedby', "admin", array('userid' => $id));
-$approvedby="Admin";
+    $approvedby = "Admin";
+    $approvedbykey = "admin";
 }
 else{
-    $DB->set_field('student', 'approvedby', "poc", array('userid' => $id));
-    $approvedby="POC";
+    $approvedby = "POC";
+    $approvedbykey = "poc";
 }
+
+$enrolledcount = local_students_approve_student($id, $approvedbykey, $USER->id);
+
 \local_studentapproval\event\user_approved::create([
     'context'  => context_system::instance(),
     'objectid' => $id, // The ID of the user being approved.
@@ -31,24 +38,6 @@ else{
 
 $studentdata = $DB->get_record('user', array('id' => $id));
 // $result = \local_emailtemplates\email_sender::send_email("approved", $id,"0",$approvedby);
-if($student){
-    $DB->set_field('user', 'confirmed', 1, array('id' => $id));
-    
-
-    $student = $DB->get_record('student', array('userid' => $id));
-    $context = context_course::instance($student->courseid);
-    $studentroleid = $DB->get_field('role', 'id', array('shortname' => 'student'));
-    // if (!is_enrolled($context, $id)) {
-    //     // Not already enrolled so try enrolling them.
-    //     if (!enrol_try_internal_enrol($student->courseid, $id, $studentroleid, time())) {
-    //         // There's a problem.
-    //         throw new moodle_exception('unabletoenrolerrormessage', 'langsourcefile');
-    //     }
-        
-    // }
-
-
-}
 // Send email notification
 // $email_subject = "Approval Notification";
 // $email_body = "Dear $student->firstname $student->lastname,\n\nYour registration has been approved.\n\nRegards,\nAdmin";
@@ -58,4 +47,11 @@ if($student){
 // $studentdata = core_user::get_support_user();
 // email_to_user($email_to, $supportuser, $email_subject, $email_body);
 
-redirect(new moodle_url('/local/students/student_manage.php'), 'Student approved successfully.', null, \core\output\notification::NOTIFY_SUCCESS);
+$message = $enrolledcount > 0
+    ? 'Student approved and enrolled successfully.'
+    : 'Student approved, but no mapped course was found for enrolment.';
+$type = $enrolledcount > 0
+    ? \core\output\notification::NOTIFY_SUCCESS
+    : \core\output\notification::NOTIFY_WARNING;
+
+redirect(new moodle_url('/local/students/student_manage.php'), $message, null, $type);

@@ -1,5 +1,6 @@
 <?php
 require_once("../../config.php");
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 global $DB, $USER;
 
 header('Content-Type: application/json'); // Ensure response is JSON
@@ -19,6 +20,7 @@ if (empty($data['schoolid']) || empty($data['gradeid']) || !isset($data['timetab
 $schoolid = intval($data['schoolid']);
 $gradeid = intval($data['gradeid']);
 $timetable = $data['timetable'];
+local_pocschool_require_grade_access($schoolid, $gradeid);
 
 // Get existing timetable entries for the school & grade
 $existingRecords = $DB->get_records('timetable', [

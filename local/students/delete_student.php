@@ -1,6 +1,7 @@
 <?php
 require_once('../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('course');
@@ -12,6 +13,10 @@ global $CFG, $DB;
     
 $id = optional_param('id', 0, PARAM_INT);
 // $userid = optional_param('userid', 0, PARAM_INT);
+
+if (local_pocschool_is_trainer_user()) {
+    throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
+}
 
 if (optional_param('confirm', 0, PARAM_INT)) {
 

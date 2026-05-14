@@ -2,6 +2,7 @@
 require_once("../../config.php");
 require_once($CFG->libdir . "/tablelib.php");
 require_once("classes/table/student_table.php");
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 $PAGE->requires->js(new moodle_url("$CFG->wwwroot/local/students/main.js"));
 
@@ -80,7 +81,7 @@ if (is_siteadmin()) {
     $userid = $USER->id;
 }
 
-if (isset($_SESSION['userIdPoc'])) {
+if (isset($_SESSION['userIdPoc']) && (is_siteadmin() || local_pocschool_is_poc_user())) {
     $userid = $_SESSION['userIdPoc'];
 }
 
@@ -169,6 +170,7 @@ $from = "{student} as st
 $safe_userid = (int)$userid;
 $where = "1=1 AND sa.userid = :pocuserid AND u.deleted = 0";
 $params = ['pocuserid' => $safe_userid];
+local_pocschool_apply_trainer_student_filter($where, $params, 'st');
 
 if ($search) {
     $where .= " AND (u.firstname LIKE :search1 OR u.lastname LIKE :search2 OR st.student_id LIKE :search3)";
@@ -193,7 +195,9 @@ if ($table->is_downloading()) {
     exit;
 } else {
     $table->out($perpage_sql, true);
-    echo html_writer::tag('button', 'Bulk Approve', array('id' => 'batch-approve-btn', 'class' => 'btn btn-success'));
+    if (!local_pocschool_is_trainer_user()) {
+        echo html_writer::tag('button', 'Bulk Approve', array('id' => 'batch-approve-btn', 'class' => 'btn btn-success'));
+    }
     echo $OUTPUT->footer();
 }
 ?>

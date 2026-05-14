@@ -1,6 +1,7 @@
 <?php
 require('../../config.php');
 require_login();
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 $id = required_param('id', PARAM_INT); // Get badge ID from URL
 
@@ -11,7 +12,7 @@ global $DB, $USER, $CFG;
 $badge = $DB->get_record('timetable', ['id' => $id]);
 
 if ($badge) {
-    
+    local_pocschool_require_grade_access($badge->schoolid, $badge->gradeid);
     
 
     // Delete the badge record from the database

@@ -227,6 +227,12 @@ echo $OUTPUT->custom_block_region('content');
 // Render custom blocks.
 $renderer = $PAGE->get_renderer('core_user', 'myprofile');
 $tree = core_user\output\myprofile\manager::build_tree($user, $currentuser);
+if (file_exists($CFG->dirroot . '/local/pocschool/lib.php')) {
+    require_once($CFG->dirroot . '/local/pocschool/lib.php');
+    if (function_exists('local_pocschool_myprofile_navigation')) {
+        local_pocschool_myprofile_navigation($tree, $user, $currentuser, null);
+    }
+}
 echo $renderer->render($tree);
 
 echo '</div>';  // Userprofile class.

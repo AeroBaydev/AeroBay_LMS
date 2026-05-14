@@ -11,7 +11,9 @@ function local_students_extend_navigation(global_navigation $navigation) {
             new pix_icon('i/cohort','')
         )->showinflatnavigation = true; 
 }
-$CFG->custommenuitems ="";
+if (!isset($CFG->custommenuitems)) {
+    $CFG->custommenuitems = "";
+}
 if(is_siteadmin()){
     $CFG->custommenuitems ="School Management | /local/school/index.php
                     POC Management  | /local/poc/poc_management.php

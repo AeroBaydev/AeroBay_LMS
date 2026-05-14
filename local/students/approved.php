@@ -1,7 +1,13 @@
 <?php
 require_once('../../config.php');
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
+require_once($CFG->dirroot . '/local/students/approval_lib.php');
 
 require_login();
+
+if (local_pocschool_is_trainer_user()) {
+    throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
+}
 
 $ids = required_param('ids', PARAM_RAW);
 $student_ids = json_decode($ids, true);
@@ -11,14 +17,14 @@ if (empty($student_ids)) {
     exit;
 }
 
-global $DB;
+global $DB, $USER;
 
-// 1) Bulk DB update – this is already good and fast
-list($insql, $params) = $DB->get_in_or_equal($student_ids, SQL_PARAMS_NAMED, 'uid');
-$sql = "UPDATE {student} SET status = 1 WHERE userid $insql";
-$DB->execute($sql, $params);
+$approvedby = is_siteadmin() ? 'admin' : 'poc';
+$enrolledcount = 0;
+foreach ($student_ids as $studentid) {
+    $enrolledcount += local_students_approve_student((int)$studentid, $approvedby, $USER->id);
+}
 
-// 2) Single bulk event instead of one per user
 $event = \local_studentapproval\event\user_approved::create([
     'context'  => context_system::instance(),
     'objectid' => (int) reset($student_ids) ?: 0,
@@ -29,6 +35,9 @@ $event = \local_studentapproval\event\user_approved::create([
 ]);
 $event->trigger();
 
-// 3) Return response quickly
-echo json_encode(['status' => 'success', 'message' => 'Selected students approved successfully.']);
+echo json_encode([
+    'status' => 'success',
+    'message' => 'Selected students approved successfully.',
+    'enrolledcount' => $enrolledcount,
+]);
 exit;

@@ -2,6 +2,7 @@
 require_once "../../config.php";
 require_once $CFG->libdir . "/tablelib.php";
 require_once "classes/table/school_table.php";
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 global $DB, $OUTPUT, $PAGE;
 require_login();
@@ -47,6 +48,8 @@ $from = "{course_categories} cc
          JOIN {school} s ON cc.id = s.course_cat_id";
 $where = "cc.parent = 0 AND cc.visible = 1";
 $params = [];
+
+local_pocschool_apply_school_filter($from, $where, $params, 'cc', 'id');
 
 
 if ($search) {

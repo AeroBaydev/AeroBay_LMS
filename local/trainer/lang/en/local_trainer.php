@@ -22,5 +22,12 @@ $string['state'] = 'State';
 $string['deletesuccess'] = 'Trainer data deleted successfully';
 $string['updatesuccess'] = 'Trainer data updated successfully';
 $string['userexists'] = 'Username already exist';
-
+$string['assignedschool'] = 'Assigned School';
+$string['selectschool'] = 'Select School';
+$string['mappedgradescourses'] = 'Mapped Grades/Courses';
+$string['selectschoolfirst'] = 'Select a school to view mapped grades/courses.';
+$string['loading'] = 'Loading...';
+$string['nomappedcourses'] = 'No mapped grades/courses found for this school.';
+$string['unabletoloadcourses'] = 'Unable to load mapped grades/courses.';
+$string['invalidschool'] = 'Please select a school assigned to this POC.';
 

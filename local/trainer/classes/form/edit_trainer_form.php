@@ -7,7 +7,20 @@ require_once("$CFG->libdir/formslib.php");
 class edit_trainer_form extends moodleform {
 
     public function definition() {
-        $mform = $this->_form; 
+        global $CFG, $DB, $USER;
+
+        $mform = $this->_form;
+        $pocuserid = $this->_customdata['pocuserid'] ?? $USER->id;
+        $schools = $DB->get_records_sql_menu(
+            "SELECT cc.id, COALESCE(sc.school_name, cc.name) AS schoolname
+               FROM {schoolassign} sa
+               JOIN {course_categories} cc ON cc.id = sa.schoolid
+          LEFT JOIN {school} sc ON sc.course_cat_id = cc.id
+              WHERE sa.userid = :userid
+           ORDER BY schoolname",
+            ['userid' => $pocuserid]
+        );
+
                 if(is_siteadmin()){
                     $siteadminarray = array(
                         'type' => 'hidden',
@@ -28,6 +41,8 @@ class edit_trainer_form extends moodleform {
                 // $heading_text = "Edit Trainer Details";
                 // $heading1 = html_writer::tag('input', '', $siteadminarray);
                 // $heading = html_writer::tag('h2', $heading_text, array('class' => 'custom-heading add-trainer'));
+                $heading = '';
+                $heading1 = html_writer::tag('input', '', $siteadminarray);
                 $mform->addElement('html', $heading);
                 $mform->addElement('html', $heading1);
                 
@@ -45,6 +60,62 @@ class edit_trainer_form extends moodleform {
         $lastnameElement=$mform->addElement('text', 'lastname', get_string('lastname', 'local_trainer'));
         $mform->setType('lastname', PARAM_TEXT);
         $mform->addRule('lastname', get_string('required'), 'required', null, 'client');
+
+        $mform->addElement('select', 'schoolid', get_string('assignedschool', 'local_trainer'), ['' => get_string('selectschool', 'local_trainer')] + $schools);
+        $mform->setType('schoolid', PARAM_INT);
+        $mform->addRule('schoolid', get_string('required'), 'required', null, 'client');
+
+        $mform->addElement('html', '<div id="trainer-school-mapped-courses" class="form-group row fitem"><div class="col-md-3 col-form-label d-flex pb-0 pr-md-0"><label>' . get_string('mappedgradescourses', 'local_trainer') . '</label></div><div class="col-md-9 form-inline align-items-start felement" id="trainer-school-mapped-courses-content">' . get_string('selectschoolfirst', 'local_trainer') . '</div></div>');
+        $ajaxurl = new moodle_url('/local/trainer/get_school_courses.php');
+        $sesskey = sesskey();
+        $selectschoolfirst = $this->js_string(get_string('selectschoolfirst', 'local_trainer'));
+        $loading = $this->js_string(get_string('loading', 'local_trainer'));
+        $nomappedcourses = $this->js_string(get_string('nomappedcourses', 'local_trainer'));
+        $unabletoloadcourses = $this->js_string(get_string('unabletoloadcourses', 'local_trainer'));
+        $js = <<<JS
+        document.addEventListener('DOMContentLoaded', function() {
+            var schoolField = document.getElementById('id_schoolid');
+            var courseContainer = document.getElementById('trainer-school-mapped-courses-content');
+
+            function loadMappedCourses() {
+                if (!schoolField || !courseContainer) {
+                    return;
+                }
+
+                var schoolid = schoolField.value;
+                if (!schoolid) {
+                    courseContainer.innerHTML = '$selectschoolfirst';
+                    return;
+                }
+
+                courseContainer.innerHTML = '$loading';
+                var formData = new FormData();
+                formData.append('schoolid', schoolid);
+                formData.append('sesskey', '$sesskey');
+
+                fetch('$ajaxurl', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    courseContainer.innerHTML = data.html || '$nomappedcourses';
+                })
+                .catch(function() {
+                    courseContainer.innerHTML = '$unabletoloadcourses';
+                });
+            }
+
+            if (schoolField) {
+                schoolField.addEventListener('change', loadMappedCourses);
+                loadMappedCourses();
+            }
+        });
+        JS;
+        $mform->addElement('html', '<script type="text/javascript">' . $js . '</script>');
 
         $mform->addElement('passwordunmask', 'password', get_string('password', 'local_trainer'));
         $mform->setType('password', PARAM_TEXT);
@@ -137,13 +208,21 @@ class edit_trainer_form extends moodleform {
 
     function validation($data, $files) {
         $errors = [];
-        global $DB,$CFG;
+        global $DB, $CFG, $USER;
         $user = $DB->get_record('user', array('id' => $this->_customdata['id']));
         if (empty(trim($data['firstname']))) {
             $errors['firstname'] = get_string('required', 'local_trainer');
         }
         if (empty(trim($data['lastname']))) {
             $errors['lastname'] = get_string('required', 'local_trainer');
+        }
+        if (empty($data['schoolid'])) {
+            $errors['schoolid'] = get_string('required');
+        } else {
+            $pocuserid = $this->_customdata['pocuserid'] ?? $USER->id;
+            if (!$DB->record_exists('schoolassign', ['userid' => $pocuserid, 'schoolid' => $data['schoolid']])) {
+                $errors['schoolid'] = get_string('invalidschool', 'local_trainer');
+            }
         }
         if (empty(trim($data['dob']))) {
             $errors['dob'] = get_string('required', 'local_trainer');
@@ -168,6 +247,11 @@ class edit_trainer_form extends moodleform {
             $errors['designation'] = get_string('required', 'local_trainer');
         }
 
+         if (!empty($data['password'])) {
+            $errmsg = '';
+            $tempuser = new stdClass();
+            $tempuser->password = $data['password'];
+        }
          if (!empty($data['password']) && !check_password_policy($data['password'], $errmsg, $tempuser)) {
             $errors['password'] = $errmsg;
         }
@@ -211,6 +295,11 @@ class edit_trainer_form extends moodleform {
 
         return $errors;
     }
+
+    private function js_string($string)
+    {
+        return addslashes($string);
+    }
 }
 
 ?>
@@ -234,5 +323,3 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script> -->
-
-

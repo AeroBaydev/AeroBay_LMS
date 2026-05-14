@@ -1,4 +1,5 @@
 <?php
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 class student_table extends table_sql
 {
@@ -7,16 +8,26 @@ class student_table extends table_sql
         parent::__construct($uniqueid);
 
         // Define columns including the new checkbox column
-        $columns = array('checkbox', 'serialno', 'studentid', 'Fullname', 'edit', 'approve', 'approvedby');
+        $columns = local_pocschool_is_trainer_user()
+            ? array('serialno', 'studentid', 'Fullname')
+            : array('checkbox', 'serialno', 'studentid', 'Fullname');
+        if (!local_pocschool_is_trainer_user()) {
+            $columns = array_merge($columns, array('edit', 'approve', 'approvedby'));
+        }
         $this->define_columns($columns);
 
         // Define headers including the new checkbox column
-        $headers = array( '<input type="checkbox" id="select-all" />', 'S.No', 'Student Id', 'Full Name', 'Action', 'Approve/Reject', 'Approve By');
+        $headers = local_pocschool_is_trainer_user()
+            ? array('S.No', 'Student Id', 'Full Name')
+            : array( '<input type="checkbox" id="select-all" />', 'S.No', 'Student Id', 'Full Name');
+        if (!local_pocschool_is_trainer_user()) {
+            $headers = array_merge($headers, array('Action', 'Approve/Reject', 'Approve By'));
+        }
         $this->define_headers($headers);
 
         $is_downloading = optional_param('download', '', PARAM_RAW);
 
-        if ($is_downloading) {
+        if ($is_downloading && !local_pocschool_is_trainer_user()) {
             // Remove the checkbox and action columns during download
             array_splice($columns, -3, 1);
             array_splice($headers, -3, 1);
@@ -37,6 +48,10 @@ class student_table extends table_sql
     function col_checkbox($values)
 {
     global $DB;
+
+    if (local_pocschool_is_trainer_user()) {
+        return '';
+    }
 
     // Get student record by userid
     $student = $DB->get_record('student', ['userid' => $values->id], 'status');

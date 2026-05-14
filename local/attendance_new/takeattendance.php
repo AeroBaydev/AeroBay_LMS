@@ -2,11 +2,18 @@
 require('../../config.php');
 require_login();
 require_once($CFG->dirroot . '/local/attendance_new/lib.php');
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 // Required parameters
 $schoolid = required_param('schoolid', PARAM_INT);
 $gradeid = required_param('catid', PARAM_INT);
 $attendanceid = required_param('attendanceid', PARAM_INT);
+local_pocschool_require_grade_access($schoolid, $gradeid);
+
+$attendance = $DB->get_record('attendance', ['id' => $attendanceid], '*', MUST_EXIST);
+if ((int)$attendance->schoolid !== $schoolid || (int)$attendance->gradeid !== $gradeid) {
+    throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
+}
 
 // Fetch the list of students based on school and grade
 $students = get_students($schoolid, $gradeid);

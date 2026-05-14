@@ -3,6 +3,7 @@ require_once('../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
 require_once('classes/form/student_form.php');
 require_once($CFG->dirroot.'/local/emailtemplates/email_sender.php');
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 global $PAGE, $CFG;
 
 $PAGE->set_context(context_system::instance());
@@ -30,9 +31,17 @@ if ($mform->is_cancelled()) {
 } elseif ($data = $mform->get_data()) {
 
     global $USER;
-    $gradeid = $_POST['gradeid'];
-    $courseid = $_POST['courseid'];
-    $sectionid = $_POST['sectionid'];
+    $gradeid = optional_param('gradeid', 0, PARAM_INT);
+    $courseid = optional_param('courseid', 0, PARAM_INT);
+    $sectionid = optional_param('sectionid', 0, PARAM_INT);
+    local_pocschool_require_grade_access($data->schoolid, $gradeid);
+
+    if (local_pocschool_is_trainer_user()) {
+        $trainercourses = local_pocschool_get_trainer_course_ids();
+        if (!empty($courseid) && !empty($trainercourses) && !in_array((int)$courseid, $trainercourses, true)) {
+            throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
+        }
+    }
     $student = new stdClass();
     $year = date('y');
     $student_id_prefix = $year.'POCSTU';
