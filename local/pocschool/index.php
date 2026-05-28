@@ -2,6 +2,7 @@
 
  require_once('../../config.php');
  require_once("$CFG->dirroot/course/classes/external/course_summary_exporter.php");
+ require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
   require_login();
   if(!isloggedin()){
 
@@ -29,6 +30,7 @@ if (isset($_SESSION['userIdPoc'])) {
    $userid=$_SESSION['userIdPoc'];
  
 }
+$effectivepocid = local_pocschool_get_effective_poc_userid((int) $userid);
 if(is_siteadmin()){
   $PAGE->navbar->add('POC Control', "$CFG->wwwroot/local/poc/pocmange/?userid=$userid");
       $PAGE->navbar->add('POC School  Allotted', "");
@@ -53,21 +55,33 @@ function get_courses_in_category($categoryid) {
 
 
 //grade 
-if($_GET['parent']>0){
+$parent = optional_param('parent', 0, PARAM_INT);
+if($parent>0){
     $title = 'Grade Listing';
     $pagetitle = $title;
     $PAGE->set_title($title);
     $PAGE->set_heading($title);   
 
 
-  $catId=$_GET['parent'];  
+  $catId=$parent;
+  $parentcategory = $DB->get_record('course_categories', ['id' => $catId], 'id,parent', MUST_EXIST);
+  if ((int) $parentcategory->parent === 0) {
+    local_pocschool_require_school_access($catId);
+  } else {
+    local_pocschool_require_grade_access((int) $parentcategory->parent, $catId);
+  }
 $category_listing = $DB->get_records_sql("select * from {course_categories} where parent=$catId and visible=1", [], $limitfrom=0, $limitnum=0);
 foreach ($category_listing as $key => $value_list) {
   $context = context_coursecat::instance($value_list->id);
   $course_url=$url."=".$value_list->id;
 
 
-  $countCatlist=  $DB->count_records("poc_copy_course",['gradeid'=>$value_list->id , 'status'=>1]);
+  $countCatlist=  $DB->count_records("poc_copy_course",[
+    'gradeid'=>$value_list->id,
+    'schoolid'=>$catId,
+    'pocid'=>$effectivepocid,
+    'status'=>1
+  ]);
   $countCatlist="<h5 class='card-title'>Total no of course: $countCatlist</h5>";
 
   $urlCat = new moodle_url("/local/pocschool/index.php?parent=$value_list->id");

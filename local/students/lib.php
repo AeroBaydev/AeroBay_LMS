@@ -16,6 +16,7 @@ if (!isset($CFG->custommenuitems)) {
 }
 if(is_siteadmin()){
     $CFG->custommenuitems ="School Management | /local/school/index.php
+                    Trainer Management | /local/trainer/index.php
                     POC Management  | /local/poc/poc_management.php
                          Course Mapping | /local/copycourse/index.php
                          Email Management | /local/emailtemplates/list.php

@@ -2,6 +2,7 @@
 
 require_once('../config.php');
 require_once($CFG->dirroot . '/local/timetable/lib.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 
 
 global $DB, $USER;
@@ -11,7 +12,7 @@ require_login();
 $PAGE->set_pagelayout('course');
 $PAGE->set_url('/mydashboard/index.php');
 $PAGE->set_title('My Dashboard');
-$PAGE->set_heading('My Dashboard');
+$PAGE->set_heading('');
 $somdata = [];
 $data = [];
 // Role ID for 'Student' (default is 5, verify in mdl_role table).
@@ -394,8 +395,15 @@ if (empty($user->lastlogin))  {
     echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $data);
     echo $OUTPUT->footer();
 } else {
-    // Render the default dashboard.
+    // Render the shared admin dashboard for admins and school-scoped POCs.
     echo $OUTPUT->header();
-    echo $OUTPUT->render_from_template('local_mydashboard/mydashboard', $somdata);
+    if (is_siteadmin()) {
+        echo $OUTPUT->render_from_template('local_mydashboard/admindashboard', array_merge($somdata, local_dashboard_get_admin_stats_context()));
+    } else if (local_dashboard_is_pocschool_user((int) $USER->id)) {
+        $scope = local_dashboard_get_pocschool_scope((int) $USER->id);
+        echo $OUTPUT->render_from_template('local_mydashboard/admindashboard', array_merge($somdata, local_dashboard_get_admin_stats_context($scope)));
+    } else {
+        echo $OUTPUT->render_from_template('local_mydashboard/mydashboard', $somdata);
+    }
     echo $OUTPUT->footer();
 }

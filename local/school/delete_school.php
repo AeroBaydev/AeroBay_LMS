@@ -8,6 +8,7 @@ $PAGE->set_pagelayout('standard');
 $PAGE->set_title('Delete School');
 $PAGE->set_heading('Delete School');
 require_login();
+require_admin();
 
 
 global $CFG, $DB;

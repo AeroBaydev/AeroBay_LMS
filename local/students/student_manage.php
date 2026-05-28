@@ -17,27 +17,24 @@ $search      = optional_param('search', '', PARAM_TEXT);
 $userIdPoc   = optional_param('userid', '', PARAM_TEXT);
 $perpage_in  = optional_param('perpage', null, PARAM_ALPHANUM);
 
-// --- PAGE SESSION LOGIC START ---
-// User ne pagination me jo page click kiya vo `page` param se aata hai
+
 $page_input = optional_param('page', null, PARAM_INT);
 
 if ($page_input !== null) {
-    // URL se page mila -> session me save kar do
+
     $_SESSION['student_manage_page'] = $page_input;
     $page = $page_input;
 } else if (isset($_SESSION['student_manage_page'])) {
-    // URL me page nahi hai -> session wala use karo
+    
     $page = (int)$_SESSION['student_manage_page'];
 
-    // IMPORTANT PART:
-    // Tablelib andhar optional_param('page', 0, PARAM_INT) call karta hai.
-    // Isko same value dikhane ke liye hum $_GET/$_REQUEST me bhi inject kar rahe hain.
+    
     if (!isset($_GET['page']) && !isset($_POST['page'])) {
         $_GET['page']     = $page;
         $_REQUEST['page'] = $page;
     }
 } else {
-    // Pehli baar aaya hai -> page 0
+   
     $page = 0;
     $_GET['page']     = 0;
     $_REQUEST['page'] = 0;
@@ -46,11 +43,11 @@ if ($page_input !== null) {
 
 // --- PERPAGE SESSION LOGIC START ---
 if ($perpage_in) {
-    // User ne dropdown se change kiya
+    
     $_SESSION['student_manage_perpage'] = $perpage_in;
     $perpage_display = $perpage_in;
 
-    // Per page change hua -> page reset 0 pe
+    
     $page = 0;
     $_SESSION['student_manage_page'] = 0;
     $_GET['page']     = 0;
@@ -94,8 +91,10 @@ if (!$table->is_downloading()) {
 
     $PAGE->set_pagelayout('course');
     $PAGE->set_title('Student');
-    $PAGE->navbar->add('POC Control', "$CFG->wwwroot/local/poc/pocmange/?userid=$userid");
-    $PAGE->navbar->add('POC Student list', "");
+    if (!local_pocschool_is_trainer_user()) {
+        $PAGE->navbar->add('POC Control', "$CFG->wwwroot/local/poc/pocmange/?userid=$userid");
+        $PAGE->navbar->add('POC Student list', "");
+    }
 
     echo $OUTPUT->header();
 
@@ -184,8 +183,7 @@ $table->set_sql($fields, $from, $where, $params);
 // Row number base
 $DB->execute('SET @row_number := ' . ($perpage_sql * $page));
 
-// Yaha tum pehle galat baseurl use kar rahe the (?page=?userid)
-// usko thik kar diya:
+
 $baseurl = $CFG->wwwroot . '/local/students/student_manage.php?userid=' . $userid;
 $table->define_baseurl($baseurl);
 

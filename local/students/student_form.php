@@ -4,6 +4,7 @@ require_once($CFG->dirroot . '/user/lib.php');
 require_once('classes/form/student_form.php');
 require_once($CFG->dirroot.'/local/emailtemplates/email_sender.php');
 require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 global $PAGE, $CFG;
 
 $PAGE->set_context(context_system::instance());
@@ -85,6 +86,24 @@ if ($mform->is_cancelled()) {
         $insert= $DB->insert_record('student', $student);
         if($insert){
             $result = \local_emailtemplates\email_sender::send_email("student", $user_id, $data->password,0);
+            $studentname = fullname((object) [
+                'firstname' => $student->firstname,
+                'lastname' => $student->lastname,
+            ]);
+            $gradename = local_dashboard_get_grade_name((int) $gradeid);
+            local_dashboard_log_activity(
+                'student_added',
+                'Student added',
+                trim($studentname . ' added' . ($gradename ? ' to ' . $gradename : '')),
+                (int) $student->schoolid,
+                [
+                    'metadata' => [
+                        'studentuserid' => (int) $user_id,
+                        'gradeid' => (int) $gradeid,
+                        'courseid' => (int) $courseid,
+                    ],
+                ]
+            );
         }
 
         redirect("$CFG->wwwroot/local/students/student_manage.php", get_string('studentsuccess', 'local_students'), 2);

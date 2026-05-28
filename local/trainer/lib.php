@@ -8,13 +8,15 @@ function local_trainer_extend_navigation(global_navigation $navigation) {
         return;
     }
 
+    $url = is_siteadmin() ? '/local/trainer/index.php' : '/local/trainer/trainer_manage.php';
+
         $navigation->add(
             "Trainer Management",
-            new moodle_url($CFG->wwwroot . '/local/trainer/trainer_manage.php'),
+            new moodle_url($CFG->wwwroot . $url),
             navigation_node::TYPE_CUSTOM,
             null,
             'local_trainer',
-            new pix_icon('i/cohort','')
+            new pix_icon('i/user','')
         )->showinflatnavigation = true; 
       //  $PAGE->navigation->action="https://dev.icloudcampus.com/update/mydashboard/";
 }

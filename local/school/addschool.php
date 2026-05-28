@@ -8,6 +8,7 @@ require_once($CFG->dirroot.'/local/school/lib.php');
 global $PAGE, $CFG, $DB, $OUTPUT;
 
 require_login();
+require_admin();
 
 $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('course');

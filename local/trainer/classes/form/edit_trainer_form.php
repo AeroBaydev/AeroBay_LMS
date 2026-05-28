@@ -7,10 +7,14 @@ require_once("$CFG->libdir/formslib.php");
 class edit_trainer_form extends moodleform {
 
     public function definition() {
-        global $CFG, $DB, $USER;
+        $mform = $this->_form; 
+        global $USER, $DB;
 
-        $mform = $this->_form;
         $pocuserid = $this->_customdata['pocuserid'] ?? $USER->id;
+        if (isset($_SESSION['userIdPoc'])) {
+            $pocuserid = $_SESSION['userIdPoc'];
+        }
+
         $schools = $DB->get_records_sql_menu(
             "SELECT cc.id, COALESCE(sc.school_name, cc.name) AS schoolname
                FROM {schoolassign} sa
@@ -20,7 +24,7 @@ class edit_trainer_form extends moodleform {
            ORDER BY schoolname",
             ['userid' => $pocuserid]
         );
-
+    
                 if(is_siteadmin()){
                     $siteadminarray = array(
                         'type' => 'hidden',
@@ -91,6 +95,7 @@ class edit_trainer_form extends moodleform {
                 courseContainer.innerHTML = '$loading';
                 var formData = new FormData();
                 formData.append('schoolid', schoolid);
+                formData.append('pocuserid', '$pocuserid');
                 formData.append('sesskey', '$sesskey');
 
                 fetch('$ajaxurl', {
@@ -208,7 +213,7 @@ class edit_trainer_form extends moodleform {
 
     function validation($data, $files) {
         $errors = [];
-        global $DB, $CFG, $USER;
+        global $DB,$CFG;
         $user = $DB->get_record('user', array('id' => $this->_customdata['id']));
         if (empty(trim($data['firstname']))) {
             $errors['firstname'] = get_string('required', 'local_trainer');
@@ -217,10 +222,13 @@ class edit_trainer_form extends moodleform {
             $errors['lastname'] = get_string('required', 'local_trainer');
         }
         if (empty($data['schoolid'])) {
-            $errors['schoolid'] = get_string('required');
+            $errors['schoolid'] = get_string('required', 'local_trainer');
         } else {
-            $pocuserid = $this->_customdata['pocuserid'] ?? $USER->id;
-            if (!$DB->record_exists('schoolassign', ['userid' => $pocuserid, 'schoolid' => $data['schoolid']])) {
+            $pocuserid = $this->_customdata['pocuserid'] ?? 0;
+            if (isset($_SESSION['userIdPoc'])) {
+                $pocuserid = $_SESSION['userIdPoc'];
+            }
+            if (!empty($pocuserid) && !$DB->record_exists('schoolassign', ['userid' => $pocuserid, 'schoolid' => $data['schoolid']])) {
                 $errors['schoolid'] = get_string('invalidschool', 'local_trainer');
             }
         }
@@ -247,12 +255,9 @@ class edit_trainer_form extends moodleform {
             $errors['designation'] = get_string('required', 'local_trainer');
         }
 
-         if (!empty($data['password'])) {
-            $errmsg = '';
-            $tempuser = new stdClass();
-            $tempuser->password = $data['password'];
-        }
-         if (!empty($data['password']) && !check_password_policy($data['password'], $errmsg, $tempuser)) {
+        $errmsg = '';
+        $tempuser = new stdClass();
+        if (!empty($data['password']) && !check_password_policy($data['password'], $errmsg, $tempuser)) {
             $errors['password'] = $errmsg;
         }
 
@@ -279,6 +284,8 @@ class edit_trainer_form extends moodleform {
                 $errors['email'] = get_string('invalidemail');
             } else if (empty($CFG->allowaccountssameemail)) {
                 // Make a case-insensitive query for the given email address.
+                
+
                 $select = $DB->sql_equal('email', ':email', false) . ' AND mnethostid = :mnethostid AND id <> :userid';
                 $params = array(
                     'email' => $data['email'],

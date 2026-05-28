@@ -5,6 +5,7 @@ require_once('classes/form/trainer_form.php');
 require_once('../../lib/moodlelib.php');
 require_once($CFG->dirroot . '/enrol/manual/lib.php');
 require_once($CFG->dirroot.'/local/emailtemplates/email_sender.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 global $PAGE, $CFG;
 
 require_login();
@@ -149,6 +150,25 @@ if ($mform->is_cancelled()) {
                     $DB->insert_record('trainer_course_mapping', $trainermapping);
                 }
             }
+
+            $trainername = fullname((object) [
+                'firstname' => $trainer->firstname,
+                'lastname' => $trainer->lastname,
+            ]);
+            $firstmapping = reset($mappedcourses);
+            $gradename = $firstmapping ? local_dashboard_get_grade_name((int) $firstmapping->gradeid) : '';
+            local_dashboard_log_activity(
+                'trainer_assigned',
+                'Trainer assigned',
+                trim('Trainer ' . $trainername . ' mapped' . ($gradename ? ' to ' . $gradename : '')),
+                (int) $data->schoolid,
+                [
+                    'metadata' => [
+                        'traineruserid' => (int) $user_id,
+                        'schoolid' => (int) $data->schoolid,
+                    ],
+                ]
+            );
 
             \local_emailtemplates\email_sender::send_email("trainer", $user_id, $data->password,0);
         }

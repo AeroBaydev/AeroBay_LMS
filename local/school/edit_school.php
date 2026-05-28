@@ -6,6 +6,7 @@ global $PAGE, $CFG, $DB;
 $PAGE->requires->js(new moodle_url('/local/school/amd/src/numeric_validation.js'));
 $schoolid = optional_param('id', 0, PARAM_INT);
 require_login();
+require_admin();
 
 $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('course');

@@ -4,6 +4,7 @@ require_once('../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
 require_once('classes/form/edit_trainer_form.php');
 require_once($CFG->dirroot . '/enrol/manual/lib.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 
 global $PAGE, $CFG, $DB;
 
@@ -156,6 +157,25 @@ if ($form->is_cancelled()) {
             $DB->insert_record('trainer_course_mapping', $trainermapping);
         }
     }
+
+    $trainername = fullname((object) [
+        'firstname' => $trainer->firstname,
+        'lastname' => $trainer->lastname,
+    ]);
+    $firstmapping = !empty($mappedcourses) ? reset($mappedcourses) : false;
+    $gradename = $firstmapping ? local_dashboard_get_grade_name((int) $firstmapping->gradeid) : '';
+    local_dashboard_log_activity(
+        'trainer_assigned',
+        'Trainer assigned',
+        trim('Trainer ' . $trainername . ' mapped' . ($gradename ? ' to ' . $gradename : '')),
+        (int) $data->schoolid,
+        [
+            'metadata' => [
+                'traineruserid' => (int) $id,
+                'schoolid' => (int) $data->schoolid,
+            ],
+        ]
+    );
 
 
     redirect("$CFG->wwwroot/local/trainer/trainer_manage.php", get_string('updatesuccess', 'local_trainer'), 2);

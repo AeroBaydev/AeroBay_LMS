@@ -2,6 +2,7 @@
 
 require_once('../../config.php');
 require_once($CFG->dirroot . '/enrol/manual/lib.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 
 global $DB, $USER, $CFG;
 require_login();
@@ -106,5 +107,14 @@ echo'';
 
 
 echo $OUTPUT->header();
-echo $OUTPUT->render_from_template('local_mydashboard/mydashboard', $somdata);
+if (is_siteadmin()) {
+    echo $OUTPUT->render_from_template('local_mydashboard/admindashboard', array_merge($somdata, local_dashboard_get_admin_stats_context()));
+} else if (local_dashboard_is_pocschool_user((int) $USER->id)) {
+    $scope = local_dashboard_get_pocschool_scope((int) $USER->id);
+    echo $OUTPUT->render_from_template('local_mydashboard/admindashboard', array_merge($somdata, local_dashboard_get_admin_stats_context($scope)));
+} else if ($DB->record_exists('student', ['userid' => $USER->id])) {
+    echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $somdata);
+} else {
+    echo $OUTPUT->render_from_template('local_mydashboard/mydashboard', $somdata);
+}
 echo $OUTPUT->footer();

@@ -67,8 +67,8 @@ class email_sender {
         } else {
             // This is the default case for sending a new password.
             $body = str_replace(
-                ['[USER_ID]', '[PASSWORD]', '[FULLNAME]', '[LOGO_URL]'],
-                [$user->username, $password, fullname($user), $logo_url],
+                ['[USER_ID]', '[PASSWORD]', '[FULLNAME]', '[LOGO_URL]', '[LOGIN_URL]'],
+                [$user->username, $password, fullname($user), $logo_url, $CFG->wwwroot . '/login/index.php'],
                 $body
             );
         }

@@ -2,6 +2,7 @@
 require_once('../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
 require_once('classes/form/student_form.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 global $PAGE, $CFG;
 
 $PAGE->set_context(context_system::instance());
@@ -54,6 +55,24 @@ if ($mform->is_cancelled()) {
     if ($user_id !== false) {
         $student->userid = $user_id;
         $DB->insert_record('student', $student);
+        $studentname = fullname((object) [
+            'firstname' => $student->firstname,
+            'lastname' => $student->lastname,
+        ]);
+        $gradename = local_dashboard_get_grade_name((int) $gradeid);
+        local_dashboard_log_activity(
+            'student_added',
+            'Student added',
+            trim($studentname . ' added' . ($gradename ? ' to ' . $gradename : '')),
+            (int) $student->schoolid,
+            [
+                'metadata' => [
+                    'studentuserid' => (int) $user_id,
+                    'gradeid' => (int) $gradeid,
+                    'courseid' => (int) $courseid,
+                ],
+            ]
+        );
         redirect("$CFG->wwwroot/local/students/student_manage.php", get_string('studentsuccess', 'local_students'), 2);
     } else {
         print_error('usercreationerror', 'local_students');

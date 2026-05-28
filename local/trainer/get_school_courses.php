@@ -7,9 +7,13 @@ require_sesskey();
 global $DB, $USER;
 
 $schoolid = required_param('schoolid', PARAM_INT);
+$requestedpocuserid = optional_param('pocuserid', 0, PARAM_INT);
 $pocuserid = $USER->id;
 if (isset($_SESSION['userIdPoc'])) {
     $pocuserid = $_SESSION['userIdPoc'];
+}
+if (!empty($requestedpocuserid) && (is_siteadmin() || $requestedpocuserid == $USER->id || (isset($_SESSION['userIdPoc']) && $requestedpocuserid == $_SESSION['userIdPoc']))) {
+    $pocuserid = $requestedpocuserid;
 }
 
 header('Content-Type: application/json');

@@ -9,10 +9,10 @@ class regionalpoc_form extends moodleform
     public function definition()
     {
         $mform = $this->_form;
-        $mform->addElement('hidden', 'regionalpocid', $this->_customdata['regionalpocid']);
+        $mform->addElement('hidden', 'regionalpocid', $this->_customdata['regionalpocid'] ?? 0);
         $mform->setType('regionalpocid', PARAM_INT);
 
-        $heading_text = "Add New RM/ARM";
+        $heading_text = "Add Assistant Regional Manager";
         $heading = html_writer::tag('h2', $heading_text, array('class' => 'custom-heading add-new-regionalpoc'));
         $mform->addElement('html', $heading);
 
@@ -122,15 +122,14 @@ class regionalpoc_form extends moodleform
         $mform->addElement('text', 'ctc', get_string('ctc', 'local_regionalpoc'));
         $mform->setType('ctc', PARAM_INT);
 
-        $roles = [
-            '' => 'Select Manager',
-            'regionalmanager' => 'Regional Manager',
-            'asstmanager' => 'Assistant Regional Manager',
-        ];
-
-        $mform->addElement('select', 'role', get_string('roles', 'local_regionalpoc'), $roles);
+        $mform->addElement('static', 'rolelabel', get_string('roles', 'local_regionalpoc'), 'Assistant Regional Manager');
+        $mform->addElement('hidden', 'role', 'asstmanager');
         $mform->setType('role', PARAM_TEXT);
-        $mform->addRule('role', get_string('required'), 'required', null, 'client');
+
+        $schooloptions = $this->_customdata['schooloptions'] ?? [];
+        $mform->addElement('autocomplete', 'schoolids', 'Assign Schools', $schooloptions, ['multiple' => true]);
+        $mform->setType('schoolids', PARAM_INT);
+        $mform->addRule('schoolids', get_string('required'), 'required', null, 'client');
 
         $mform->addElement('date_selector', 'date_of_joining', get_string('dateofjoining', 'local_regionalpoc'));
         $mform->setType('date_of_joining', PARAM_INT);
@@ -200,6 +199,16 @@ class regionalpoc_form extends moodleform
             $errors['designation'] = get_string('required');
         }
 
+
+        if (empty($data['schoolids']) || !is_array($data['schoolids'])) {
+            $errors['schoolids'] = get_string('required');
+        } else {
+            $allowed = array_map('intval', array_keys($this->_customdata['schooloptions'] ?? []));
+            $selected = array_map('intval', $data['schoolids']);
+            if (!empty(array_diff($selected, $allowed))) {
+                $errors['schoolids'] = 'Select only schools assigned to you.';
+            }
+        }
 
         if (!empty($data['password'])) {
             $errmsg="";

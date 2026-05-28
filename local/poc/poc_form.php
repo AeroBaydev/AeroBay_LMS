@@ -4,6 +4,7 @@ require_once($CFG->dirroot . '/user/lib.php');
 require_once('classes/form/poc_form.php');
 require_once('../../lib/moodlelib.php');
 require_once($CFG->dirroot.'/local/emailtemplates/email_sender.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 require_once($CFG->dirroot . '/course/lib.php');
 
 
@@ -71,13 +72,43 @@ $contextid = $context->id;
         $insert = $DB->insert_record('poc', $poc);
    
         if($insert){
+            $pocname = fullname((object) [
+                'firstname' => $poc->firstname,
+                'lastname' => $poc->lastname,
+            ]);
+            $site = get_site();
+            local_dashboard_log_activity(
+                'poc_added',
+                'POC added',
+                $pocname . ' added as POC',
+                0,
+                [
+                    'schoolname' => format_string($site->fullname),
+                    'metadata' => [
+                        'pocrecordid' => (int) $insert,
+                        'pocuserid' => (int) $user_id,
+                    ],
+                ]
+            );
 
             $poc_session_date = new stdClass();
             $currentYear = date("Y");
             $poc_session_date->session_date = $currentYear;
             $poc_session_date->pocid = $user_id;
             $poc_session_date->status = 1;
-            $DB->insert_record('poc_session_date', $poc_session_date);
+            $sessionid = $DB->insert_record('poc_session_date', $poc_session_date);
+            local_dashboard_log_activity(
+                'session_scheduled',
+                'Session scheduled',
+                'POC session scheduled for ' . $currentYear,
+                0,
+                [
+                    'metadata' => [
+                        'sessionid' => (int) $sessionid,
+                        'pocuserid' => (int) $user_id,
+                    ],
+                ]
+            );
 
 
 

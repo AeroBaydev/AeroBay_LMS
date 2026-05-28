@@ -1,6 +1,7 @@
 <?php
 require_once("../../config.php");
 require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 global $DB, $USER;
 
 header('Content-Type: application/json'); // Ensure response is JSON
@@ -68,6 +69,19 @@ foreach ($existingEntries as $day => $periods) {
         }
     }
 }
+
+$gradename = local_dashboard_get_grade_name((int) $gradeid);
+local_dashboard_log_activity(
+    'timetable_updated',
+    'Timetable updated',
+    $gradename ? 'Weekly timetable updated for ' . $gradename : 'Weekly timetable updated',
+    (int) $schoolid,
+    [
+        'metadata' => [
+            'gradeid' => (int) $gradeid,
+        ],
+    ]
+);
 
 // Return success response
 echo json_encode(["success" => true, "message" => "Timetable updated successfully"]);

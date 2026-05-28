@@ -4,6 +4,7 @@ require_once($CFG->dirroot . '/user/lib.php');
 require_once($CFG->dirroot . '/cohort/lib.php');
 require_once('classes/form/school_form.php');
 require_once($CFG->dirroot.'/local/school/lib.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 
 global $PAGE, $CFG, $DB, $OUTPUT;
 
@@ -103,6 +104,19 @@ if ($mform->is_cancelled()) {
 
 
     $DB->insert_record('schoolassign', $schoolassign);
+    local_dashboard_log_activity(
+        'school_added',
+        'New school added',
+        'School profile created',
+        (int) $data->course_cat_id,
+        [
+            'schoolname' => $data->school_name,
+            'metadata' => [
+                'schoolrecordid' => (int) $id,
+                'coursecatid' => (int) $data->course_cat_id,
+            ],
+        ]
+    );
     // print_r($categoryid->id);
     // die;
 

@@ -2,13 +2,14 @@
 
  require_once('../../config.php');
  require_once("$CFG->dirroot/course/classes/external/course_summary_exporter.php");
+ require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
   require_login();
   if(!isloggedin()){
 
   return redirect(new moodle_url('/login'));
 }
-GLOBAL $DB,$USER;
- $catId=$_GET['catId'];
+GLOBAL $DB,$USER,$CFG,$OUTPUT;
+ $catId = required_param('catId', PARAM_INT);
  
  if (isset($_SESSION['userIdPoc'])) {
   $id=$_SESSION['userIdPoc'];
@@ -18,11 +19,24 @@ else{
   $id = $USER->id;
 }
 
+$schoolid = (int) $DB->get_field('course_categories', 'parent', ['id' => $catId], MUST_EXIST);
+local_pocschool_require_grade_access($schoolid, $catId);
+$effectivepocid = local_pocschool_get_effective_poc_userid((int) $id);
 
+$allCourses = $DB->get_records_sql(
+    "SELECT c.*
+       FROM {course} c
+       JOIN {poc_copy_course} pcc ON pcc.courseid = c.id
+      WHERE c.visible = 1
+        AND pcc.gradeid = :gradeid
+        AND pcc.schoolid = :schoolid
+        AND pcc.pocid = :pocid
+        AND pcc.status = 1
+   ORDER BY c.sortorder, c.fullname",
+    ['gradeid' => $catId, 'schoolid' => $schoolid, 'pocid' => $effectivepocid]
+);
 
-$allCourses = $DB->get_records_sql("SELECT * FROM {course} where visible=1  and 
-id in( select courseid from {poc_copy_course} where gradeid=$catId and status=1)");
-
+$poc_session_date_id = $DB->get_record('poc_session_date', ['pocid' => $effectivepocid,'status'=>1]);
 $courseArray=array();
 foreach ($allCourses as $course) {
     $course_name = $course->fullname;
@@ -56,10 +70,16 @@ foreach ($allCourses as $course) {
     $enroll_user = COUNT($users);
 
 
-    $poc_session_date_id = $DB->get_record('poc_session_date', ['pocid' => $id,'status'=>1], '*', MUST_EXIST);
-  
-   
-    $checkCourseCopy = $DB->get_record('poc_copy_course',  ['pocid' => $id,'status'=>1,'gradeid'=>$catId,'sessionid'=>$poc_session_date_id->id]);
+    $checkCourseCopy = null;
+    if ($poc_session_date_id) {
+      $checkCourseCopy = $DB->get_record('poc_copy_course',  [
+        'pocid' => $effectivepocid,
+        'status' => 1,
+        'gradeid' => $catId,
+        'courseid' => $course->id,
+        'sessionid' => $poc_session_date_id->id,
+      ]);
+    }
     
     if($checkCourseCopy){
     
@@ -123,6 +143,7 @@ $faviconUrl = $OUTPUT->favicon();
 $data['courses']=$courseArray;
 $data['url']=$url;
 $data['badcrudurl']=$badcrudurl;
+$data['config'] = ['wwwroot' => $CFG->wwwroot];
 echo  $OUTPUT->render_from_template('local_pocschool/viewcourse', $data);
 echo $OUTPUT->footer();
 

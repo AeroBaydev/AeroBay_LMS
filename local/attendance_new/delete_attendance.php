@@ -22,6 +22,7 @@ local_pocschool_require_grade_access($record->schoolid, $record->gradeid);
 
 // If the user confirmed deletion, delete the record
 if (optional_param('confirm', 0, PARAM_BOOL)) {
+    $DB->delete_records('attendance_student', ['attendanceid' => $id]);
     $DB->delete_records('attendance', ['id' => $id]);
 
     // Redirect to create_attendance.php with parameters

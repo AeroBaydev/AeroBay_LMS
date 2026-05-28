@@ -19,10 +19,10 @@ $table = new trainer_table('uniqueid');
 
 
 if(is_siteadmin()){
-    if (!isset($_SESSION['userIdPoc'])) {
-     
-    // $_SESSION['userIdPoc'] = $userIdPoc;
-    $userid =$userIdPoc;
+    $userIdPoc = optional_param('userid', 0, PARAM_INT);
+    if (!isset($_SESSION['userIdPoc']) && !empty($userIdPoc)) {
+        $_SESSION['userIdPoc'] = $userIdPoc;
+        $userid = $userIdPoc;
     }
     
 }
@@ -33,6 +33,10 @@ else{
 if (isset($_SESSION['userIdPoc'])) {
      $userid=$_SESSION['userIdPoc'];
    
+}
+
+if (is_siteadmin() && empty($userid)) {
+    redirect(new moodle_url('/local/trainer/index.php'));
 }
 
 

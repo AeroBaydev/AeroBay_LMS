@@ -27,19 +27,21 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/behat/lib.php');
 require_once($CFG->dirroot . '/course/lib.php');
 
-// Add block button in editing mode.
-$addblockbutton = $OUTPUT->addblockbutton();
+$canviewblockdrawer = false;
+
+// AeroBay does not use Moodle's right block drawer in the LMS dashboard layout.
+$addblockbutton = $canviewblockdrawer ? $OUTPUT->addblockbutton() : '';
 
 if (isloggedin()) {
     $courseindexopen = (get_user_preferences('drawer-open-index', true) == true);
-    $blockdraweropen = (get_user_preferences('drawer-open-block') == true);
+    $blockdraweropen = $canviewblockdrawer && (get_user_preferences('drawer-open-block') == true);
 } else {
     $courseindexopen = false;
     $blockdraweropen = false;
 }
 
 if (defined('BEHAT_SITE_RUNNING') && get_user_preferences('behat_keep_drawer_closed') != 1) {
-    $blockdraweropen = true;
+    $blockdraweropen = $canviewblockdrawer;
 }
 
 $extraclasses = ['uses-drawers'];
@@ -48,7 +50,7 @@ if ($courseindexopen) {
 }
 
 $blockshtml = $OUTPUT->blocks('side-pre');
-$hasblocks = (strpos($blockshtml, 'data-block=') !== false || !empty($addblockbutton));
+$hasblocks = $canviewblockdrawer && (strpos($blockshtml, 'data-block=') !== false || !empty($addblockbutton));
 if (!$hasblocks) {
     $blockdraweropen = false;
 }
@@ -58,7 +60,7 @@ if (!$courseindex) {
 }
 
 $bodyattributes = $OUTPUT->body_attributes($extraclasses);
-$forceblockdraweropen = $OUTPUT->firstview_fakeblocks();
+$forceblockdraweropen = $canviewblockdrawer && $OUTPUT->firstview_fakeblocks();
 
 $secondarynavigation = false;
 $overflow = '';

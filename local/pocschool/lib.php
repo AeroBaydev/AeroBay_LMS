@@ -20,7 +20,7 @@ function local_pocschool_extend_navigation(global_navigation $navigation) {
         if(!is_siteadmin()){
         $CFG->custommenuitems = "Alloted School | /local/pocschool
                         Trainer Management | /local/trainer/trainer_manage.php
-                        RM / ARM Management | /local/regionalpoc/rm_arm_manage.php
+                        ARM Management | /local/regionalpoc/rm_arm_manage.php
                         Student Management | /local/students/student_manage.php
                         Attendance Management | /local/attendance_new/index.php
                         Time Table Management | /local/timetable/index.php";

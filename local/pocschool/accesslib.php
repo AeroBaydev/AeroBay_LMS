@@ -1,5 +1,6 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
+require_once($CFG->dirroot . '/local/regionalpoc/lib.php');
 
 function local_pocschool_is_poc_user($userid = null) {
     global $DB, $USER;
@@ -8,7 +9,8 @@ function local_pocschool_is_poc_user($userid = null) {
         $userid = $USER->id;
     }
 
-    return !is_siteadmin($userid) && $DB->record_exists('poc', ['userid' => $userid]);
+    return !is_siteadmin($userid) &&
+        ($DB->record_exists('poc', ['userid' => $userid]) || local_regionalpoc_is_arm_user((int) $userid));
 }
 
 function local_pocschool_is_trainer_user($userid = null) {
@@ -28,7 +30,31 @@ function local_pocschool_get_assigned_school_ids($userid = null) {
         $userid = $USER->id;
     }
 
+    if (local_regionalpoc_is_arm_user((int) $userid)) {
+        return local_regionalpoc_get_arm_school_ids((int) $userid);
+    }
+
     return array_map('intval', $DB->get_fieldset_select('schoolassign', 'schoolid', 'userid = ?', [$userid]));
+}
+
+function local_pocschool_get_effective_poc_userid($userid = null) {
+    global $DB, $USER;
+
+    if ($userid === null) {
+        $userid = $USER->id;
+    }
+
+    if (local_regionalpoc_is_arm_user((int) $userid)) {
+        $pocid = $DB->get_field('regionalpoc', 'pocid', [
+            'userid' => $userid,
+            'usertype' => 'asstmanager',
+        ]);
+        if (!empty($pocid)) {
+            return (int) $pocid;
+        }
+    }
+
+    return (int) $userid;
 }
 
 function local_pocschool_get_trainer_grade_ids($userid = null) {
