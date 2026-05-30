@@ -19,7 +19,7 @@ if (empty($student_ids)) {
 
 global $DB, $USER;
 
-$approvedby = is_siteadmin() ? 'admin' : 'poc';
+$approvedby = local_students_get_action_actor_key((int) $USER->id);
 $enrolledcount = 0;
 foreach ($student_ids as $studentid) {
     $enrolledcount += local_students_approve_student((int)$studentid, $approvedby, $USER->id);

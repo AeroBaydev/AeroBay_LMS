@@ -5,10 +5,6 @@ require_once($CFG->dirroot . '/local/dashboard/lib.php');
 
 require_login();
 
-$title = 'Admin Dashboard';
-$pagetitle = $title;
-$PAGE->set_title($title);
-$PAGE->set_heading($title);
 $context = context_system::instance();
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('standard');
@@ -20,6 +16,11 @@ if (is_siteadmin()) {
 } else {
     throw new required_capability_exception($context, 'moodle/site:config', 'nopermissions', '');
 }
+$title = empty($scope['is_school_scoped']) ? 'Admin Dashboard' :
+    (empty($scope['regional_manager_userid']) ? 'ARM Dashboard' : 'Zonal Manager Dashboard');
+$pagetitle = $title;
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 $somdata = local_dashboard_get_admin_stats_context($scope);
 
 echo $OUTPUT->header();

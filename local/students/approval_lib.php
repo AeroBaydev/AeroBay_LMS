@@ -3,6 +3,58 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/enrollib.php');
 require_once($CFG->dirroot . '/enrol/manual/lib.php');
+require_once($CFG->dirroot . '/local/regionalpoc/lib.php');
+
+function local_students_get_action_actor_key(?int $actorid = null): string {
+    global $USER;
+
+    if ($actorid === null) {
+        $actorid = (int) $USER->id;
+    }
+
+    if (is_siteadmin($actorid)) {
+        return 'admin';
+    }
+
+    if (local_regionalpoc_is_arm_user($actorid)) {
+        return 'arm:' . $actorid;
+    }
+
+    return 'poc:' . $actorid;
+}
+
+function local_students_format_action_actor(?string $actorkey): string {
+    global $DB;
+
+    $actorkey = trim((string) $actorkey);
+    if ($actorkey === '') {
+        return '_';
+    }
+
+    if ($actorkey === 'admin' || strcasecmp($actorkey, 'Admin') === 0) {
+        return 'Admin';
+    }
+
+    if (preg_match('/^(poc|arm):(\d+)$/', $actorkey, $matches)) {
+        $user = $DB->get_record('user', ['id' => (int) $matches[2]], 'id, firstname, lastname', IGNORE_MISSING);
+        $name = $user ? fullname($user) : '';
+        if ($matches[1] === 'arm') {
+            return 'ARM: ' . ($name ?: 'Unknown user');
+        }
+
+        return 'POC: ' . ($name ?: 'Unknown user');
+    }
+
+    if ($actorkey === 'poc') {
+        return 'POC';
+    }
+
+    if ($actorkey === 'arm') {
+        return 'ARM';
+    }
+
+    return $actorkey;
+}
 
 function local_students_get_approval_course_ids(stdClass $student, ?int $approverid = null): array {
     global $DB, $USER;

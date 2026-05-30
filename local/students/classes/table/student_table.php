@@ -1,5 +1,6 @@
 <?php
 require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
+require_once($CFG->dirroot . '/local/students/approval_lib.php');
 
 class student_table extends table_sql
 {
@@ -21,7 +22,7 @@ class student_table extends table_sql
             ? array('S.No', 'Student Id', 'Full Name')
             : array( '<input type="checkbox" id="select-all" />', 'S.No', 'Student Id', 'Full Name');
         if (!local_pocschool_is_trainer_user()) {
-            $headers = array_merge($headers, array('Action', 'Approve/Reject', 'Approve By'));
+            $headers = array_merge($headers, array('Action', 'Approve/Reject', 'Action By'));
         }
         $this->define_headers($headers);
 
@@ -86,11 +87,18 @@ class student_table extends table_sql
         global $DB;
         $studentdata = $DB->get_record('student', array('userid' => $values->id));
 
-        if (isset($studentdata->approvedby)) {
-            return $studentdata->approvedby;
-        } else {
+        if (empty($studentdata->approvedby)) {
             return "_";
         }
+
+        $prefix = 'Action By:';
+        if ((int) $studentdata->status === 1) {
+            $prefix = 'Approved By:';
+        } else if ((int) $studentdata->status === 0) {
+            $prefix = 'Rejected By:';
+        }
+
+        return $prefix . html_writer::empty_tag('br') . s(local_students_format_action_actor($studentdata->approvedby));
     }
 
     function col_approve($values)

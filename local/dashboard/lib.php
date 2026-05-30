@@ -86,7 +86,36 @@ function local_dashboard_get_admin_stats_context(array $scope = []): array {
         );
     }
 
-    if ($dbman->table_exists('poc')) {
+    if (!empty($scope['is_school_scoped']) && $dbman->table_exists('regionalpoc')) {
+        $pocwhere = "u.deleted = 0
+                AND u.suspended = 0
+                AND rp.usertype = :armusertype";
+        $pocparams = ['armusertype' => 'asstmanager'];
+        if (empty($scope['regional_manager_userid'])) {
+            $pocwhere .= ' AND 1 = 0';
+        } else {
+            $pocwhere .= ' AND rp.pocid = :regionalmanagerid';
+            $pocparams['regionalmanagerid'] = $scope['regional_manager_userid'];
+        }
+
+        $stats['total_pocs'] = (int) $DB->count_records_sql(
+            "SELECT COUNT(DISTINCT rp.userid)
+               FROM {regionalpoc} rp
+               JOIN {user} u ON u.id = rp.userid
+              WHERE {$pocwhere}",
+            $pocparams
+        );
+
+        $pocchangeparams = $pocparams + ['quarterstart' => $quarterstart];
+        $stats['total_pocs_change'] = (int) $DB->count_records_sql(
+            "SELECT COUNT(DISTINCT rp.userid)
+               FROM {regionalpoc} rp
+               JOIN {user} u ON u.id = rp.userid
+              WHERE {$pocwhere}
+                AND u.timecreated >= :quarterstart",
+            $pocchangeparams
+        );
+    } else if ($dbman->table_exists('poc')) {
         $pocjoin = '';
         $pocwhere = "u.deleted = 0
                 AND u.suspended = 0";
@@ -184,17 +213,32 @@ function local_dashboard_get_admin_stats_context(array $scope = []): array {
 
     return [
         'config' => ['wwwroot' => $CFG->wwwroot],
-        'dashboard_title' => empty($scope['is_school_scoped']) ? 'Admin Dashboard' : 'POC Dashboard',
+        'dashboard_title' => empty($scope['is_school_scoped']) ? 'Admin Dashboard' :
+            (empty($scope['regional_manager_userid']) ? 'ARM Dashboard' : 'Zonal Manager Dashboard'),
         'dashboard_subtitle' => empty($scope['is_school_scoped']) ?
             'School operations, trainer activity, student attendance, and LMS health monitoring.' :
             'Assigned school operations, trainer activity, student attendance, and scoped LMS analytics.',
         'school_management_url' => (new moodle_url('/local/school/index.php'))->out(false),
-        'trainer_management_url' => (new moodle_url('/local/trainer/index.php'))->out(false),
+        'trainer_management_url' => (new moodle_url(
+            empty($scope['is_school_scoped']) ? '/local/trainer/index.php' : '/local/trainer/trainer_manage.php'
+        ))->out(false),
         'poc_management_url' => (new moodle_url('/local/poc/poc_management.php'))->out(false),
-        'student_management_url' => (new moodle_url('/local/studentadmin/index.php'))->out(false),
+        'student_management_url' => (new moodle_url(
+            empty($scope['is_school_scoped']) ? '/local/studentadmin/index.php' : '/local/students/student_manage.php'
+        ))->out(false),
         'course_management_url' => (new moodle_url('/my/courses.php'))->out(false),
         'attendance_management_url' => (new moodle_url('/local/attendance_new/index.php'))->out(false),
         'trainer_activity_url' => (new moodle_url('/local/dashboard/admin/trainer_activity.php'))->out(false),
+        'poc_card_aria_label' => empty($scope['is_school_scoped']) ? 'Open POC List' : 'Open ARM List',
+        'poc_card_label' => empty($scope['is_school_scoped']) ? 'Total POCs' : 'Total ARM',
+        'poc_coverage_label' => empty($scope['is_school_scoped']) ? 'POC coverage' : 'ARM coverage',
+        'poc_coverage_text' => empty($scope['is_school_scoped']) ?
+            'POCs assigned across active schools' :
+            'ARM assigned across active schools',
+        'poc_modal_title' => empty($scope['is_school_scoped']) ? 'POC Listing' : 'ARM Listing',
+        'poc_modal_count_label' => empty($scope['is_school_scoped']) ? 'POCs' : 'ARM',
+        'poc_modal_close_label' => empty($scope['is_school_scoped']) ? 'Close POC listing' : 'Close ARM listing',
+        'poc_empty_text' => empty($scope['is_school_scoped']) ? 'No POC data is available.' : 'No ARM data is available.',
         'total_schools' => local_dashboard_format_count($stats['total_schools']),
         'total_trainers' => local_dashboard_format_count($stats['total_trainers']),
         'total_pocs' => local_dashboard_format_count($stats['total_pocs']),
@@ -226,6 +270,7 @@ function local_dashboard_normalize_school_scope(array $scope): array {
     return [
         'is_school_scoped' => !empty($scope['is_school_scoped']),
         'schoolids' => $schoolids,
+        'regional_manager_userid' => (int) ($scope['regional_manager_userid'] ?? 0),
     ];
 }
 
@@ -240,12 +285,14 @@ function local_dashboard_get_pocschool_scope(int $userid): array {
         return [
             'is_school_scoped' => true,
             'schoolids' => local_regionalpoc_get_arm_school_ids($userid),
+            'regional_manager_userid' => 0,
         ];
     }
 
     return [
         'is_school_scoped' => true,
         'schoolids' => $DB->get_fieldset_select('schoolassign', 'schoolid', 'userid = ?', [$userid]),
+        'regional_manager_userid' => $userid,
     ];
 }
 
@@ -1127,7 +1174,7 @@ function local_dashboard_get_weekday_name(int $timestamp): string {
 }
 
 /**
- * Build POC listing data for the dashboard modal.
+ * Build POC or ARM listing data for the dashboard modal.
  *
  * @return array
  */
@@ -1136,7 +1183,71 @@ function local_dashboard_get_poc_context(array $scope = []): array {
 
     $scope = local_dashboard_normalize_school_scope($scope);
     $dbman = $DB->get_manager();
-    if (!$dbman->table_exists('poc')) {
+    if (empty($scope['is_school_scoped'])) {
+        if (!$dbman->table_exists('poc')) {
+            return [
+                'poc_list' => [],
+                'has_poc_list' => false,
+                'poc_total_count' => 0,
+            ];
+        }
+
+        $schoolcountjoin = '';
+        $schoolcountfield = '0 AS assignedschools';
+        if ($dbman->table_exists('schoolassign')) {
+            $schoolcountfield = 'COALESCE(schools.assignedschools, 0) AS assignedschools';
+            $schoolcountjoin = "LEFT JOIN (
+                    SELECT sa.userid,
+                           COUNT(DISTINCT sa.schoolid) AS assignedschools
+                      FROM {schoolassign} sa
+                  GROUP BY sa.userid
+                    ) schools ON schools.userid = p.userid";
+        }
+
+        $records = $DB->get_records_sql(
+            "SELECT p.userid AS id,
+                    p.poc_id,
+                    p.firstname,
+                    p.lastname,
+                    p.email,
+                    p.contact_number,
+                    p.designation,
+                    p.suspended,
+                    $schoolcountfield
+               FROM {poc} p
+               JOIN {user} u ON u.id = p.userid
+         $schoolcountjoin
+              WHERE u.deleted = 0
+                AND u.suspended = 0
+           ORDER BY p.id DESC"
+        );
+
+        $pocs = [];
+        foreach ($records as $record) {
+            $fullname = fullname((object) [
+                'firstname' => $record->firstname,
+                'lastname' => $record->lastname,
+            ]);
+
+            $pocs[] = [
+                'poc_id' => $record->poc_id ?: '-',
+                'poc_name' => format_string($fullname ?: '-'),
+                'poc_email' => $record->email ?: '-',
+                'poc_contact' => $record->contact_number ?: '-',
+                'poc_designation' => format_string($record->designation ?: '-'),
+                'poc_assigned_schools' => local_dashboard_format_count((int) $record->assignedschools),
+                'poc_status' => !empty($record->suspended) ? 'Suspended' : 'Active',
+            ];
+        }
+
+        return [
+            'poc_list' => $pocs,
+            'has_poc_list' => !empty($pocs),
+            'poc_total_count' => count($pocs),
+        ];
+    }
+
+    if (!$dbman->table_exists('regionalpoc')) {
         return [
             'poc_list' => [],
             'has_poc_list' => false,
@@ -1146,7 +1257,15 @@ function local_dashboard_get_poc_context(array $scope = []): array {
 
     $schoolcountjoin = '';
     $schoolcountfield = '0 AS assignedschools';
-    if ($dbman->table_exists('schoolassign')) {
+    if ($dbman->table_exists('regionalpoc_arm_school')) {
+        $schoolcountfield = 'COALESCE(schools.assignedschools, 0) AS assignedschools';
+        $schoolcountjoin = "LEFT JOIN (
+                SELECT ras.userid,
+                       COUNT(DISTINCT ras.schoolid) AS assignedschools
+                  FROM {regionalpoc_arm_school} ras
+              GROUP BY ras.userid
+                ) schools ON schools.userid = rp.userid";
+    } else if ($dbman->table_exists('schoolassign')) {
         $schoolcountwhere = '';
         $schoolcountparams = [];
         if (!empty($scope['is_school_scoped'])) {
@@ -1169,31 +1288,38 @@ function local_dashboard_get_poc_context(array $scope = []): array {
                   FROM {schoolassign} sa
                   {$schoolcountwhere}
               GROUP BY sa.userid
-                ) schools ON schools.userid = p.userid";
+                ) schools ON schools.userid = rp.userid";
     }
 
-    $pocjoin = '';
     $where = "u.deleted = 0
-            AND u.suspended = 0";
+            AND u.suspended = 0
+            AND rp.usertype = :armusertype";
     $params = $schoolcountparams ?? [];
-    local_dashboard_apply_poc_school_scope($pocjoin, $where, $params, $scope, 'p');
+    $params['armusertype'] = 'asstmanager';
+    if (!empty($scope['is_school_scoped'])) {
+        if (empty($scope['regional_manager_userid'])) {
+            $where .= ' AND 1 = 0';
+        } else {
+            $where .= ' AND rp.pocid = :regionalmanagerid';
+            $params['regionalmanagerid'] = $scope['regional_manager_userid'];
+        }
+    }
 
     $records = $DB->get_records_sql(
-        "SELECT p.userid AS id,
-                p.poc_id,
-                p.firstname,
-                p.lastname,
-                p.email,
-                p.contact_number,
-                p.designation,
-                p.suspended,
+        "SELECT rp.userid AS id,
+                rp.username,
+                rp.firstname,
+                rp.lastname,
+                rp.email,
+                rp.contact_number,
+                rp.designation,
+                u.suspended,
                 $schoolcountfield
-           FROM {poc} p
-           JOIN {user} u ON u.id = p.userid
+           FROM {regionalpoc} rp
+           JOIN {user} u ON u.id = rp.userid
      $schoolcountjoin
-     $pocjoin
           WHERE {$where}
-       ORDER BY p.id DESC",
+       ORDER BY rp.id DESC",
         $params
     );
 
@@ -1205,7 +1331,7 @@ function local_dashboard_get_poc_context(array $scope = []): array {
         ]);
 
         $pocs[] = [
-            'poc_id' => $record->poc_id ?: '-',
+            'poc_id' => $record->username ?: '-',
             'poc_name' => format_string($fullname ?: '-'),
             'poc_email' => $record->email ?: '-',
             'poc_contact' => $record->contact_number ?: '-',

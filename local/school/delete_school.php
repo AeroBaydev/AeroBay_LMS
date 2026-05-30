@@ -17,42 +17,16 @@ $schoolid = optional_param('id', 0, PARAM_INT);
 $sortname = optional_param('school_sortname', '', PARAM_TEXT);
 
 if (optional_param('confirm', 0, PARAM_INT)) {
-    
-    
-    function delete_category_with_subcategories($categoryid) {
-        global $DB;
-    
-        // Fetch the main category
-   
-        // Fetch subcategories
-        $subcategories = $DB->get_records('course_categories', ['parent' => $categoryid]);
-        if($subcategories){
-        // Recursively delete subcategories
-        foreach ($subcategories as $subcategory) {
-             // Delete the main category
-        $coursecat = \core_course_category::get($subcategory->id);
-            if($coursecat){
-        $coursecat->delete_full();
-    } 
+    $course_categories = $DB->get_record('course_categories', array('idnumber' => $sortname), 'id, visible', IGNORE_MISSING);
 
+    if ($course_categories) {
+        $coursecat = \core_course_category::get((int)$course_categories->id, IGNORE_MISSING, true);
+        if ($coursecat) {
+            $coursecat->delete_full(false);
         }
     }
-       
-    }
-    
-
-    $course_categories = $DB->get_record('course_categories', array('idnumber' => $sortname), 'id, visible');
-    //
-    // print_r($course_categories);
-    // die;
 
     $deleted = $DB->delete_records('school', array('id' => $schoolid));
-
-               delete_category_with_subcategories($course_categories->id);
-              // $DB->delete_records('cohort', array('name'=>$sortname));
-              // $DB->delete_records('course_categories', array('idnumber'=>$sortname));
-              $coursecat = \core_course_category::get($course_categories->id);
-              if($coursecat){     $coursecat->delete_full();} 
 
     if ($deleted !== false) {
        

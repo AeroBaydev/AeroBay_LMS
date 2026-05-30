@@ -20,16 +20,9 @@ if (local_pocschool_is_trainer_user()) {
     throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
 }
 
-if(is_siteadmin()){
-    $approvedby = "Admin";
-    $approvedbykey = "admin";
-}
-else{
-    $approvedby = "POC";
-    $approvedbykey = "poc";
-}
+$approvedby = local_students_get_action_actor_key((int) $USER->id);
 
-$enrolledcount = local_students_approve_student($id, $approvedbykey, $USER->id);
+$enrolledcount = local_students_approve_student($id, $approvedby, $USER->id);
 
 \local_studentapproval\event\user_approved::create([
     'context'  => context_system::instance(),

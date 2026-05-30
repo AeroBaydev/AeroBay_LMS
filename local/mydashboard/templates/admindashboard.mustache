@@ -1044,13 +1044,13 @@
                 <div class="aero-kpi-note">Assigned to schools and courses</div>
             </a>
 
-            <button type="button" class="aero-kpi-card aero-kpi-link aero-kpi-indigo" id="aeroOpenPocList" aria-label="Open POC List">
+            <button type="button" class="aero-kpi-card aero-kpi-link aero-kpi-indigo" id="aeroOpenPocList" aria-label="{{poc_card_aria_label}}">
                 <div class="aero-kpi-top">
                     <div class="aero-kpi-icon"><i class="fa-solid fa-user-shield"></i></div>
                     <span class="aero-kpi-change">{{total_pocs_change}}<small>{{total_pocs_period}}</small></span>
                 </div>
                 <div class="aero-kpi-value">{{total_pocs}}</div>
-                <div class="aero-kpi-label">Total POCs</div>
+                <div class="aero-kpi-label">{{poc_card_label}}</div>
                 <div class="aero-kpi-note">Managing school operations</div>
             </button>
 
@@ -1305,10 +1305,10 @@
     <div class="aero-modal" role="dialog" aria-modal="true" aria-labelledby="aeroPocListTitle">
         <div class="aero-modal-header">
             <div>
-                <h3 id="aeroPocListTitle">POC Listing</h3>
-                <div class="aero-panel-subtitle">{{poc_total_count}} POCs</div>
+                <h3 id="aeroPocListTitle">{{poc_modal_title}}</h3>
+                <div class="aero-panel-subtitle">{{poc_total_count}} {{poc_modal_count_label}}</div>
             </div>
-            <button type="button" class="aero-modal-close" id="aeroClosePocList" aria-label="Close POC listing">
+            <button type="button" class="aero-modal-close" id="aeroClosePocList" aria-label="{{poc_modal_close_label}}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -1349,7 +1349,7 @@
                 </div>
             {{/has_poc_list}}
             {{^has_poc_list}}
-                <div class="aero-empty-state">No POC data is available.</div>
+                <div class="aero-empty-state">{{poc_empty_text}}</div>
             {{/has_poc_list}}
         </div>
     </div>
