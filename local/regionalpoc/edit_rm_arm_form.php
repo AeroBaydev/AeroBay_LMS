@@ -3,34 +3,37 @@
 require_once('../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
 require_once('classes/form/edit_regionalpoc_form.php');
+require_once($CFG->dirroot . '/local/regionalpoc/lib.php');
 
-global $PAGE, $CFG, $DB;
+global $PAGE, $CFG, $DB, $USER;
 
 require_login();
-$usertype = optional_param('usertype', '', PARAM_TEXT);
+local_regionalpoc_require_regional_manager();
+$usertype = optional_param('usertype', 'arm', PARAM_ALPHA);
+$id = optional_param('id', 0, PARAM_INT);
 $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('course');
-$PAGE->set_title('Edit RM/ARM');
-$PAGE->navbar->add('RM/ARM Management', "$CFG->wwwroot/local/regionalpoc/rm_arm_manage.php?usertype=$usertype");
-$PAGE->navbar->add('Update RM/ARM Details', "$CFG->wwwroot/local/regionalpoc/edit_rm_arm_form.php?id=$id");
-$PAGE->set_heading(' Update RM/ARM Details');
+$PAGE->set_title('Edit Assistant Regional Manager');
+$PAGE->navbar->add('Assistant Regional Manager Management', "$CFG->wwwroot/local/regionalpoc/rm_arm_manage.php?usertype=arm");
+$PAGE->navbar->add('Update Assistant Regional Manager Details', "$CFG->wwwroot/local/regionalpoc/edit_rm_arm_form.php?id=$id");
+$PAGE->set_heading('Update Assistant Regional Manager Details');
 
-$id = optional_param('id', 0, PARAM_INT);
-$regionalpoc_record = (array)$DB->get_record('regionalpoc', ['userid' => $id]);
+$conditions = [
+    'userid' => $id,
+    'usertype' => 'asstmanager',
+];
+if (!is_siteadmin()) {
+    $conditions['pocid'] = $USER->id;
+}
+$regionalpoc_record = $DB->get_record('regionalpoc', $conditions, '*', MUST_EXIST);
 
- if($regionalpoc_record['usertype']=="regionalmanager"){
-    $regionalpoc_record['usertype']="rm";
-    }
-    elseif($regionalpoc_record['usertype']=="asstmanager"){
-        $regionalpoc_record['usertype']="arm";
-    }
-$form = new edit_regionalpoc_form(null, ['userid' => $regionalpoc_record->userid,'id' => $regionalpoc_record->userid]);
+$regionalpoc_record->usertype = 'arm';
+$form = new edit_regionalpoc_form(null, ['userid' => $regionalpoc_record->userid, 'id' => $regionalpoc_record->id]);
 
 $form->set_data($regionalpoc_record);
 
 if ($form->is_cancelled()) { 
-    $usertype= $_POST['usertype'];
-     redirect("$CFG->wwwroot/local/regionalpoc/rm_arm_manage.php?usertype=$usertype");
+     redirect("$CFG->wwwroot/local/regionalpoc/rm_arm_manage.php?usertype=arm");
 } elseif ($data = $form->get_data()) {
 
     $user = $DB->get_record('user', array('id' => $data->userid), '*', MUST_EXIST);
@@ -60,7 +63,7 @@ if ($form->is_cancelled()) {
     $regionalpoc->id = $data->id;
     $DB->update_record('regionalpoc', $regionalpoc);
 
-    redirect("$CFG->wwwroot/local/regionalpoc/rm_arm_manage.php?usertype=$data->usertype", get_string('updatesuccess', 'local_regionalpoc'), 2);
+    redirect("$CFG->wwwroot/local/regionalpoc/rm_arm_manage.php?usertype=arm", get_string('updatesuccess', 'local_regionalpoc'), 2);
 } else {
     echo $OUTPUT->header();
     $form->display();

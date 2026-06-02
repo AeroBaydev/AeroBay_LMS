@@ -1,6 +1,7 @@
 <?php
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 global $DB, $PAGE, $OUTPUT;
 
@@ -11,6 +12,7 @@ $context = context_system::instance();
 // Get schoolid and gradeid from URL
 $schoolid = optional_param('schoolid', 0, PARAM_INT);
 $gradeid = optional_param('catid', 0, PARAM_INT);
+local_pocschool_require_grade_access($schoolid, $gradeid);
 
 $PAGE->set_url(new moodle_url('/local/attendance_new/create_attendance.php', ['schoolid' => $schoolid, 'catid' => $gradeid]));
 $PAGE->set_context($context);
@@ -45,6 +47,11 @@ $mform = new create_attendance_form();
 if ($mform->is_cancelled()) {
     redirect(new moodle_url('/local/attendance_new/index.php'));
 } elseif ($data = $mform->get_data()) {
+    local_pocschool_require_grade_access($data->schoolid, $data->gradeid);
+    if (local_pocschool_is_trainer_user() && userdate($data->attendancedate, '%Y-%m-%d') !== userdate(time(), '%Y-%m-%d')) {
+        throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
+    }
+
     $record = new stdClass();
     $record->description = $data->description;
     $record->date = $data->attendancedate;

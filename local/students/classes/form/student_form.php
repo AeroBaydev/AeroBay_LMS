@@ -1,6 +1,7 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->libdir/formslib.php");
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 $PAGE->requires->js(new moodle_url("$CFG->wwwroot/local/students/amd/src/numeric_validation.js"));
 $PAGE->requires->js(new moodle_url("$CFG->wwwroot/local/students/amd/form.js"));
 class student_form extends moodleform {
@@ -15,18 +16,28 @@ class student_form extends moodleform {
       $userid=  $USER->id;
        }
 
-        $school = $DB->get_records_sql_menu("SELECT cc.id, cc.name FROM {schoolassign} sa JOIN {course_categories} cc ON sa.schoolid = cc.id 
-        
-        where sa.userid=$userid");
+        $school = $DB->get_records_sql_menu(
+            "SELECT cc.id, cc.name
+               FROM {schoolassign} sa
+               JOIN {course_categories} cc ON sa.schoolid = cc.id
+              WHERE sa.userid = :userid",
+            ['userid' => $userid]
+        );
         
         $mform = $this->_form;
-        $schoolid = $_POST['schoolid'];
-        $gradeid = $_POST['gradeid'];
-        $courseid = $_POST['courseid'];
+        $schoolid = optional_param('schoolid', 0, PARAM_INT);
+        $gradeid = optional_param('gradeid', 0, PARAM_INT);
+        $courseid = optional_param('courseid', 0, PARAM_INT);
         $gradeid_list=[];
         if($schoolid){
-
-           $gradeid_list= $DB->get_records_sql_menu("SELECT cc.id, cc.name FROM {course_categories} cc where cc.parent=$schoolid");
+            $gradefrom = "{course_categories} cc";
+            $gradewhere = "cc.parent = :schoolid AND cc.visible = 1";
+            $gradeparams = ['schoolid' => $schoolid];
+            local_pocschool_apply_trainer_grade_filter($gradewhere, $gradeparams, 'cc', 'id');
+            $gradeid_list = $DB->get_records_sql_menu(
+                "SELECT cc.id, cc.name FROM {$gradefrom} WHERE {$gradewhere} ORDER BY cc.sortorder, cc.name",
+                $gradeparams
+            );
         }
         $course_list=[];
         if($gradeid){
@@ -136,6 +147,18 @@ class student_form extends moodleform {
             $tempuser->password = $data['password'];
             if (!check_password_policy($data['password'], $errmsg, $tempuser)) {
                 $errors['password'] = $errmsg;
+            }
+        }
+
+        if (empty($data['schoolid']) || !local_pocschool_user_can_access_school($data['schoolid'])) {
+            $errors['schoolid'] = get_string('nopermissions', 'error');
+        }
+
+        if (!empty($data['schoolid']) && !empty($data['gradeid'])) {
+            try {
+                local_pocschool_require_grade_access($data['schoolid'], $data['gradeid']);
+            } catch (required_capability_exception $e) {
+                $errors['gradeid'] = get_string('nopermissions', 'error');
             }
         }
 

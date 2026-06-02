@@ -10,26 +10,26 @@ $page = optional_param('page', 0, PARAM_INT);
 
 class school_class_table extends table_sql
 {
+    /** @var bool */
+    private $readonly = false;
 
-
-    function __construct($uniqueid)
+    function __construct($uniqueid, bool $readonly = false)
     {
         parent::__construct($uniqueid);
+        $this->readonly = $readonly;
 
         $columns = array('serialno', 'school_name','school_sortname','school_code', 'principal_name', 'edit');
-        $this->define_columns($columns);
-
         $headers = array('S.No', 'School Name','School Short Name','School ID', 'Principal Name', 'Action');
-        $this->define_headers($headers);
 
         $is_downloading = optional_param('download', '', PARAM_RAW);
 
-        if ($is_downloading) {
+        if ($is_downloading || $this->readonly) {
             array_pop($columns);
             array_pop($headers);
-            $this->define_columns($columns);
-            $this->define_headers($headers);
         }
+
+        $this->define_columns($columns);
+        $this->define_headers($headers);
     }
 
     function col_timecreated($values)
@@ -43,7 +43,11 @@ class school_class_table extends table_sql
     {
 
         global $CFG, $DB;
-        $school = $DB->get_record('course_categories', array('name' => $values->school_id), 'id, visible');
+        if ($this->readonly) {
+            return '';
+        }
+
+        $school = $DB->get_record('course_categories', array('idnumber' => $values->school_code), 'id, visible');
 
         $button_html = "
         <a href='{$CFG->wwwroot}/local/school/edit_school.php?id={$values->schoolid}' class='btn btn-primary mr-2' title='Edit School'>
@@ -77,6 +81,20 @@ class school_class_table extends table_sql
     function col_serialno($values)
     {
         return sr($values);
+    }
+
+    function col_school_name($values)
+    {
+        if ($this->readonly) {
+            return format_string($values->school_name);
+        }
+
+        $url = new moodle_url('/local/school/students.php', ['schoolid' => $values->schoolid]);
+
+        return html_writer::link($url, format_string($values->school_name), [
+            'class' => 'text-primary',
+            'title' => 'View students by grade',
+        ]);
     }
 
     function define_headers($headers)

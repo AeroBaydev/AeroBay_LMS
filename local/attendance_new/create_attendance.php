@@ -2,6 +2,7 @@
 require_once("../../config.php");
 require_once($CFG->libdir . "/tablelib.php");
 require_once("classes/table/attendace_table.php");
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 // require_once("lib.php");
 
 global $DB, $OUTPUT, $PAGE, $USER;
@@ -12,11 +13,12 @@ $download = optional_param('download', '', PARAM_ALPHA);
 $search = optional_param('search', '', PARAM_TEXT);
 $gradeid = optional_param('catid', '', PARAM_INT);
 $schoolid = optional_param('schoolid', '', PARAM_INT);
+local_pocschool_require_grade_access($schoolid, $gradeid);
 //  $gradeid = optional_param('gradeid', '', PARAM_INT); // Added gradeid
 $course_categories_records = $DB->get_record('course_categories', ['id' => $gradeid]);
 $context = context_system::instance();
 $PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/local/attendance_new/view.php', ['catid' => $catid, 'schoolid' => $schoolid, 'gradeid' => $gradeid]));
+$PAGE->set_url(new moodle_url('/local/attendance_new/create_attendance.php', ['catid' => $gradeid, 'schoolid' => $schoolid, 'gradeid' => $gradeid]));
 $PAGE->navbar->add('School List', "$CFG->wwwroot/local/attendance_new/index.php");
 $PAGE->navbar->add('Grade List', "$CFG->wwwroot/local/attendance_new/view_grade.php?id=$schoolid"); //grade list
 $PAGE->navbar->add('Attendance List', "$CFG->wwwroot/local/attendance_new/view_grade.php/index.php?id=$gradeid");

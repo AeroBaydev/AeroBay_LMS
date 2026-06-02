@@ -2,6 +2,8 @@
 require_once('../../config.php');
 require_once($CFG->dirroot.'/course/lib.php');
 global $DB;
+require_login();
+require_admin();
 $name = required_param('name', PARAM_TEXT);
 
 // $category = $DB->get_record('course_categories', array('id' => $categoryid), '*', MUST_EXIST);

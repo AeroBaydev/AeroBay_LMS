@@ -2,6 +2,7 @@
 require_once('../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
 require_once('classes/form/edit_student_form.php');
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 global $PAGE, $CFG, $DB;
 
@@ -15,6 +16,10 @@ $PAGE->navbar->add('Edit Student', new moodle_url("$CFG->wwwroot/local/students/
 $PAGE->set_heading('Edit Student Details');
 
 $id = optional_param('id', 0, PARAM_INT);
+
+if (local_pocschool_is_trainer_user()) {
+    throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
+}
 
 $student_record = (array)$DB->get_record('student', ['userid' => $id]);
 $user_record = (array)$DB->get_record('user', ['id' => $id]);

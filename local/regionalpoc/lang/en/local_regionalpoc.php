@@ -17,7 +17,7 @@ $string['savechanges'] = 'Save';
 $string['username'] = 'Username';
 $string['password'] = 'Password';
 $string['deleteconfirm'] = 'Are you sure want to delete data';
-$string['regionalpocsuccess'] = 'RM / ARM Created Successfully!';
+$string['regionalpocsuccess'] = 'Assistant Regional Manager created successfully!';
 $string['roles'] = 'Role';
 $string['selectschool'] = 'Select School';
 $string['selectregionalpoc'] = 'Select regionalpoc';
@@ -42,7 +42,6 @@ $string['course_management'] = 'Course Management';
 $string['student_management'] = 'Student Management';
 $string['activity_resource_management'] = 'Activity and Resource Management';
 $string['trainer_management'] = 'Trainer Management';
-
 
 
 

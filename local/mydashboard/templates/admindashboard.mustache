@@ -1,0 +1,1670 @@
+<link rel="stylesheet" href="{{{config.wwwroot}}}/local/dashboard/css/all.min.css">
+
+<style>
+    :root {
+        --aero-bg: #f4f7fb;
+        --aero-card: #ffffff;
+        --aero-text: #172033;
+        --aero-muted: #667085;
+        --aero-line: #e6ebf2;
+        --aero-primary: #2563eb;
+        --aero-primary-dark: #1e3a8a;
+        --aero-cyan: #06b6d4;
+        --aero-green: #16a34a;
+        --aero-amber: #d97706;
+        --aero-rose: #e11d48;
+        --aero-shadow: 0 18px 45px rgba(15, 23, 42, .08);
+    }
+
+    #page-local-dashboard-admin-index #region-main,
+    #page-local-dashboard-admin-index #topofscroll,
+    #page-local-mydashboard-index #region-main,
+    #page-local-mydashboard-index #topofscroll,
+    #page-mydashboard-index #region-main,
+    #page-mydashboard-index #topofscroll {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    #page-mydashboard-index #page-header,
+    #page-mydashboard-index .page-header-headings,
+    #page-local-mydashboard-index #page-header,
+    #page-local-mydashboard-index .page-header-headings {
+        display: none !important;
+    }
+
+    .aerobay-admin-dashboard {
+        background:
+            radial-gradient(circle at top left, rgba(37, 99, 235, .12), transparent 30rem),
+            radial-gradient(circle at top right, rgba(6, 182, 212, .12), transparent 28rem),
+            var(--aero-bg);
+        color: var(--aero-text);
+        font-family: Inter, Roboto, "Segoe UI", Arial, sans-serif;
+        margin: -1rem;
+        min-height: 100vh;
+        padding: 28px;
+    }
+
+    .aero-dashboard-shell {
+        max-width: 1480px;
+        margin: 0 auto;
+    }
+
+    .aero-dashboard-header {
+        align-items: center;
+        display: flex;
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .aero-eyebrow {
+        color: var(--aero-primary);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: .08em;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+    }
+
+    .aero-dashboard-header h1 {
+        color: var(--aero-text);
+        font-size: clamp(28px, 3vw, 42px);
+        font-weight: 850;
+        line-height: 1.1;
+        margin: 0;
+    }
+
+    .aero-dashboard-header p {
+        color: var(--aero-muted);
+        font-size: 15px;
+        margin: 10px 0 0;
+        max-width: 680px;
+    }
+
+    .aero-kpi-grid,
+    .aero-summary-grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .aero-kpi-card {
+        background:
+            linear-gradient(145deg, rgba(255, 255, 255, .96), rgba(248, 250, 252, .92)),
+            var(--aero-card);
+        border: 1px solid rgba(226, 232, 240, .92);
+        border-radius: 20px;
+        box-shadow: 0 18px 42px rgba(15, 23, 42, .08);
+        min-height: 168px;
+        overflow: hidden;
+        padding: 20px;
+        position: relative;
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .aero-kpi-link {
+        color: inherit;
+        cursor: pointer;
+        display: block;
+        font: inherit;
+        text-align: left;
+        text-decoration: none;
+        width: 100%;
+    }
+
+    button.aero-kpi-link {
+        appearance: none;
+    }
+
+    .aero-kpi-link:hover,
+    .aero-kpi-link:focus {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .aero-kpi-card:hover,
+    .aero-panel:hover,
+    .aero-summary-card:hover {
+        border-color: rgba(37, 99, 235, .24);
+        box-shadow: 0 24px 54px rgba(15, 23, 42, .13);
+        transform: translateY(-3px);
+    }
+
+    .aero-kpi-card::before {
+        content: "";
+        height: 4px;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+
+    .aero-kpi-card::after {
+        border-radius: 999px;
+        content: "";
+        height: 128px;
+        opacity: .11;
+        position: absolute;
+        right: -48px;
+        top: -54px;
+        width: 128px;
+    }
+
+    .aero-kpi-blue::before,
+    .aero-kpi-blue::after,
+    .aero-kpi-blue .aero-kpi-icon { background: linear-gradient(135deg, #2563eb, #38bdf8); }
+    .aero-kpi-green::before,
+    .aero-kpi-green::after,
+    .aero-kpi-green .aero-kpi-icon { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .aero-kpi-indigo::before,
+    .aero-kpi-indigo::after,
+    .aero-kpi-indigo .aero-kpi-icon { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+    .aero-kpi-amber::before,
+    .aero-kpi-amber::after,
+    .aero-kpi-amber .aero-kpi-icon { background: linear-gradient(135deg, #f59e0b, #f97316); }
+    .aero-kpi-cyan::before,
+    .aero-kpi-cyan::after,
+    .aero-kpi-cyan .aero-kpi-icon { background: linear-gradient(135deg, #06b6d4, #0ea5e9); }
+    .aero-kpi-rose::before,
+    .aero-kpi-rose::after,
+    .aero-kpi-rose .aero-kpi-icon { background: linear-gradient(135deg, #e11d48, #fb7185); }
+
+    .aero-kpi-top {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        z-index: 1;
+    }
+
+    .aero-kpi-icon {
+        align-items: center;
+        border-radius: 15px;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, .12);
+        color: #ffffff;
+        display: flex;
+        font-size: 18px;
+        height: 42px;
+        justify-content: center;
+        width: 42px;
+    }
+
+    .aero-kpi-change {
+        align-items: center;
+        background: rgba(248, 250, 252, .86);
+        border: 1px solid rgba(226, 232, 240, .9);
+        border-radius: 999px;
+        color: #475467;
+        display: inline-flex;
+        flex-direction: row;
+        font-size: 11px;
+        font-weight: 850;
+        gap: 6px;
+        line-height: 1.1;
+        padding: 6px 9px;
+        text-align: center;
+    }
+
+    .aero-kpi-change::before {
+        background: currentColor;
+        border-radius: 999px;
+        content: "";
+        height: 7px;
+        width: 7px;
+    }
+
+    .aero-kpi-change small {
+        color: inherit;
+        display: inline;
+        font-size: 10px;
+        font-weight: 850;
+        margin-top: 0;
+    }
+
+    .aero-kpi-blue .aero-kpi-change { color: #2563eb; }
+    .aero-kpi-green .aero-kpi-change { color: #16a34a; }
+    .aero-kpi-indigo .aero-kpi-change { color: #4f46e5; }
+    .aero-kpi-amber .aero-kpi-change { color: #d97706; }
+    .aero-kpi-cyan .aero-kpi-change { color: #0891b2; }
+    .aero-kpi-rose .aero-kpi-change { color: #e11d48; }
+
+    .aero-kpi-value {
+        color: var(--aero-text);
+        display: block;
+        font-size: 32px;
+        font-weight: 900;
+        line-height: 1;
+        margin-top: 24px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .aero-kpi-label {
+        color: #475467;
+        display: block;
+        font-size: 13px;
+        font-weight: 850;
+        margin-top: 10px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .aero-kpi-note {
+        color: #98a2b3;
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 12px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .aero-dashboard-grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: minmax(0, 1.45fr) minmax(340px, .75fr);
+        margin-top: 22px;
+    }
+
+    .aero-panel {
+        background: rgba(255, 255, 255, .92);
+        border: 1px solid rgba(230, 235, 242, .9);
+        border-radius: 22px;
+        box-shadow: var(--aero-shadow);
+        color: inherit;
+        padding: 22px;
+        text-decoration: none;
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .aero-panel:hover,
+    .aero-panel:focus {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .aero-trainer-panel-link {
+        cursor: pointer;
+        display: block;
+        min-height: 100%;
+        position: relative;
+    }
+
+    .aero-trainer-panel-link:hover .aero-trainer-view-link,
+    .aero-trainer-panel-link:focus .aero-trainer-view-link {
+        background: #dbeafe;
+        color: #1e40af;
+        transform: translateX(2px);
+    }
+
+    .aero-panel-activities {
+        display: flex;
+        flex-direction: column;
+        height: 430px;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .aero-panel-header {
+        align-items: flex-start;
+        display: flex;
+        flex: 0 0 auto;
+        gap: 16px;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+
+    .aero-panel-title {
+        font-size: 18px;
+        font-weight: 850;
+        margin: 0;
+    }
+
+    .aero-panel-subtitle {
+        color: var(--aero-muted);
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .aero-panel-badge {
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        border-radius: 999px;
+        color: #1d4ed8;
+        flex: 0 0 auto;
+        font-size: 12px;
+        font-weight: 800;
+        padding: 7px 10px;
+    }
+
+    .aero-chart-card {
+        height: 330px;
+        position: relative;
+    }
+
+    .aero-canvas {
+        height: 100%;
+        width: 100%;
+    }
+
+    .aero-school-row {
+        margin-top: 18px;
+    }
+
+    .aero-school-meta {
+        align-items: center;
+        display: flex;
+        font-size: 14px;
+        font-weight: 800;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .aero-school-meta span:last-child {
+        color: var(--aero-primary);
+    }
+
+    .aero-progress {
+        background: #edf2f7;
+        border-radius: 999px;
+        height: 10px;
+        overflow: hidden;
+    }
+
+    .aero-progress span {
+        background: linear-gradient(90deg, #2563eb, #06b6d4);
+        border-radius: inherit;
+        display: block;
+        height: 100%;
+    }
+
+    .aero-school-list.is-loading .aero-school-content {
+        display: none;
+    }
+
+    .aero-school-list:not(.is-loading) .aero-school-skeleton {
+        display: none;
+    }
+
+    .aero-skeleton-line {
+        animation: aeroPulse 1.25s ease-in-out infinite;
+        background: linear-gradient(90deg, #eef2f7, #f8fafc, #eef2f7);
+        background-size: 220% 100%;
+        border-radius: 999px;
+        height: 14px;
+        margin-top: 18px;
+    }
+
+    .aero-skeleton-line:nth-child(even) {
+        height: 10px;
+        margin-top: 9px;
+        width: 100%;
+    }
+
+    @keyframes aeroPulse {
+        0% { background-position: 100% 0; }
+        100% { background-position: -100% 0; }
+    }
+
+    .aero-panel-action {
+        margin-top: 20px;
+        text-align: right;
+    }
+
+    .aero-action-button {
+        align-items: center;
+        background: #2563eb;
+        border: 0;
+        border-radius: 12px;
+        color: #ffffff;
+        cursor: pointer;
+        display: inline-flex;
+        font-size: 13px;
+        font-weight: 850;
+        gap: 8px;
+        min-height: 40px;
+        padding: 10px 14px;
+    }
+
+    .aero-action-button:hover,
+    .aero-action-button:focus {
+        background: #1d4ed8;
+        color: #ffffff;
+        outline: none;
+    }
+
+    .aero-empty-state {
+        background: #f8fafc;
+        border: 1px dashed #dbe3ee;
+        border-radius: 16px;
+        color: var(--aero-muted);
+        font-size: 14px;
+        font-weight: 750;
+        margin-top: 18px;
+        padding: 18px;
+        text-align: center;
+    }
+
+    .aero-modal-backdrop {
+        align-items: center;
+        background: rgba(15, 23, 42, .52);
+        bottom: 0;
+        display: none;
+        justify-content: center;
+        left: 0;
+        padding: 22px;
+        position: fixed;
+        right: 0;
+        top: 0;
+        z-index: 1050;
+    }
+
+    .aero-modal-backdrop.is-open {
+        display: flex;
+    }
+
+    .aero-modal {
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 28px 80px rgba(15, 23, 42, .28);
+        display: flex;
+        flex-direction: column;
+        max-height: min(760px, calc(100vh - 44px));
+        max-width: 980px;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .aero-modal-header {
+        align-items: center;
+        border-bottom: 1px solid var(--aero-line);
+        display: flex;
+        flex: 0 0 auto;
+        justify-content: space-between;
+        padding: 18px 22px;
+    }
+
+    .aero-modal-header h3 {
+        font-size: 18px;
+        font-weight: 850;
+        margin: 0;
+    }
+
+    .aero-modal-close {
+        align-items: center;
+        background: #f1f5f9;
+        border: 0;
+        border-radius: 10px;
+        color: #334155;
+        cursor: pointer;
+        display: flex;
+        height: 38px;
+        justify-content: center;
+        width: 38px;
+    }
+
+    .aero-modal-body {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+        padding: 0;
+    }
+
+    .aero-table-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+        padding: 18px 22px 0;
+    }
+
+    .aero-attendance-table {
+        border-collapse: collapse;
+        min-width: 760px;
+        width: 100%;
+    }
+
+    .aero-attendance-table th,
+    .aero-attendance-table td {
+        border-bottom: 1px solid var(--aero-line);
+        font-size: 13px;
+        padding: 13px 12px;
+        text-align: left;
+    }
+
+    .aero-attendance-table th {
+        color: #475467;
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .aero-attendance-table td {
+        color: #1d2939;
+        font-weight: 700;
+    }
+
+    .aero-attendance-table td:last-child {
+        color: var(--aero-primary);
+        font-weight: 850;
+    }
+
+    .aero-pagination {
+        align-items: center;
+        background: #ffffff;
+        border-top: 1px solid var(--aero-line);
+        display: flex;
+        flex: 0 0 auto;
+        gap: 10px;
+        justify-content: flex-end;
+        min-height: 78px;
+        padding: 14px 22px;
+    }
+
+    .aero-pagination button {
+        background: #f1f5f9;
+        border: 0;
+        border-radius: 10px;
+        color: #334155;
+        cursor: pointer;
+        font-weight: 850;
+        line-height: 1;
+        min-height: 44px;
+        padding: 10px 16px;
+    }
+
+    .aero-pagination button:disabled {
+        cursor: not-allowed;
+        opacity: .45;
+    }
+
+    .aero-pagination span {
+        color: var(--aero-muted);
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 44px;
+    }
+
+    @media (max-width: 760px) {
+        .aero-modal-backdrop {
+            padding: 12px;
+        }
+
+        .aero-modal {
+            max-height: calc(100vh - 24px);
+        }
+
+        .aero-table-scroll {
+            padding: 14px 14px 0;
+        }
+
+        .aero-pagination {
+            justify-content: center;
+            min-height: 72px;
+            padding: 12px 14px;
+        }
+    }
+
+    .aero-trainer-layout {
+        align-items: center;
+        display: grid;
+        gap: 22px;
+        grid-template-columns: 210px minmax(0, 1fr);
+    }
+
+    .aero-donut-wrap {
+        align-items: center;
+        display: flex;
+        height: 210px;
+        justify-content: center;
+        min-height: 210px;
+        overflow: hidden;
+        position: relative;
+        width: 210px;
+    }
+
+    #aeroTrainerDonut {
+        display: block;
+        height: 190px !important;
+        max-height: 190px;
+        max-width: 190px;
+        width: 190px !important;
+    }
+
+    .aero-donut-center {
+        position: absolute;
+        text-align: center;
+    }
+
+    .aero-donut-center strong {
+        display: block;
+        font-size: 28px;
+        font-weight: 850;
+    }
+
+    .aero-donut-center span {
+        color: var(--aero-muted);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .aero-legend-item {
+        align-items: center;
+        border-bottom: 1px solid var(--aero-line);
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        padding: 13px 0;
+    }
+
+    .aero-legend-item:last-child {
+        border-bottom: 0;
+    }
+
+    .aero-legend-label {
+        align-items: center;
+        color: #344054;
+        display: flex;
+        font-weight: 800;
+        gap: 10px;
+    }
+
+    .aero-legend-dot {
+        border-radius: 999px;
+        height: 10px;
+        width: 10px;
+    }
+
+    .aero-trainer-view-link {
+        align-items: center;
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        border-radius: 999px;
+        color: var(--aero-primary);
+        display: inline-flex;
+        font-size: 13px;
+        font-weight: 850;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 8px 11px;
+        transition: background .2s ease, color .2s ease, transform .2s ease;
+    }
+
+    .aero-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .aero-activity-scroll {
+        flex: 1 1 auto;
+        margin: 0 -8px 0 0;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 0 8px 2px 0;
+        scrollbar-color: rgba(37, 99, 235, .36) rgba(226, 232, 240, .72);
+        scrollbar-width: thin;
+    }
+
+    .aero-activity-scroll::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .aero-activity-scroll::-webkit-scrollbar-track {
+        background: rgba(226, 232, 240, .72);
+        border-radius: 999px;
+    }
+
+    .aero-activity-scroll::-webkit-scrollbar-thumb {
+        background: rgba(37, 99, 235, .36);
+        border-radius: 999px;
+    }
+
+    .aero-activity-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(37, 99, 235, .54);
+    }
+
+    .aero-activity {
+        align-items: flex-start;
+        background: #f8fafc;
+        border: 1px solid #edf2f7;
+        border-radius: 16px;
+        display: flex;
+        gap: 13px;
+        padding: 14px;
+        transition: background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+
+    .aero-activity:hover {
+        background: #ffffff;
+        border-color: #dbeafe;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, .08);
+        transform: translateY(-1px);
+    }
+
+    .aero-activity-icon {
+        align-items: center;
+        border-radius: 13px;
+        color: #ffffff;
+        display: flex;
+        flex: 0 0 auto;
+        height: 38px;
+        justify-content: center;
+        width: 38px;
+    }
+
+    .aero-activity strong {
+        color: #1d2939;
+        display: block;
+        font-size: 14px;
+        font-weight: 850;
+    }
+
+    .aero-activity span {
+        color: var(--aero-muted);
+        display: block;
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .aero-activity-body {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .aero-activity-meta {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 7px;
+    }
+
+    .aero-activity .aero-activity-school,
+    .aero-activity .aero-activity-time {
+        color: #667085;
+        display: inline-flex;
+        font-size: 11px;
+        font-weight: 750;
+        margin-top: 0;
+    }
+
+    .aero-activity-count {
+        background: #eef4ff;
+        border: 1px solid #dbeafe;
+        border-radius: 999px;
+        color: #1d4ed8;
+        display: inline-flex;
+        font-size: 11px;
+        font-weight: 850;
+        line-height: 1;
+        padding: 5px 8px;
+    }
+
+    .aero-summary-grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-top: 24px;
+    }
+
+    .aero-summary-card {
+        background:
+            linear-gradient(145deg, rgba(255, 255, 255, .96), rgba(248, 250, 252, .92)),
+            #ffffff;
+        border: 1px solid rgba(226, 232, 240, .92);
+        border-radius: 20px;
+        box-shadow: 0 18px 42px rgba(15, 23, 42, .08);
+        min-height: 168px;
+        overflow: hidden;
+        padding: 20px;
+        position: relative;
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .aero-summary-card::before {
+        content: "";
+        height: 4px;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+
+    .aero-summary-card::after {
+        border-radius: 999px;
+        content: "";
+        height: 128px;
+        opacity: .11;
+        position: absolute;
+        right: -48px;
+        top: -54px;
+        width: 128px;
+    }
+
+    .aero-summary-card:hover {
+        border-color: rgba(37, 99, 235, .24);
+        box-shadow: 0 24px 54px rgba(15, 23, 42, .13);
+        transform: translateY(-3px);
+    }
+
+    .aero-summary-top {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        z-index: 1;
+    }
+
+    .aero-summary-icon {
+        align-items: center;
+        border-radius: 15px;
+        color: #ffffff;
+        display: flex;
+        height: 42px;
+        justify-content: center;
+        width: 42px;
+    }
+
+    .aero-summary-live {
+        align-items: center;
+        background: rgba(248, 250, 252, .86);
+        border: 1px solid rgba(226, 232, 240, .9);
+        border-radius: 999px;
+        color: #475467;
+        display: inline-flex;
+        font-size: 11px;
+        font-weight: 850;
+        gap: 6px;
+        padding: 6px 9px;
+    }
+
+    .aero-summary-live::before {
+        background: currentColor;
+        border-radius: 999px;
+        content: "";
+        height: 7px;
+        width: 7px;
+    }
+
+    .aero-summary-value {
+        color: var(--aero-text);
+        display: block;
+        font-size: 32px;
+        font-weight: 900;
+        line-height: 1;
+        margin-top: 24px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .aero-summary-label {
+        color: #475467;
+        display: block;
+        font-size: 13px;
+        font-weight: 850;
+        margin-top: 10px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .aero-summary-note {
+        color: #98a2b3;
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 12px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .aero-summary-info::before,
+    .aero-summary-info::after,
+    .aero-summary-info .aero-summary-icon {
+        background: linear-gradient(135deg, #2563eb, #06b6d4);
+    }
+
+    .aero-summary-success::before,
+    .aero-summary-success::after,
+    .aero-summary-success .aero-summary-icon {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+    }
+
+    .aero-summary-warning::before,
+    .aero-summary-warning::after,
+    .aero-summary-warning .aero-summary-icon {
+        background: linear-gradient(135deg, #e11d48, #fb7185);
+    }
+
+    .aero-summary-attendance::before,
+    .aero-summary-attendance::after,
+    .aero-summary-attendance .aero-summary-icon {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    }
+
+    .aero-summary-info .aero-summary-live { color: #2563eb; }
+    .aero-summary-success .aero-summary-live { color: #16a34a; }
+    .aero-summary-warning .aero-summary-live { color: #e11d48; }
+    .aero-summary-attendance .aero-summary-live { color: #4f46e5; }
+
+    .aero-summary-health {
+        color: #475467;
+        font-size: 13px;
+        font-weight: 850;
+        grid-column: 1 / -1;
+        margin: 0 0 -6px;
+    }
+
+    .aero-bg-blue { background: linear-gradient(135deg, #2563eb, #38bdf8); }
+    .aero-bg-green { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .aero-bg-amber { background: linear-gradient(135deg, #f59e0b, #f97316); }
+    .aero-bg-rose { background: linear-gradient(135deg, #e11d48, #fb7185); }
+    .aero-bg-indigo { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+
+    @media (max-width: 1280px) {
+        .aero-kpi-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .aero-dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .aero-summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 760px) {
+        .aerobay-admin-dashboard {
+            margin: -.5rem;
+            padding: 18px;
+        }
+
+        .aero-dashboard-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .aero-kpi-grid,
+        .aero-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .aero-trainer-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .aero-panel-activities {
+            height: 430px;
+        }
+
+        .aero-donut-wrap {
+            margin: 0 auto;
+        }
+
+        .aero-chart-card {
+            height: 270px;
+        }
+    }
+</style>
+
+<section class="aerobay-admin-dashboard">
+    <div class="aero-dashboard-shell">
+        <header class="aero-dashboard-header">
+            <div>
+                
+                <h1>{{dashboard_title}}</h1>
+                <p>{{dashboard_subtitle}}</p>
+            </div>
+        </header>
+
+        <div class="aero-kpi-grid">
+            <a class="aero-kpi-card aero-kpi-link aero-kpi-blue" href="{{{school_management_url}}}" aria-label="Open School Management">
+                <div class="aero-kpi-top">
+                    <div class="aero-kpi-icon"><i class="fa-solid fa-school"></i></div>
+                    <span class="aero-kpi-change">{{total_schools_change}}<small>{{total_schools_period}}</small></span>
+                </div>
+                <div class="aero-kpi-value">{{total_schools}}</div>
+                <div class="aero-kpi-label">Total Schools</div>
+                <div class="aero-kpi-note">Across active LMS regions</div>
+            </a>
+
+            <a class="aero-kpi-card aero-kpi-link aero-kpi-green" href="{{{trainer_management_url}}}" aria-label="Open Trainer Management">
+                <div class="aero-kpi-top">
+                    <div class="aero-kpi-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
+                    <span class="aero-kpi-change">{{total_trainers_change}}<small>{{total_trainers_period}}</small></span>
+                </div>
+                <div class="aero-kpi-value">{{total_trainers}}</div>
+                <div class="aero-kpi-label">Total Trainers</div>
+                <div class="aero-kpi-note">Assigned to schools and courses</div>
+            </a>
+
+            <button type="button" class="aero-kpi-card aero-kpi-link aero-kpi-indigo" id="aeroOpenPocList" aria-label="{{poc_card_aria_label}}">
+                <div class="aero-kpi-top">
+                    <div class="aero-kpi-icon"><i class="fa-solid fa-user-shield"></i></div>
+                    <span class="aero-kpi-change">{{total_pocs_change}}<small>{{total_pocs_period}}</small></span>
+                </div>
+                <div class="aero-kpi-value">{{total_pocs}}</div>
+                <div class="aero-kpi-label">{{poc_card_label}}</div>
+                <div class="aero-kpi-note">Managing school operations</div>
+            </button>
+
+            <a class="aero-kpi-card aero-kpi-link aero-kpi-amber" href="{{{student_management_url}}}" aria-label="Open Student Management">
+                <div class="aero-kpi-top">
+                    <div class="aero-kpi-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                    <span class="aero-kpi-change">{{total_students_change}}<small>{{total_students_period}}</small></span>
+                </div>
+                <div class="aero-kpi-value">{{total_students}}</div>
+                <div class="aero-kpi-label">Total Students</div>
+                <div class="aero-kpi-note">Enrolled in LMS programs</div>
+            </a>
+
+            <a class="aero-kpi-card aero-kpi-link aero-kpi-cyan" href="{{{course_management_url}}}" aria-label="Open Course Management">
+                <div class="aero-kpi-top">
+                    <div class="aero-kpi-icon"><i class="fa-solid fa-book-open"></i></div>
+                    <span class="aero-kpi-change">{{active_courses_change}}<small>{{active_courses_period}}</small></span>
+                </div>
+                <div class="aero-kpi-value">{{active_courses}}</div>
+                <div class="aero-kpi-label">Active Courses</div>
+                <div class="aero-kpi-note">Currently available to learners</div>
+            </a>
+
+            <article class="aero-kpi-card aero-kpi-rose">
+                <div class="aero-kpi-top">
+                    <div class="aero-kpi-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <span class="aero-kpi-change">{{attendance_change}}</span>
+                </div>
+                <div class="aero-kpi-value">{{todays_attendance_percent}}</div>
+                <div class="aero-kpi-label">Today's Attendance %</div>
+                <div class="aero-kpi-note">Attendance average</div>
+            </article>
+        </div>
+
+        <div class="aero-dashboard-grid">
+            <article class="aero-panel">
+                <div class="aero-panel-header">
+                    <div>
+                        <h2 class="aero-panel-title">Attendance Trend Graph</h2>
+                        <div class="aero-panel-subtitle">Weekly attendance trend for LMS operations preview</div>
+                    </div>
+                    <span class="aero-panel-badge">Last 7 days</span>
+                </div>
+                <div class="aero-chart-card">
+                    <canvas id="aeroAttendanceTrend" class="aero-canvas"></canvas>
+                </div>
+            </article>
+
+            <article class="aero-panel">
+                <div class="aero-panel-header">
+                    <div>
+                        <h2 class="aero-panel-title">School-wise Attendance</h2>
+                        <div class="aero-panel-subtitle">Top 5 schools by today's attendance</div>
+                    </div>
+                </div>
+
+                <div class="aero-school-list is-loading" id="aeroSchoolAttendanceList">
+                    <div class="aero-school-skeleton" aria-hidden="true">
+                        <div class="aero-skeleton-line"></div>
+                        <div class="aero-skeleton-line"></div>
+                        <div class="aero-skeleton-line"></div>
+                        <div class="aero-skeleton-line"></div>
+                        <div class="aero-skeleton-line"></div>
+                        <div class="aero-skeleton-line"></div>
+                    </div>
+                    <div class="aero-school-content">
+                        {{#has_school_attendance}}
+                            {{#school_attendance_top5}}
+                                <div class="aero-school-row">
+                                    <div class="aero-school-meta"><span>{{school_name}}</span><span>{{attendance_percentage}}</span></div>
+                                    <div class="aero-progress"><span style="width: {{attendance_width}}%"></span></div>
+                                </div>
+                            {{/school_attendance_top5}}
+                            <div class="aero-panel-action">
+                                <button type="button" class="aero-action-button" id="aeroOpenSchoolAttendance">
+                                    <i class="fa-solid fa-table-list"></i>
+                                    View More
+                                </button>
+                            </div>
+                        {{/has_school_attendance}}
+                        {{^has_school_attendance}}
+                            <div class="aero-empty-state">No school attendance data is available.</div>
+                        {{/has_school_attendance}}
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="aero-dashboard-grid">
+            <a class="aero-panel aero-trainer-panel-link" href="{{{trainer_activity_url}}}" aria-label="Open Trainer Activity monitoring">
+                <div class="aero-panel-header">
+                    <div>
+                        <h2 class="aero-panel-title">Trainer Activity</h2>
+                        <div class="aero-panel-subtitle">Live status for {{trainer_activity_today_name}}</div>
+                    </div>
+                    <span class="aero-panel-badge">{{trainer_activity_total_assigned}} assigned</span>
+                </div>
+                <div class="aero-trainer-layout">
+                    <div class="aero-donut-wrap">
+                        <canvas id="aeroTrainerDonut" width="190" height="190"></canvas>
+                        <div class="aero-donut-center">
+                            <strong>{{trainer_activity_active_percent}}</strong>
+                            <span>Active</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="aero-legend-item">
+                            <div class="aero-legend-label"><span class="aero-legend-dot" style="background:#2563eb"></span>Active Trainers</div>
+                            <strong>{{trainer_activity_active_count}}</strong>
+                        </div>
+                        <div class="aero-legend-item">
+                            <div class="aero-legend-label"><span class="aero-legend-dot" style="background:#e5e7eb"></span>Inactive Trainers</div>
+                            <strong>{{trainer_activity_inactive_count}}</strong>
+                        </div>
+                        <div class="aero-legend-item">
+                            <div class="aero-legend-label"><span class="aero-legend-dot" style="background:#06b6d4"></span>Sessions Scheduled</div>
+                            <strong>{{trainer_activity_sessions_scheduled}}</strong>
+                        </div>
+                        <span class="aero-trainer-view-link">View Details <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                </div>
+            </a>
+
+            <article class="aero-panel aero-panel-activities">
+                <div class="aero-panel-header">
+                    <div>
+                        <h2 class="aero-panel-title">Recent Activities</h2>
+                        <div class="aero-panel-subtitle">Operational activity stream preview</div>
+                    </div>
+                </div>
+                <div class="aero-list aero-activity-scroll">
+                    {{#has_recent_activities}}
+                        {{#recent_activities}}
+                            <div class="aero-activity">
+                                <div class="aero-activity-icon {{iconclass}}"><i class="{{icon}}"></i></div>
+                                <div class="aero-activity-body">
+                                    <strong>{{title}}</strong>
+                                    <span>{{description}}</span>
+                                    <div class="aero-activity-meta">
+                                        <span class="aero-activity-school">{{schoolname}}</span>
+                                        <span class="aero-activity-time">{{timeago}}</span>
+                                        {{#has_countvalue}}
+                                            <span class="aero-activity-count">{{countvalue}}</span>
+                                        {{/has_countvalue}}
+                                    </div>
+                                </div>
+                            </div>
+                        {{/recent_activities}}
+                    {{/has_recent_activities}}
+                    {{^has_recent_activities}}
+                        <div class="aero-empty-state">No recent operational activities yet.</div>
+                    {{/has_recent_activities}}
+                </div>
+            </article>
+        </div>
+
+        {{#show_operational_health_metrics}}
+        <div class="aero-summary-grid">
+            <div class="aero-summary-health">Live LMS operational health metrics</div>
+            <article class="aero-summary-card aero-summary-info">
+                <div class="aero-summary-top">
+                    <div class="aero-summary-icon"><i class="fa-solid fa-right-to-bracket"></i></div>
+                    <span class="aero-summary-live">Live</span>
+                </div>
+                <strong class="aero-summary-value">{{total_logins_today}}</strong>
+                <span class="aero-summary-label">Total Logins Today</span>
+                <span class="aero-summary-note">Platform access volume</span>
+            </article>
+            <article class="aero-summary-card aero-summary-success">
+                <div class="aero-summary-top">
+                    <div class="aero-summary-icon"><i class="fa-solid fa-user-check"></i></div>
+                    <span class="aero-summary-live">Present</span>
+                </div>
+                <strong class="aero-summary-value">{{students_present_today}}</strong>
+                <span class="aero-summary-label">Students Present Today</span>
+                <span class="aero-summary-note">Marked active in attendance</span>
+            </article>
+            <article class="aero-summary-card aero-summary-warning">
+                <div class="aero-summary-top">
+                    <div class="aero-summary-icon"><i class="fa-solid fa-user-minus"></i></div>
+                    <span class="aero-summary-live">Absent</span>
+                </div>
+                <strong class="aero-summary-value">{{students_absent_today}}</strong>
+                <span class="aero-summary-label">Students Absent Today</span>
+                <span class="aero-summary-note">Needs operational follow-up</span>
+            </article>
+            <article class="aero-summary-card aero-summary-attendance">
+                <div class="aero-summary-top">
+                    <div class="aero-summary-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                    <span class="aero-summary-live">Average</span>
+                </div>
+                <strong class="aero-summary-value">{{todays_attendance_percent}}</strong>
+                <span class="aero-summary-label">Average Attendance</span>
+                <span class="aero-summary-note">Daily attendance health</span>
+            </article>
+        </div>
+        {{/show_operational_health_metrics}}
+    </div>
+</section>
+
+<div class="aero-modal-backdrop" id="aeroSchoolAttendanceModal" aria-hidden="true">
+    <div class="aero-modal" role="dialog" aria-modal="true" aria-labelledby="aeroSchoolAttendanceTitle">
+        <div class="aero-modal-header">
+            <div>
+                <h3 id="aeroSchoolAttendanceTitle">School-wise Attendance</h3>
+                <div class="aero-panel-subtitle">{{school_attendance_total_count}} schools</div>
+            </div>
+            <button type="button" class="aero-modal-close" id="aeroCloseSchoolAttendance" aria-label="Close school-wise attendance">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="aero-modal-body">
+            {{#has_school_attendance}}
+                <div class="aero-table-scroll">
+                    <table class="aero-attendance-table">
+                        <thead>
+                            <tr>
+                                <th>School Name</th>
+                                <th>Total Students</th>
+                                <th>Present Students</th>
+                                <th>Absent Students</th>
+                                <th>Attendance Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aeroSchoolAttendanceRows">
+                            {{#school_attendance_all}}
+                                <tr>
+                                    <td>{{school_name}}</td>
+                                    <td>{{total_students}}</td>
+                                    <td>{{present_students}}</td>
+                                    <td>{{absent_students}}</td>
+                                    <td>{{attendance_percentage}}</td>
+                                </tr>
+                            {{/school_attendance_all}}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="aero-pagination" id="aeroSchoolAttendancePagination">
+                    <button type="button" data-aero-page="prev">Previous</button>
+                    <span id="aeroSchoolAttendancePageInfo"></span>
+                    <button type="button" data-aero-page="next">Next</button>
+                </div>
+            {{/has_school_attendance}}
+            {{^has_school_attendance}}
+                <div class="aero-empty-state">No school attendance data is available.</div>
+            {{/has_school_attendance}}
+        </div>
+    </div>
+</div>
+
+<div class="aero-modal-backdrop" id="aeroPocListModal" aria-hidden="true">
+    <div class="aero-modal" role="dialog" aria-modal="true" aria-labelledby="aeroPocListTitle">
+        <div class="aero-modal-header">
+            <div>
+                <h3 id="aeroPocListTitle">{{poc_modal_title}}</h3>
+                <div class="aero-panel-subtitle">{{poc_total_count}} {{poc_modal_count_label}}</div>
+            </div>
+            <button type="button" class="aero-modal-close" id="aeroClosePocList" aria-label="{{poc_modal_close_label}}">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="aero-modal-body">
+            {{#has_poc_list}}
+                <div class="aero-table-scroll">
+                    <table class="aero-attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Contact No</th>
+                                <th>Designation</th>
+                                <th>Assigned Schools</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aeroPocListRows">
+                            {{#poc_list}}
+                                <tr>
+                                    <td>{{poc_id}}</td>
+                                    <td>{{poc_name}}</td>
+                                    <td>{{poc_email}}</td>
+                                    <td>{{poc_contact}}</td>
+                                    <td>{{poc_designation}}</td>
+                                    <td>{{poc_assigned_schools}}</td>
+                                    <td>{{poc_status}}</td>
+                                </tr>
+                            {{/poc_list}}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="aero-pagination" id="aeroPocListPagination">
+                    <button type="button" data-aero-page="prev">Previous</button>
+                    <span id="aeroPocListPageInfo"></span>
+                    <button type="button" data-aero-page="next">Next</button>
+                </div>
+            {{/has_poc_list}}
+            {{^has_poc_list}}
+                <div class="aero-empty-state">{{poc_empty_text}}</div>
+            {{/has_poc_list}}
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        var attendanceTrendData = {{{attendance_trend_json}}};
+        var trainerActivityData = {{{trainer_activity_json}}};
+
+        function setupCanvas(canvas) {
+            var ratio = window.devicePixelRatio || 1;
+            var rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * ratio;
+            canvas.height = rect.height * ratio;
+            var ctx = canvas.getContext('2d');
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+            return { ctx: ctx, width: rect.width, height: rect.height };
+        }
+
+        function drawAttendanceTrend() {
+            var canvas = document.getElementById('aeroAttendanceTrend');
+            if (!canvas) {
+                return;
+            }
+
+            var chart = setupCanvas(canvas);
+            var ctx = chart.ctx;
+            var width = chart.width;
+            var height = chart.height;
+            var padding = { top: 22, right: 24, bottom: 42, left: 42 };
+            var values = Array.isArray(attendanceTrendData.values) ? attendanceTrendData.values : [];
+            var labels = Array.isArray(attendanceTrendData.labels) ? attendanceTrendData.labels : [];
+            var min = 0;
+            var maxValue = values.reduce(function(highest, value) {
+                return Math.max(highest, Number(value) || 0);
+            }, 0);
+            var max = Math.max(1, Math.min(100, Math.ceil(maxValue + 1)));
+            var plotWidth = width - padding.left - padding.right;
+            var plotHeight = height - padding.top - padding.bottom;
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#e6ebf2';
+            ctx.fillStyle = '#667085';
+            ctx.font = '12px Inter, Arial, sans-serif';
+
+            for (var i = 0; i <= 5; i++) {
+                var y = padding.top + (plotHeight / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+            }
+
+            var points = values.map(function(value, index) {
+                var safevalue = Math.max(min, Math.min(max, Number(value) || 0));
+                var x = padding.left + (values.length > 1 ? (plotWidth / (values.length - 1)) * index : plotWidth / 2);
+                var y = padding.top + ((max - safevalue) / (max - min)) * plotHeight;
+                return { x: x, y: y, value: value, label: labels[index] };
+            });
+
+            if (!points.length) {
+                return;
+            }
+
+            var gradient = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+            gradient.addColorStop(0, 'rgba(37, 99, 235, .28)');
+            gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, height - padding.bottom);
+            points.forEach(function(point) {
+                ctx.lineTo(point.x, point.y);
+            });
+            ctx.lineTo(points[points.length - 1].x, height - padding.bottom);
+            ctx.closePath();
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.beginPath();
+            points.forEach(function(point, index) {
+                if (index === 0) {
+                    ctx.moveTo(point.x, point.y);
+                } else {
+                    ctx.lineTo(point.x, point.y);
+                }
+            });
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#2563eb';
+            ctx.stroke();
+
+            points.forEach(function(point) {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#2563eb';
+                ctx.stroke();
+
+                ctx.fillStyle = '#667085';
+                ctx.textAlign = 'center';
+                ctx.fillText(point.label, point.x, height - 16);
+            });
+        }
+
+        function drawTrainerDonut() {
+            var canvas = document.getElementById('aeroTrainerDonut');
+            if (!canvas) {
+                return;
+            }
+
+            var chart = setupCanvas(canvas);
+            var ctx = chart.ctx;
+            var width = chart.width;
+            var height = chart.height;
+            var active = Number(trainerActivityData && trainerActivityData.active ? trainerActivityData.active : 0);
+            var inactive = Number(trainerActivityData && trainerActivityData.inactive ? trainerActivityData.inactive : 0);
+            var total = active + inactive;
+            var centerX = width / 2;
+            var centerY = height / 2;
+            var radius = Math.min(width, height) / 2 - 12;
+            var lineWidth = 18;
+            var start = -Math.PI / 2;
+            var activeEnd = total > 0 ? start + (Math.PI * 2 * active / total) : start;
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#e5e7eb';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, start, activeEnd);
+            ctx.strokeStyle = '#2563eb';
+            ctx.stroke();
+        }
+
+        function setupSchoolAttendance() {
+            var list = document.getElementById('aeroSchoolAttendanceList');
+            var openButton = document.getElementById('aeroOpenSchoolAttendance');
+            var closeButton = document.getElementById('aeroCloseSchoolAttendance');
+            var modal = document.getElementById('aeroSchoolAttendanceModal');
+            var rows = Array.prototype.slice.call(document.querySelectorAll('#aeroSchoolAttendanceRows tr'));
+            var pagination = document.getElementById('aeroSchoolAttendancePagination');
+            var pageInfo = document.getElementById('aeroSchoolAttendancePageInfo');
+            var page = 1;
+            var perPage = 10;
+
+            if (list) {
+                list.classList.remove('is-loading');
+            }
+
+            function renderPage() {
+                var totalPages = Math.max(1, Math.ceil(rows.length / perPage));
+                page = Math.min(Math.max(page, 1), totalPages);
+
+                rows.forEach(function(row, index) {
+                    var visible = index >= (page - 1) * perPage && index < page * perPage;
+                    row.style.display = visible ? '' : 'none';
+                });
+
+                if (!pagination || !pageInfo) {
+                    return;
+                }
+
+                pagination.style.display = rows.length > perPage ? 'flex' : 'none';
+                pageInfo.textContent = 'Page ' + page + ' of ' + totalPages;
+                pagination.querySelector('[data-aero-page="prev"]').disabled = page <= 1;
+                pagination.querySelector('[data-aero-page="next"]').disabled = page >= totalPages;
+            }
+
+            function openModal() {
+                if (!modal) {
+                    return;
+                }
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
+                renderPage();
+            }
+
+            function closeModal() {
+                if (!modal) {
+                    return;
+                }
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+
+            if (openButton) {
+                openButton.addEventListener('click', openModal);
+            }
+            if (closeButton) {
+                closeButton.addEventListener('click', closeModal);
+            }
+            if (modal) {
+                modal.addEventListener('click', function(event) {
+                    if (event.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+            if (pagination) {
+                pagination.addEventListener('click', function(event) {
+                    var button = event.target.closest('button[data-aero-page]');
+                    if (!button) {
+                        return;
+                    }
+                    page += button.getAttribute('data-aero-page') === 'next' ? 1 : -1;
+                    renderPage();
+                });
+            }
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeModal();
+                }
+            });
+
+            renderPage();
+        }
+
+        function setupPocList() {
+            var openButton = document.getElementById('aeroOpenPocList');
+            var closeButton = document.getElementById('aeroClosePocList');
+            var modal = document.getElementById('aeroPocListModal');
+            var rows = Array.prototype.slice.call(document.querySelectorAll('#aeroPocListRows tr'));
+            var pagination = document.getElementById('aeroPocListPagination');
+            var pageInfo = document.getElementById('aeroPocListPageInfo');
+            var page = 1;
+            var perPage = 10;
+
+            function renderPage() {
+                var totalPages = Math.max(1, Math.ceil(rows.length / perPage));
+                page = Math.min(Math.max(page, 1), totalPages);
+
+                rows.forEach(function(row, index) {
+                    var visible = index >= (page - 1) * perPage && index < page * perPage;
+                    row.style.display = visible ? '' : 'none';
+                });
+
+                if (!pagination || !pageInfo) {
+                    return;
+                }
+
+                pagination.style.display = rows.length > perPage ? 'flex' : 'none';
+                pageInfo.textContent = 'Page ' + page + ' of ' + totalPages;
+                pagination.querySelector('[data-aero-page="prev"]').disabled = page <= 1;
+                pagination.querySelector('[data-aero-page="next"]').disabled = page >= totalPages;
+            }
+
+            function openModal() {
+                if (!modal) {
+                    return;
+                }
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
+                renderPage();
+            }
+
+            function closeModal() {
+                if (!modal) {
+                    return;
+                }
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+
+            if (openButton) {
+                openButton.addEventListener('click', openModal);
+            }
+            if (closeButton) {
+                closeButton.addEventListener('click', closeModal);
+            }
+            if (modal) {
+                modal.addEventListener('click', function(event) {
+                    if (event.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+            if (pagination) {
+                pagination.addEventListener('click', function(event) {
+                    var button = event.target.closest('button[data-aero-page]');
+                    if (!button) {
+                        return;
+                    }
+                    page += button.getAttribute('data-aero-page') === 'next' ? 1 : -1;
+                    renderPage();
+                });
+            }
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeModal();
+                }
+            });
+
+            renderPage();
+        }
+
+        function drawCharts() {
+            drawAttendanceTrend();
+            drawTrainerDonut();
+        }
+
+        setupSchoolAttendance();
+        setupPocList();
+        drawCharts();
+        window.addEventListener('resize', drawCharts);
+    })();
+</script>

@@ -11,10 +11,14 @@ function local_students_extend_navigation(global_navigation $navigation) {
             new pix_icon('i/cohort','')
         )->showinflatnavigation = true; 
 }
-$CFG->custommenuitems ="";
+if (!isset($CFG->custommenuitems)) {
+    $CFG->custommenuitems = "";
+}
 if(is_siteadmin()){
     $CFG->custommenuitems ="School Management | /local/school/index.php
+                    Trainer Management | /local/trainer/index.php
                     POC Management  | /local/poc/poc_management.php
+                    ARM Management | /local/regionalpoc/rm_arm_manage.php
                          Course Mapping | /local/copycourse/index.php
                          Email Management | /local/emailtemplates/list.php
                          Course Management | /course/management.php

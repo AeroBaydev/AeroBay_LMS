@@ -4,6 +4,7 @@
 require_once "../../config.php";
 require_once $CFG->libdir . "/tablelib.php";
 require_once "classes/table/trainer_table.php";
+require_once($CFG->dirroot . '/local/regionalpoc/lib.php');
 
 global $DB, $USER;
 require_login();
@@ -19,10 +20,10 @@ $table = new trainer_table('uniqueid');
 
 
 if(is_siteadmin()){
-    if (!isset($_SESSION['userIdPoc'])) {
-     
-    // $_SESSION['userIdPoc'] = $userIdPoc;
-    $userid =$userIdPoc;
+    $userIdPoc = optional_param('userid', 0, PARAM_INT);
+    if (!isset($_SESSION['userIdPoc']) && !empty($userIdPoc)) {
+        $_SESSION['userIdPoc'] = $userIdPoc;
+        $userid = $userIdPoc;
     }
     
 }
@@ -33,6 +34,10 @@ else{
 if (isset($_SESSION['userIdPoc'])) {
      $userid=$_SESSION['userIdPoc'];
    
+}
+
+if (is_siteadmin() && empty($userid)) {
+    redirect(new moodle_url('/local/trainer/index.php'));
 }
 
 
@@ -66,18 +71,79 @@ if (!$table->is_downloading()) {
     echo html_writer::end_div();
 }
 // tr.trainer_id as trainercode, 
-$fields = "(@row_number := @row_number + 1) as serialno, tr.userid as id,tr.firstname as firstname, tr.lastname as lastname, tr.contact_number as contact, tr.current_address as address, tr.designation as designation, tr.trainerid as trainderid";
-$from = "{trainer} as tr ";
-$where = "1=1 and tr.createdby=$userid";
-$params = [];
+$schoolcourseconditions = [
+    "c.category = tr.schoolid",
+    "EXISTS (
+        SELECT 1
+          FROM {course_categories} coursecat
+         WHERE coursecat.id = c.category
+           AND cc.path IS NOT NULL
+           AND coursecat.path LIKE CONCAT(cc.path, '/%')
+    )",
+];
+if ($DB->get_manager()->table_exists('poc_copy_course')) {
+    $schoolcourseconditions[] = "EXISTS (
+        SELECT 1
+          FROM {poc_copy_course} pcc
+         WHERE pcc.schoolid = tr.schoolid
+           AND pcc.courseid = c.id
+    )";
+}
+$schoolcoursecondition = '(' . implode(' OR ', $schoolcourseconditions) . ')';
+
+$fields = "(@row_number := @row_number + 1) as serialno,
+    tr.userid as id,
+    tr.firstname as firstname,
+    tr.lastname as lastname,
+    tr.contact_number as contact,
+    COALESCE(sc.school_name, cc.name) as assignedschools,
+    GROUP_CONCAT(DISTINCT c.fullname ORDER BY c.fullname SEPARATOR ', ') as assignedcourses,
+    tr.current_address as address,
+    tr.designation as designation,
+    tr.trainerid as trainderid";
+$from = "{trainer} as tr
+    LEFT JOIN {course_categories} cc ON cc.id = tr.schoolid
+    LEFT JOIN {school} sc ON sc.course_cat_id = cc.id
+    LEFT JOIN {course} c ON c.visible = 1
+                         AND c.id <> :siteid
+                         AND tr.schoolid IS NOT NULL
+                         AND tr.schoolid <> 0
+                         AND cc.id IS NOT NULL
+                         AND {$schoolcoursecondition}";
+$params = ['siteid' => SITEID];
+if (!is_siteadmin() && local_regionalpoc_is_arm_user((int) $USER->id)) {
+    $armschoolids = local_regionalpoc_get_arm_school_ids((int) $USER->id);
+    if (empty($armschoolids)) {
+        $where = "1 = 0";
+    } else {
+        list($armschoolsql, $armschoolparams) = $DB->get_in_or_equal($armschoolids, SQL_PARAMS_NAMED, 'armtrainerschool');
+        $where = "tr.schoolid {$armschoolsql}";
+        $params += $armschoolparams;
+    }
+} else {
+    $where = "((tr.schoolid IS NOT NULL AND tr.schoolid <> 0
+                AND EXISTS (
+                    SELECT 1
+                      FROM {schoolassign} sa
+                     WHERE sa.schoolid = tr.schoolid
+                       AND sa.userid = :pocuserid
+                ))
+            OR ((tr.schoolid IS NULL OR tr.schoolid = 0 OR cc.id IS NULL) AND tr.createdby = :legacycreatedby))";
+    $params += ['pocuserid' => $userid, 'legacycreatedby' => $userid];
+}
 
 if ($search) {
     $where .= " AND (tr.firstname LIKE :search1 OR tr.lastname LIKE :search2 OR tr.contact_number LIKE :search3 OR tr.trainerid LIKE :search4)";
-    $params = ['search1' => "%$search%", 'search2' => "%$search%", 'search3' => "%$search%",'search4' => "%$search%"];
+    $params += ['search1' => "%$search%", 'search2' => "%$search%", 'search3' => "%$search%",'search4' => "%$search%"];
 }
 
 $perpage = 10;
-$table->set_sql($fields, $from, $where, $params);
+$table->set_sql(
+    $fields,
+    $from,
+    $where . " GROUP BY tr.userid, tr.firstname, tr.lastname, tr.contact_number, sc.school_name, cc.name, tr.current_address, tr.designation, tr.trainerid",
+    $params
+);
 $DB->execute('SET @row_number := ' . ($perpage * $page));
 $table->define_baseurl("$CFG->wwwroot/local/trainer/trainer_manage.php?page=$page");
 

@@ -3,6 +3,7 @@ require_once("../../config.php");
 require_once($CFG->libdir . "/tablelib.php");
 require_once("classes/table/timetable_table.php");
 require_once("lib.php");
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 global $DB, $OUTPUT, $PAGE, $USER;
 require_login();
@@ -12,11 +13,13 @@ $download = optional_param('download', '', PARAM_ALPHA);
 $search = optional_param('search', '', PARAM_TEXT);
 $gradeid = optional_param('catid', '', PARAM_INT);
 $schoolid = optional_param('schoolid', '', PARAM_INT);
+local_pocschool_require_grade_access($schoolid, $gradeid);
+$catId = $gradeid;
 // $gradeid = optional_param('gradeid', '', PARAM_INT); // Added gradeid
 $course_categories_records = $DB->get_record('course_categories', ['id' => $gradeid]);
 $context = context_system::instance();
 $PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/local/timetable/view.php', ['catid' => $catid, 'schoolid' => $schoolid, 'gradeid' => $gradeid]));
+$PAGE->set_url(new moodle_url('/local/timetable/create_timetable.php', ['catid' => $gradeid, 'schoolid' => $schoolid, 'gradeid' => $gradeid]));
 $PAGE->navbar->add('School List', "$CFG->wwwroot/local/timetable/");
 $PAGE->navbar->add('Grade List', "$CFG->wwwroot/local/timetable/view_grade.php?id=$schoolid"); //grade list
 $PAGE->navbar->add('Time Table List', "$CFG->wwwroot/local/timetable/view_grade.php/index.php?id=$catId");
@@ -30,11 +33,29 @@ $PAGE->requires->css(new moodle_url('/local/timetable/customedit.css'));
 
 // Fetch existing timetable data based on schoolid and gradeid
 $timetable_records = $DB->get_records('timetable', ['schoolid' => $schoolid, 'gradeid' => $gradeid]);
-$catId = $gradeid; // Example course ID
-
-$courseid = $DB->get_record_sql("SELECT * FROM {course} where visible=1  and 
-id in( select courseid from {poc_copy_course} where gradeid=$catId and status=1)");
-$coursename = get_course_name($courseid->id);
+$coursewhere = "c.visible = 1
+        AND c.id IN (
+            SELECT pcc.courseid
+              FROM {poc_copy_course} pcc
+             WHERE pcc.gradeid = :gradeid
+               AND pcc.schoolid = :schoolid
+               AND pcc.status = 1
+        )";
+$courseparams = ['gradeid' => $catId, 'schoolid' => $schoolid];
+$trainercourses = local_pocschool_get_trainer_course_ids();
+if (local_pocschool_is_trainer_user() && !empty($trainercourses)) {
+    list($coursesql, $courseinparams) = $DB->get_in_or_equal($trainercourses, SQL_PARAMS_NAMED, 'timetablecourse');
+    $coursewhere .= " AND c.id {$coursesql}";
+    $courseparams += $courseinparams;
+}
+$courseid = $DB->get_record_sql(
+    "SELECT c.*
+       FROM {course} c
+      WHERE {$coursewhere}",
+    $courseparams,
+    IGNORE_MULTIPLE
+);
+$coursename = $courseid ? get_course_name($courseid->id) : '';
 // Convert records into an array for pre-checking checkboxes
 $checked_timetable = [];
 foreach ($timetable_records as $record) {

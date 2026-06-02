@@ -2,6 +2,7 @@
 
 require_once("$CFG->libdir/formslib.php");
 require_once($CFG->dirroot . '/local/school/lib.php');
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 global $tsort, $page;
 
 $tsort = optional_param('tsort', '', PARAM_TEXT);
@@ -80,11 +81,13 @@ class attendace_class_table extends table_sql
         $button_html = "
         <a href='{$CFG->wwwroot}/local/attendance_new/takeattendance.php?schoolid={$values->schoolid}&catid={$values->gradeid}&attendanceid={$values->attendanceid}' class='btn btn-primary mr-2' title='Take attendance'>
         <i class='icon fa fa-play fa-fw'></i>
-    </a>
+    </a>";
+        if (!local_pocschool_is_trainer_user()) {
+            $button_html .= "
         <a href='{$CFG->wwwroot}/local/attendance_new/delete_attendance.php?id={$values->attendanceid}&catid={$values->gradeid}&schoolid={$values->schoolid}' class='btn btn-primary mr-2' title='Delete attendance'>
             <i class='fa fa-trash'></i>
-        </a>
-        ";
+        </a>";
+        }
         return $button_html;
     }
 

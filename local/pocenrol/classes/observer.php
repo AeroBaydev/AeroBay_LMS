@@ -9,7 +9,9 @@ class observer {
      * @param \local_pocenrol\event\poc_course_selected $event The event object.
      */
     public static function course_selected(\local_pocenrol\event\poc_course_selected $event) {
-        global $DB;
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot . '/local/dashboard/lib.php');
 
         // Get the data from the event
         $courseid = $event->courseid;
@@ -63,6 +65,23 @@ class observer {
                 
                 if (!$DB->record_exists('poc_copy_course', $conditions)) {
                     $insertedid = $DB->insert_record('poc_copy_course', $record);
+                    $course = $DB->get_record('course', ['id' => $courseid], 'id, fullname', IGNORE_MISSING);
+                    $gradename = local_dashboard_get_grade_name((int) $other_data['gradeid']);
+                    local_dashboard_log_activity(
+                        'course_assigned',
+                        'Course assigned',
+                        trim(($course ? $course->fullname : 'Course') . ' mapped' . ($gradename ? ' to ' . $gradename : '')),
+                        (int) $other_data['schoolid'],
+                        [
+                            'actorid' => (int) $userid,
+                            'metadata' => [
+                                'poccourseid' => (int) $insertedid,
+                                'courseid' => (int) $courseid,
+                                'gradeid' => (int) $other_data['gradeid'],
+                                'sessionid' => (int) $other_data['sessionid'],
+                            ],
+                        ]
+                    );
                 }
 
                 // STEP 5: Add user to group based on poc_id from mdl_poc table

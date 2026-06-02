@@ -4,6 +4,7 @@ require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/moodlelib.php'); // Required for email_to_user function
 require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 
 global $DB, $OUTPUT, $PAGE;
 
@@ -21,6 +22,7 @@ $courseid = $_POST['courseid'];
 $new_users = [];
 $errors = [];
 $existing_users = [];
+$createdcount = 0;
 
 // Loop through users and create them
 foreach ($users as $user) {
@@ -60,6 +62,7 @@ foreach ($users as $user) {
             $student_id = $student_id_prefix . str_pad($newLastNumber, 3, '0', STR_PAD_LEFT);
             $student->student_id = $student_id;
             $DB->insert_record('student', $student);
+            $createdcount++;
         }
 
             if ($userid) {
@@ -76,6 +79,24 @@ foreach ($users as $user) {
             $errors[] = ["username" => $user->username, "error" => "Error creating user: " . $e->getMessage()];
         }
     }
+}
+
+if ($createdcount > 0) {
+    local_dashboard_log_activity(
+        'bulk_student_import',
+        'Bulk student import',
+        $createdcount . ' student' . ($createdcount === 1 ? '' : 's') . ' added',
+        (int) $schoolid,
+        [
+            'countvalue' => $createdcount,
+            'metadata' => [
+                'gradeid' => (int) $gradeid,
+                'courseid' => (int) $courseid,
+                'importtime' => time(),
+            ],
+            'dedupekey' => sha1('bulk_student_import|' . $schoolid . '|' . $gradeid . '|' . time()),
+        ]
+    );
 }
 
 echo $OUTPUT->header();

@@ -28,21 +28,16 @@ else{
 // echo "<a href=\"{$CFG->wwwroot}/local/regionalpoc/rm_arm_manage.php?roleid=4\" class='btn btn-primary'>BACK</a>";
 
 
-if($_SESSION['caturlid'])
-{
-
-	$getpocid=$_SESSION['caturlid'];
-}
-else{
-	$getpocid=$pocId;
-	$_SESSION['caturlid']=$getpocid;
-}
-if($pocId){
-	$getpocid=$pocId;
-}
+$getpocid=$pocId;
 
 //get existing school
-$result=$DB->get_records_sql("SELECT cc.* FROM {course_categories} cc  join {schoolassign} sa on sa.schoolid=cc.id where sa.userid=$getpocid"); //get records of all users that are enrolled in the dept
+$result=$DB->get_records_sql(
+	"SELECT DISTINCT cc.*
+	   FROM {course_categories} cc
+	   JOIN {schoolassign} sa ON sa.schoolid = cc.id
+	  WHERE sa.userid = :pocid",
+	['pocid' => $getpocid]
+); //get records of all users that are enrolled in the dept
 $existing_select=''; 
 
 foreach($result as $record) {
@@ -57,19 +52,17 @@ if($existing_select=='') { //if no user found
 // print_r($existUserArray);
 // die;
 //get potential users
-$assignrecord=$DB->get_records('schoolassign', array());
-$existUserArray=[];
-foreach ($assignrecord as $key => $value) {
-	$existUserArray[]=$value->schoolid;
-}
-
-$notcatid=0;
-if(!empty($existUserArray))
-{
-	$notcatid = implode(',',$existUserArray);
-}
-
-$result=$DB->get_records_sql("SELECT cc.* FROM {course_categories} cc  join {school} s on s.school_id=cc.idnumber where cc.id not in($notcatid)  "); //get records of all users that are 'NOT enrolled in any dept' and ('Not enrolled in any branch' or 'enrolled in the selected branch')
+$result=$DB->get_records_sql(
+	"SELECT DISTINCT cc.*
+	   FROM {course_categories} cc
+	   JOIN {school} s ON s.school_id = cc.idnumber
+	  WHERE NOT EXISTS (
+	            SELECT 1
+	              FROM {schoolassign} sa
+	              JOIN {poc} p ON p.userid = sa.userid
+	             WHERE sa.schoolid = cc.id
+	        )"
+); //get records of all schools not assigned to a POC
 //first record in user table is for guest
 $potential_select='';
 foreach($result as $record) {
@@ -96,7 +89,6 @@ html_writer::end_tag('a');
 
   <input type="hidden" name="id" value="<?php echo $pocId; ?>">
   <!-- hidden element to store deptid -->
-<?php $_SESSION['caturlid'] =$pocId; ?>
   <!-- school list-->
    
 
@@ -186,5 +178,3 @@ echo $OUTPUT->footer();
 <script src="search.js?new=<?php echo time(); ?>"></script> <!-- echo time to prevent caching --> 
 
 <link rel="stylesheet" type="text/css" href="custom.css?new=<?php echo time(); ?>">
-
-

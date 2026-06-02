@@ -693,6 +693,30 @@ License: You must have a valid license purchased only from themeforest(the above
                 </div>
                 <!-- END: Top Bar -->
                 <div class="grid grid-cols-12 gap-6">
+                    {{#istrainer}}
+                    <div class="col-span-12 mt-8">
+                        <div class="intro-y flex items-center h-10">
+                            <h2 class="text-lg font-medium truncate mr-5">My Courses</h2>
+                        </div>
+                        {{#hastrainercourses}}
+                        <div class="grid grid-cols-12 gap-6 mt-5">
+                            {{#trainercourses}}
+                            <div class="col-span-12 md:col-span-6 xl:col-span-4 intro-y">
+                                <div class="box p-5">
+                                    <div class="text-base font-medium truncate">{{coursename}}</div>
+                                    <div class="text-gray-600 mt-1">{{schoolname}}</div>
+                                    <div class="text-gray-600 mt-1">{{gradename}}</div>
+                                    <a href="{{url}}" class="button bg-theme-1 text-white mt-4 inline-block">View Course</a>
+                                </div>
+                            </div>
+                            {{/trainercourses}}
+                        </div>
+                        {{/hastrainercourses}}
+                        {{^hastrainercourses}}
+                        <div class="box p-5 mt-5 text-gray-600">No courses are mapped to your trainer account yet.</div>
+                        {{/hastrainercourses}}
+                    </div>
+                    {{/istrainer}}
                     <div class="col-span-12 xxl:col-span-9 grid grid-cols-12 gap-6">
                         <!-- BEGIN: General Report -->
                         <div class="col-span-12 mt-8">

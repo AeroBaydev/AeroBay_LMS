@@ -1,8 +1,38 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
+html,
+body {
+    overflow-y: auto;
+    scrollbar-color: #6a737b #f8f9fa;
+    scrollbar-width: auto;
+}
+
 body {
     font-family: "DM Sans", sans-serif !important;
     color: #444;
+}
+
+body::-webkit-scrollbar,
+html::-webkit-scrollbar {
+    height: 16px;
+    width: 16px;
+}
+
+body::-webkit-scrollbar-track,
+html::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+body::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-thumb {
+    background: #6a737b;
+    border: 4px solid #f8f9fa;
+    border-radius: 999px;
+}
+
+body::-webkit-scrollbar-thumb:hover,
+html::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
 }
 
 
@@ -740,3 +770,94 @@ align-items: center; margin-right:10px; border-radius: 100%; color:#fff}
     text-decoration: none !important;
     color: #2b76b9 !important;
 } */
+
+/* AeroBay global drawer/content layout sync.
+   Keeps LMS pages from sliding underneath the expanded left navigation. */
+:root {
+    --aerobay-drawer-top: 60px;
+    --aerobay-primary-drawer-width: 260px;
+}
+
+#theme_boost-drawers-primary.drawer-primary {
+    height: calc(100vh - var(--aerobay-drawer-top)) !important;
+    top: var(--aerobay-drawer-top) !important;
+}
+
+#theme_boost-drawers-primary .drawercontent {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#theme_boost-drawers-primary .drawercontent::-webkit-scrollbar {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+}
+
+#theme_boost-drawers-blocks,
+.drawer-right-toggle {
+    display: none !important;
+}
+
+#page.drawers.show-drawer-right {
+    margin-right: 0 !important;
+    padding-right: 1.2rem !important;
+}
+
+@media (min-width: 768px) {
+    #theme_boost-drawers-primary.drawer-primary,
+    .drawer.drawer-left.drawer-primary {
+        width: var(--aerobay-primary-drawer-width) !important;
+        max-width: var(--aerobay-primary-drawer-width) !important;
+    }
+
+    #page.drawers {
+        -ms-overflow-style: auto;
+        box-sizing: border-box;
+        height: auto !important;
+        max-width: none !important;
+        min-height: calc(100vh - var(--aerobay-drawer-top));
+        min-width: 0;
+        overflow-x: hidden;
+        overflow-y: visible !important;
+        transition: margin-left .3s ease-in-out, width .3s ease-in-out;
+        width: 100% !important;
+    }
+
+    #page.drawers.show-drawer-primary {
+        margin-left: var(--aerobay-primary-drawer-width) !important;
+        width: calc(100% - var(--aerobay-primary-drawer-width)) !important;
+    }
+
+    #page.drawers .main-inner,
+    #page.drawers #page-content,
+    #page.drawers #region-main-box,
+    #page.drawers #region-main,
+    #page.drawers [role="main"] {
+        box-sizing: border-box;
+        min-width: 0;
+    }
+
+    #page.drawers.show-drawer-primary .main-inner,
+    #page.drawers.show-drawer-primary #page-content,
+    #page.drawers.show-drawer-primary #region-main-box,
+    #page.drawers.show-drawer-primary #region-main,
+    #page.drawers.show-drawer-primary [role="main"] {
+        max-width: none !important;
+        width: 100% !important;
+    }
+
+    .pagelayout-standard #page.drawers.show-drawer-primary .main-inner,
+    body.limitedwidth #page.drawers.show-drawer-primary .main-inner {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        max-width: none !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    #page.drawers.show-drawer-primary {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
