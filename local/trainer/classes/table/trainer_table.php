@@ -11,11 +11,11 @@ class trainer_table extends table_sql
         $this->adminlisting = $adminlisting;
 
         if ($this->adminlisting) {
-            $columns = array('serialno', 'fullname', 'email', 'contact', 'assignedschools', 'assignedpocs', 'assignedcourses', 'statuslabel', 'edit');
-            $headers = array('S.No', 'Trainer Name', 'Email', 'Mobile Number', 'Assigned School Name', 'Assigned POC Name', 'Assigned Courses', 'Status', 'Action');
+            $columns = array('serialno', 'fullname', 'email', 'contact', 'assignedschools', 'assignedpocs', 'assignedcourses', 'edit');
+            $headers = array('S.No', 'Trainer Name', 'Email', 'Mobile Number', 'Assigned School Name', 'Assigned POC Name', 'School Courses', 'Action');
         } else {
-            $columns = array('serialno', 'trainderid', 'fullname', 'contact', 'designation', 'edit');
-            $headers = array('S.No', 'Trainer ID', 'Full Name', 'Contact', 'Designation', 'Action');
+            $columns = array('serialno', 'trainderid', 'fullname', 'contact', 'assignedschools', 'assignedcourses', 'designation', 'edit');
+            $headers = array('S.No', 'Trainer ID', 'Full Name', 'Contact', 'Assigned School Name', 'School Courses', 'Designation', 'Action');
         }
 
         $this->define_columns($columns);
@@ -189,8 +189,22 @@ class trainer_table extends table_sql
         $deleteurl = new moodle_url('/local/trainer/delete_trainer.php', $deleteparams);
 
         $button_html = '';
-        if (!$this->adminlisting) {
-            $button_html .= html_writer::link('#', html_writer::tag('i', '', ['class' => 'fa fa-school']), [
+        if ($this->adminlisting) {
+            $schoolurl = new moodle_url('/local/trainer/school.php', [
+                'id' => $values->id,
+                'returnurl' => (new moodle_url('/local/trainer/index.php'))->out_as_local_url(false),
+            ]);
+            $button_html .= html_writer::link($schoolurl, html_writer::tag('i', '', ['class' => 'fa fa-school']), [
+                'class' => 'btn btn-primary mr-2',
+                'title' => 'Assign School',
+            ]);
+            $button_html .= html_writer::link($editurl, html_writer::tag('i', '', ['class' => 'fa fa-pencil']), [
+                'class' => 'btn btn-primary mr-2',
+                'title' => 'Edit Trainer',
+            ]);
+        } else {
+            $schoolurl = new moodle_url('/local/trainer/school.php', ['id' => $values->id]);
+            $button_html .= html_writer::link($schoolurl, html_writer::tag('i', '', ['class' => 'fa fa-school']), [
                 'class' => 'btn btn-primary mr-2',
                 'title' => 'Assign School',
             ]);

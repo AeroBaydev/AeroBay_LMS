@@ -35,15 +35,30 @@ class regionalpoc_table extends table_sql
     // return $schools->count;
   }
 
+  function col_Fullname($values)
+  {
+    global $CFG;
+
+    $fullname = trim(($values->firstname ?? '') . ' ' . ($values->lastname ?? ''));
+    if ($fullname === '') {
+      $fullname = '-';
+    }
+
+    return html_writer::link(
+      new moodle_url($CFG->wwwroot . '/user/profile.php', ['id' => (int) $values->userid]),
+      format_string($fullname)
+    );
+  }
+
   function col_edit($values)
   {
 
 
     global $CFG;
     $usertype = 'arm';
-    return "<a href='$CFG->wwwroot/local/assign_school_ARM/school.php?userId=$values->userid&usertype=$usertype'  title='Assign Schools' class='btn btn-primary mr-2'><i class='fa-solid fa-school-circle-check'></i></a> 
-      <a href='$CFG->wwwroot/local/regionalpoc/edit_rm_arm_form.php?id=$values->userid&usertype=$usertype' class='btn btn-primary mr-2' title='Edit '><i class='fa fa-cog'></i></a> 
-      <a href='$CFG->wwwroot/local/regionalpoc/delete_regionalpoc.php?id=$values->userid&usertype=$usertype' class='btn btn-primary mr-2' title='Delete'><i class='fa fa-trash'></i></a>";
+    return "<a href='$CFG->wwwroot/local/regionalpoc/assignschool/school.php?id=$values->userid&usertype=$usertype'  title='Assign Schools' class='btn btn-primary mr-2'><i class='fa-solid fa-school-circle-check'></i></a>"
+      . "<a href='$CFG->wwwroot/local/regionalpoc/edit_rm_arm_form.php?id=$values->userid&usertype=$usertype' class='btn btn-primary mr-2' title='Edit '><i class='fa fa-cog'></i></a>"
+      . "<a href='$CFG->wwwroot/local/regionalpoc/delete_regionalpoc.php?id=$values->userid&usertype=$usertype' class='btn btn-primary mr-2' title='Delete'><i class='fa fa-trash'></i></a>";
   }
 
 

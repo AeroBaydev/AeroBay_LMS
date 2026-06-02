@@ -26,16 +26,23 @@ $usertype = 'asstmanager';
 $table->is_downloading($download, 'regionalpoc', 'regionalpoc_data');
 
 $fields = "(@row_number := @row_number + 1) as serialno, rp.userid as userid, rp.firstname as firstname, rp.lastname as lastname, rp.contact_number as contact, rp.current_address as address, rp.designation as designation";
-$from =  "{regionalpoc}  rp  join {user}  u on u.id=rp.userid";
+$from =  "{regionalpoc}  rp  JOIN {user} u ON u.id = rp.userid";
 
-$where = "rp.usertype = :usertype AND rp.pocid = :pocid";
-$params = ['usertype' => $usertype, 'pocid' => $USER->id];
+$where = "rp.usertype = :usertype AND u.deleted = 0";
+$params = ['usertype' => $usertype];
+if (!is_siteadmin()) {
+    $where .= " AND rp.pocid = :pocid";
+    $params['pocid'] = $USER->id;
+}
 
 // $order_by = "ORDER BY rp.userid DESC";
 $perpage = 10;
 $table->set_sql($fields, $from, $where . ' ORDER BY rp.id DESC', $params);
 $DB->execute('SET @row_number := ' . ($perpage * $page));
-$table->define_baseurl("$CFG->wwwroot/local/regionalpoc/rm_arm_manage.php?usertype=$usertypselected&page=$page");
+$table->define_baseurl(new moodle_url('/local/regionalpoc/rm_arm_manage.php', [
+    'usertype' => $usertypselected,
+    'page' => $page,
+]));
 
 
 if ($table->is_downloading()) {
@@ -62,8 +69,9 @@ if ($table->is_downloading()) {
         "arm" => 'Assistant Regional Manager'
     ];
 
-   
 
+
+    $urlparams = ['usertype' => $usertypselected, 'page' => $page];
     echo $OUTPUT->single_select(
         new moodle_url("$CFG->wwwroot/local/regionalpoc/rm_arm_manage.php", $urlparams),
         'usertype',

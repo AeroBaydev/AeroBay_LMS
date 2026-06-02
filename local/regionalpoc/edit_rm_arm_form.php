@@ -18,11 +18,14 @@ $PAGE->navbar->add('Assistant Regional Manager Management', "$CFG->wwwroot/local
 $PAGE->navbar->add('Update Assistant Regional Manager Details', "$CFG->wwwroot/local/regionalpoc/edit_rm_arm_form.php?id=$id");
 $PAGE->set_heading('Update Assistant Regional Manager Details');
 
-$regionalpoc_record = $DB->get_record('regionalpoc', [
+$conditions = [
     'userid' => $id,
-    'pocid' => $USER->id,
     'usertype' => 'asstmanager',
-], '*', MUST_EXIST);
+];
+if (!is_siteadmin()) {
+    $conditions['pocid'] = $USER->id;
+}
+$regionalpoc_record = $DB->get_record('regionalpoc', $conditions, '*', MUST_EXIST);
 
 $regionalpoc_record->usertype = 'arm';
 $form = new edit_regionalpoc_form(null, ['userid' => $regionalpoc_record->userid, 'id' => $regionalpoc_record->id]);

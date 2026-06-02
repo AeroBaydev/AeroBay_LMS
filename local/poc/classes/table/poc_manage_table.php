@@ -33,17 +33,11 @@ class poc_manage_table extends table_sql
 {
     global $CFG, $OUTPUT;
     
-    $urlassign = "";
     $urlpocschool = new moodle_url('/local/pocschool/', array('userid' => $values->id));
     $urltrainer = new moodle_url('/local/trainer/trainer_manage.php', array('userid' => $values->id));
     $urlstudent = new moodle_url('/local/students/student_manage.php',array('userid' => $values->id));
 
-    $button_html = html_writer::link($urlassign,
-        html_writer::tag('i', '', array('class' => 'fa-solid fa-school-circle-check')) . ' Assign School',
-        array('class' => 'btn btn-primary', 'title' => 'Assign School')
-    );
-
-    $button_html .= html_writer::link($urlpocschool,
+    $button_html = html_writer::link($urlpocschool,
         html_writer::tag('i', '', array('class' => 'fa-solid fa-school-circle-check')) . ' School POC',
         array('class' => 'btn btn-info', 'title' => 'Edit POC Details')
     );

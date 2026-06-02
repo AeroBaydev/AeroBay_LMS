@@ -56,7 +56,12 @@
         align-items: center;
         display: flex;
         gap: 18px;
+        justify-content: space-between;
         margin-bottom: 24px;
+    }
+
+    .aero-dashboard-header-actions {
+        flex: 0 0 auto;
     }
 
     .aero-eyebrow {
@@ -750,6 +755,15 @@
             flex-direction: column;
         }
 
+        .aero-dashboard-header-actions {
+            width: 100%;
+        }
+
+        .aero-dashboard-header-actions .aero-action-button {
+            justify-content: center;
+            width: 100%;
+        }
+
         .aero-kpi-grid,
         .aero-summary-grid {
             grid-template-columns: 1fr;
@@ -777,6 +791,14 @@
                 <h1>{{dashboard_title}}</h1>
                 <p>{{dashboard_subtitle}}</p>
             </div>
+            {{#show_arm_management_link}}
+                <div class="aero-dashboard-header-actions">
+                    <a class="aero-action-button" href="{{{arm_management_url}}}" aria-label="Open ARM Management">
+                        <i class="fa-solid fa-users-gear"></i>
+                        ARM Management
+                    </a>
+                </div>
+            {{/show_arm_management_link}}
         </header>
 
         <div class="aero-kpi-grid">

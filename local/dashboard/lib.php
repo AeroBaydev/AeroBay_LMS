@@ -229,6 +229,8 @@ function local_dashboard_get_admin_stats_context(array $scope = []): array {
         'course_management_url' => (new moodle_url('/my/courses.php'))->out(false),
         'attendance_management_url' => (new moodle_url('/local/attendance_new/index.php'))->out(false),
         'trainer_activity_url' => (new moodle_url('/local/dashboard/admin/trainer_activity.php'))->out(false),
+        'arm_management_url' => (new moodle_url('/local/regionalpoc/rm_arm_manage.php', ['usertype' => 'arm']))->out(false),
+        'show_arm_management_link' => empty($scope['is_school_scoped']),
         'poc_card_aria_label' => empty($scope['is_school_scoped']) ? 'Open POC List' : 'Open ARM List',
         'poc_card_label' => empty($scope['is_school_scoped']) ? 'Total POCs' : 'Total ARM',
         'poc_coverage_label' => empty($scope['is_school_scoped']) ? 'POC coverage' : 'ARM coverage',
@@ -388,26 +390,37 @@ function local_dashboard_apply_trainer_school_scope(string &$where, array &$para
         return;
     }
 
+    if (!empty($scope['regional_manager_userid'])) {
+        $params['dashtrainerpocuserid'] = $scope['regional_manager_userid'];
+        $params['dashtrainercreatedby'] = $scope['regional_manager_userid'];
+        $legacycondition = "(({$traineralias}.schoolid IS NULL OR {$traineralias}.schoolid = 0
+                    OR NOT EXISTS (
+                        SELECT 1
+                          FROM {course_categories} dash_trainer_cc
+                         WHERE dash_trainer_cc.id = {$traineralias}.schoolid
+                    ))
+                    AND {$traineralias}.createdby = :dashtrainercreatedby)";
+        $assignedcondition = "({$traineralias}.schoolid IS NOT NULL
+                    AND {$traineralias}.schoolid <> 0
+                    AND EXISTS (
+                        SELECT 1
+                          FROM {schoolassign} dash_trainer_sa
+                         WHERE dash_trainer_sa.schoolid = {$traineralias}.schoolid
+                           AND dash_trainer_sa.userid = :dashtrainerpocuserid
+                    ))";
+
+        $where .= " AND ({$assignedcondition} OR {$legacycondition})";
+        return;
+    }
+
     if (local_dashboard_scope_is_empty($scope)) {
         $where .= ' AND 1 = 0';
         return;
     }
 
-    list($mappingsql, $mappingparams) = $DB->get_in_or_equal($scope['schoolids'], SQL_PARAMS_NAMED, 'dashtrainermap');
     list($trainersql, $trainerparams) = $DB->get_in_or_equal($scope['schoolids'], SQL_PARAMS_NAMED, 'dashtrainerrecord');
-    $conditions = [];
-    if ($DB->get_manager()->table_exists('trainer_course_mapping')) {
-        $conditions[] = "EXISTS (
-                SELECT 1
-                  FROM {trainer_course_mapping} dash_tcm
-                 WHERE dash_tcm.traineruserid = {$traineralias}.userid
-                   AND dash_tcm.status = 1
-                   AND dash_tcm.schoolid {$mappingsql}
-            )";
-    }
-    $conditions[] = "{$traineralias}.schoolid {$trainersql}";
-    $where .= ' AND (' . implode(' OR ', $conditions) . ')';
-    $params += $mappingparams + $trainerparams;
+    $where .= " AND {$traineralias}.schoolid {$trainersql}";
+    $params += $trainerparams;
 }
 
 function local_dashboard_apply_poc_school_scope(string &$join, string &$where, array &$params, array $scope, string $pocalias): void {

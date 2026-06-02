@@ -10,22 +10,31 @@ defined('MOODLE_INTERNAL') || die();
 function local_regionalpoc_get_assignable_school_options(int $userid): array {
     global $DB;
 
-    $schoolids = $DB->get_fieldset_select('schoolassign', 'schoolid', 'userid = ?', [$userid]);
-    $schoolids = array_values(array_unique(array_filter(array_map('intval', $schoolids))));
-    if (empty($schoolids)) {
-        return [];
+    if (is_siteadmin($userid)) {
+        return $DB->get_records_sql_menu(
+            "SELECT cc.id, COALESCE(sc.school_name, cc.name) AS schoolname
+               FROM {school} sc
+               JOIN {course_categories} cc ON cc.id = sc.course_cat_id OR cc.idnumber = sc.school_id
+           ORDER BY schoolname ASC"
+        );
+    } else {
+        $schoolids = $DB->get_fieldset_select('schoolassign', 'schoolid', 'userid = ?', [$userid]);
+        $schoolids = array_values(array_unique(array_filter(array_map('intval', $schoolids))));
+        if (empty($schoolids)) {
+            return [];
+        }
+
+        list($insql, $params) = $DB->get_in_or_equal($schoolids, SQL_PARAMS_NAMED, 'rpschool');
+
+        return $DB->get_records_sql_menu(
+            "SELECT cc.id, COALESCE(sc.school_name, cc.name) AS schoolname
+               FROM {course_categories} cc
+          LEFT JOIN {school} sc ON sc.course_cat_id = cc.id OR sc.school_id = cc.idnumber
+              WHERE cc.id {$insql}
+           ORDER BY schoolname ASC",
+            $params
+        );
     }
-
-    list($insql, $params) = $DB->get_in_or_equal($schoolids, SQL_PARAMS_NAMED, 'rpschool');
-
-    return $DB->get_records_sql_menu(
-        "SELECT cc.id, COALESCE(sc.school_name, cc.name) AS schoolname
-           FROM {course_categories} cc
-      LEFT JOIN {school} sc ON sc.course_cat_id = cc.id OR sc.school_id = cc.idnumber
-          WHERE cc.id {$insql}
-       ORDER BY schoolname ASC",
-        $params
-    );
 }
 
 /**
@@ -76,12 +85,22 @@ function local_regionalpoc_is_regional_manager_user(int $userid): bool {
 }
 
 /**
+ * Whether the user can access ARM management pages.
+ *
+ * @param int $userid
+ * @return bool
+ */
+function local_regionalpoc_can_manage_arms(int $userid): bool {
+    return is_siteadmin($userid) || local_regionalpoc_is_regional_manager_user($userid);
+}
+
+/**
  * Require Regional Manager access for ARM management pages.
  */
 function local_regionalpoc_require_regional_manager(): void {
     global $USER;
 
-    if (!local_regionalpoc_is_regional_manager_user((int) $USER->id)) {
+    if (!local_regionalpoc_can_manage_arms((int) $USER->id)) {
         throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
     }
 }
@@ -120,6 +139,64 @@ function local_regionalpoc_arm_email_debug_log(string $stage, array $metadata = 
 function local_regionalpoc_get_arm_school_ids(int $userid): array {
     global $DB;
 
+    $regionalpoc = $DB->get_record('regionalpoc', [
+        'userid' => $userid,
+        'usertype' => 'asstmanager',
+    ], 'userid, pocid', IGNORE_MISSING);
+    if (!$regionalpoc || empty($regionalpoc->pocid)) {
+        return [];
+    }
+
+    if (is_siteadmin((int) $regionalpoc->pocid)) {
+        if ($DB->get_manager()->table_exists('regionalpoc_arm_school')) {
+            $schoolids = $DB->get_fieldset_select('regionalpoc_arm_school', 'schoolid', 'userid = ?', [$userid]);
+            if (!empty($schoolids)) {
+                return array_values(array_unique(array_filter(array_map('intval', $schoolids))));
+            }
+        }
+
+        $schoolids = $DB->get_fieldset_select('schoolassign', 'schoolid', 'userid = ?', [$userid]);
+        return array_values(array_unique(array_filter(array_map('intval', $schoolids))));
+    }
+
+    $schoolids = [];
+    if ($DB->get_manager()->table_exists('regionalpoc_arm_school')) {
+        $schoolids = $DB->get_fieldset_sql(
+            "SELECT ras.schoolid
+               FROM {regionalpoc_arm_school} ras
+               JOIN {schoolassign} owner_sa ON owner_sa.schoolid = ras.schoolid
+              WHERE ras.userid = :userid
+                AND owner_sa.userid = :pocid",
+            ['userid' => $userid, 'pocid' => $regionalpoc->pocid]
+        );
+    }
+
+    if (empty($schoolids)) {
+        $schoolids = $DB->get_fieldset_sql(
+            "SELECT arm_sa.schoolid
+               FROM {schoolassign} arm_sa
+               JOIN {schoolassign} owner_sa ON owner_sa.schoolid = arm_sa.schoolid
+              WHERE arm_sa.userid = :userid
+                AND owner_sa.userid = :pocid",
+            ['userid' => $userid, 'pocid' => $regionalpoc->pocid]
+        );
+    }
+
+    return array_values(array_unique(array_filter(array_map('intval', $schoolids))));
+}
+
+/**
+ * Get an ARM user's stored school assignments without applying ownership scope.
+ *
+ * This is used by site admins while managing assignments globally. Scoped
+ * visibility should continue to use local_regionalpoc_get_arm_school_ids().
+ *
+ * @param int $userid
+ * @return int[]
+ */
+function local_regionalpoc_get_stored_arm_school_ids(int $userid): array {
+    global $DB;
+
     $schoolids = [];
     if ($DB->get_manager()->table_exists('regionalpoc_arm_school')) {
         $schoolids = $DB->get_fieldset_select('regionalpoc_arm_school', 'schoolid', 'userid = ?', [$userid]);
@@ -127,6 +204,41 @@ function local_regionalpoc_get_arm_school_ids(int $userid): array {
 
     if (empty($schoolids)) {
         $schoolids = $DB->get_fieldset_select('schoolassign', 'schoolid', 'userid = ?', [$userid]);
+    }
+
+    return array_values(array_unique(array_filter(array_map('intval', $schoolids))));
+}
+
+/**
+ * Get schools already assigned to any ARM under a Regional Manager.
+ *
+ * @param int $pocid
+ * @return int[]
+ */
+function local_regionalpoc_get_assigned_arm_school_ids_for_poc(int $pocid): array {
+    global $DB;
+
+    $schoolids = [];
+    if ($DB->get_manager()->table_exists('regionalpoc_arm_school')) {
+        $schoolids = $DB->get_fieldset_sql(
+            "SELECT ras.schoolid
+               FROM {regionalpoc_arm_school} ras
+               JOIN {regionalpoc} rp ON rp.userid = ras.userid
+              WHERE rp.pocid = :pocid
+                AND rp.usertype = :usertype",
+            ['pocid' => $pocid, 'usertype' => 'asstmanager']
+        );
+    }
+
+    if (empty($schoolids)) {
+        $schoolids = $DB->get_fieldset_sql(
+            "SELECT arm_sa.schoolid
+               FROM {schoolassign} arm_sa
+               JOIN {regionalpoc} rp ON rp.userid = arm_sa.userid
+              WHERE rp.pocid = :pocid
+                AND rp.usertype = :usertype",
+            ['pocid' => $pocid, 'usertype' => 'asstmanager']
+        );
     }
 
     return array_values(array_unique(array_filter(array_map('intval', $schoolids))));
@@ -143,6 +255,8 @@ function local_regionalpoc_save_arm_school_assignments(int $userid, array $schoo
     global $DB;
 
     $schoolids = array_values(array_unique(array_filter(array_map('intval', $schoolids))));
+    $allowedschoolids = array_map('intval', array_keys(local_regionalpoc_get_assignable_school_options($assignedby)));
+    $schoolids = array_values(array_intersect($schoolids, $allowedschoolids));
     $now = time();
 
     if ($DB->get_manager()->table_exists('regionalpoc_arm_school')) {

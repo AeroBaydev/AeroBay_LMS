@@ -18,13 +18,10 @@ $PAGE->set_url(new moodle_url('/local/trainer/index.php', ['search' => $search, 
 $PAGE->set_pagelayout('course');
 $PAGE->set_title('Trainer Management');
 $PAGE->set_heading('');
-$PAGE->navbar->add('Trainer Management', $PAGE->url);
 $PAGE->requires->css(new moodle_url('/local/students/customedit.css'));
 
 $table = new trainer_table('admin_trainer_listing', true);
 $table->is_downloading($download, 'trainer_data', 'trainer_data');
-$schoolassigncolumns = $DB->get_columns('schoolassign');
-$schoolassignpocfield = array_key_exists('schoolassignby', $schoolassigncolumns) ? 'sa.schoolassignby' : 'sa.schoolassignee';
 
 if (!$table->is_downloading()) {
     echo $OUTPUT->header();
@@ -145,7 +142,9 @@ if (!$table->is_downloading()) {
     echo html_writer::end_tag('style');
     echo html_writer::start_div('trainer-management-page');
     echo html_writer::tag('h2', 'Trainer Management', ['class' => 'custom-heading add-trainer']);
-    echo html_writer::start_div('action-button-container');
+    echo html_writer::start_div('d-flex justify-content-between mb-2');
+    echo html_writer::link(new moodle_url('/local/trainer/trainer_form.php'), 'Add New Trainer', ['class' => 'btn btn-primary mr-10']);
+    echo html_writer::start_div('d-flex');
     echo html_writer::start_tag('form', [
         'method' => 'post',
         'class' => 'd-flex',
@@ -162,7 +161,28 @@ if (!$table->is_downloading()) {
     echo html_writer::link(new moodle_url('/local/trainer/index.php'), 'Clear', ['class' => 'btn btn-secondary mr-2']);
     echo html_writer::end_tag('form');
     echo html_writer::end_div();
+    echo html_writer::end_div();
 }
+
+$schoolcourseconditions = [
+    "c.category = tr.schoolid",
+    "EXISTS (
+        SELECT 1
+          FROM {course_categories} coursecat
+         WHERE coursecat.id = c.category
+           AND schoolcat.path IS NOT NULL
+           AND coursecat.path LIKE CONCAT(schoolcat.path, '/%')
+    )",
+];
+if ($DB->get_manager()->table_exists('poc_copy_course')) {
+    $schoolcourseconditions[] = "EXISTS (
+        SELECT 1
+          FROM {poc_copy_course} pcc
+         WHERE pcc.schoolid = tr.schoolid
+           AND pcc.courseid = c.id
+    )";
+}
+$schoolcoursecondition = '(' . implode(' OR ', $schoolcourseconditions) . ')';
 
 $fields = "(@row_number := @row_number + 1) AS serialno,
            tr.userid AS id,
@@ -172,21 +192,24 @@ $fields = "(@row_number := @row_number + 1) AS serialno,
            tr.contact_number AS contact,
            GROUP_CONCAT(DISTINCT COALESCE(sc.school_name, schoolcat.name) ORDER BY COALESCE(sc.school_name, schoolcat.name) SEPARATOR ', ') AS assignedschools,
            GROUP_CONCAT(DISTINCT COALESCE(NULLIF(CONCAT(pu.firstname, ' ', pu.lastname), ' '), pc.firstname, pc.username) ORDER BY pu.firstname, pu.lastname SEPARATOR ', ') AS assignedpocs,
-           GROUP_CONCAT(DISTINCT c.fullname ORDER BY c.fullname SEPARATOR ', ') AS assignedcourses,
-           CASE WHEN u.suspended = 1 THEN 'Inactive' ELSE 'Active' END AS statuslabel";
+           GROUP_CONCAT(DISTINCT c.fullname ORDER BY c.fullname SEPARATOR ', ') AS assignedcourses";
 
 $from = "{trainer} tr
          JOIN {user} u ON u.id = tr.userid
-    LEFT JOIN {trainer_course_mapping} tcm ON tcm.traineruserid = tr.userid AND (tcm.status IS NULL OR tcm.status = 1)
-    LEFT JOIN {schoolassign} sa ON sa.userid = tr.userid
-    LEFT JOIN {course_categories} schoolcat ON schoolcat.id = COALESCE(tcm.schoolid, tr.schoolid, sa.schoolid)
+    LEFT JOIN {course_categories} schoolcat ON schoolcat.id = tr.schoolid
     LEFT JOIN {school} sc ON sc.course_cat_id = schoolcat.id
-    LEFT JOIN {user} pu ON pu.id = COALESCE(tcm.pocid, tr.createdby, $schoolassignpocfield)
-    LEFT JOIN {poc} pc ON pc.userid = pu.id
-    LEFT JOIN {course} c ON c.id = tcm.courseid";
+    LEFT JOIN {schoolassign} ownersa ON ownersa.schoolid = tr.schoolid
+    LEFT JOIN {poc} pc ON pc.userid = ownersa.userid
+    LEFT JOIN {user} pu ON pu.id = pc.userid
+    LEFT JOIN {course} c ON c.visible = 1
+                         AND c.id <> :siteid
+                         AND tr.schoolid IS NOT NULL
+                         AND tr.schoolid <> 0
+                         AND schoolcat.id IS NOT NULL
+                         AND {$schoolcoursecondition}";
 
 $where = "u.deleted = 0";
-$params = [];
+$params = ['siteid' => SITEID];
 
 if ($search) {
     $where .= " AND (u.firstname LIKE :search1
@@ -199,7 +222,7 @@ if ($search) {
                  OR c.fullname LIKE :search8
                  OR pu.firstname LIKE :search9
                  OR pu.lastname LIKE :search10)";
-    $params = [
+    $params += [
         'search1' => "%$search%",
         'search2' => "%$search%",
         'search3' => "%$search%",
@@ -213,7 +236,7 @@ if ($search) {
     ];
 }
 
-$groupsort = " GROUP BY tr.userid, u.firstname, u.lastname, u.email, tr.contact_number, u.suspended
+$groupsort = " GROUP BY tr.userid, u.firstname, u.lastname, u.email, tr.contact_number
                ORDER BY u.firstname, u.lastname";
 
 $perpage = 10;

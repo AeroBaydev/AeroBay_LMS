@@ -15,7 +15,7 @@ if (!has_capability('local/poc:view', $context)) {
     throw new required_capability_exception($context, 'local/poc:view', 'nopermissions', '');
 }
 $_SESSION['caturlid'] = 0;
-$PAGE->set_url('/poc_pocmanagement.php');
+$PAGE->set_url('/local/poc/pocmange/index.php', array('userid' => $userIdPoc));
  $_SESSION['userIdPoc']=$userIdPoc;
 $download = optional_param('download', '', PARAM_ALPHA);
 $roleid = optional_param('roleid', 0, PARAM_INT);
@@ -26,8 +26,7 @@ $table = new poc_manage_table('uniqueid');
 $PAGE->set_pagelayout('course');
 $PAGE->set_title('POC Management');
 
- $PAGE->navbar->add('POC List', "$CFG->wwwroot/local/poc/poc_management.php");
- $PAGE->navbar->add('POC controls', "");
+$PAGE->navbar->add('POC controls', "");
       
 // Get username
 $user = core_user::get_user($userIdPoc);
@@ -56,7 +55,7 @@ $perpage = 11;
 $DB->execute('SET @row_number := ' . ($perpage * $page));
 
 $table->set_sql($fields, $from, $where, $params);
-$table->define_baseurl("$CFG->wwwroot/local/poc/poc_management.php?page=$page");
+$table->define_baseurl(new moodle_url('/local/poc/pocmange/index.php', array('userid' => $userIdPoc, 'page' => $page)));
     $table->out($perpage, true);
     echo $OUTPUT->footer();
 

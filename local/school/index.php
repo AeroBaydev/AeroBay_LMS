@@ -14,6 +14,7 @@ $context = context_system::instance();
 $PAGE->set_context($context);
 $isadmin = is_siteadmin();
 $ispocschool = local_dashboard_is_pocschool_user((int) $USER->id);
+$cancreateschool = local_regionalpoc_is_regional_manager_user((int) $USER->id);
 if ($isadmin) {
     $ispocschool = false;
 } else if (!$ispocschool) {
@@ -38,7 +39,7 @@ if (!$table->is_downloading()) {
     $heading_text = $ispocschool ? "My Schools" : "Manage Schools";
     echo html_writer::tag('h2', $heading_text, array('class' => 'custom-heading add-new-school'));
     echo '<div class="action-button d-flex justify-content-between">';
-    if ($isadmin) {
+    if ($isadmin || $cancreateschool) {
         echo html_writer::start_div('action-button-container');
         echo html_writer::link(new moodle_url('/local/school/addschool.php'), 'Add New School', array('class' => 'btn btn-primary'));
         echo html_writer::end_div();

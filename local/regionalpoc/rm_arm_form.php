@@ -18,8 +18,7 @@ $PAGE->navbar->add('Assistant Regional Manager Management', "$CFG->wwwroot/local
 $PAGE->navbar->add('Add Assistant Regional Manager', "$CFG->wwwroot/local/regionalpoc/rm_arm_form.php");
 // $PAGE->set_heading('Regionalpoc Registration Form');
 
-$schooloptions = local_regionalpoc_get_assignable_school_options((int) $USER->id);
-$mform = new regionalpoc_form(null, ['schooloptions' => $schooloptions]);
+$mform = new regionalpoc_form();
 
 if ($mform->is_cancelled()) {
     redirect("$CFG->wwwroot/local/regionalpoc/rm_arm_manage.php?usertype=arm");
@@ -29,7 +28,6 @@ if ($mform->is_cancelled()) {
         'recipient_email' => $data->email ?? '',
         'password_present' => !empty($data->password),
         'password_length' => isset($data->password) ? strlen($data->password) : 0,
-        'selected_school_count' => is_array($data->schoolids ?? null) ? count($data->schoolids) : 0,
     ]);
 
     $regionalpoc = new stdClass();
@@ -51,7 +49,7 @@ if ($mform->is_cancelled()) {
     // $regionalpoc->roleid = $data->role;
     $regionalpoc->date_of_joining = $data->date_of_joining;
     $regionalpoc->designation = $data->designation;
-    $regionalpoc->pocid = $USER->id;
+    $regionalpoc->pocid = (int) $USER->id;
     $regionalpoc->usertype = 'asstmanager';
         
   
@@ -80,7 +78,6 @@ if ($mform->is_cancelled()) {
         $regionalpoc->roleid = $role->id;
         $regionalpoc->contextid = $context->id;
         $DB->insert_record('regionalpoc', $regionalpoc);
-        local_regionalpoc_save_arm_school_assignments($user_id, $data->schoolids, (int) $USER->id);
 
         $template = $DB->get_record('local_emailtemplates', ['name' => 'Arm'], 'id,name,subject');
         local_regionalpoc_arm_email_debug_log('email_template_lookup', [
@@ -138,7 +135,6 @@ if ($mform->is_cancelled()) {
             'userid' => (int) $user_id,
             'recipient_email' => $regionalpoc->email,
             'role_assigned' => 'arm',
-            'school_assignments_saved' => is_array($data->schoolids ?? null) ? count($data->schoolids) : 0,
             'email_send_attempted' => !empty($template),
             'email_send_success' => !empty($emailsent),
         ]);

@@ -126,11 +126,6 @@ class regionalpoc_form extends moodleform
         $mform->addElement('hidden', 'role', 'asstmanager');
         $mform->setType('role', PARAM_TEXT);
 
-        $schooloptions = $this->_customdata['schooloptions'] ?? [];
-        $mform->addElement('autocomplete', 'schoolids', 'Assign Schools', $schooloptions, ['multiple' => true]);
-        $mform->setType('schoolids', PARAM_INT);
-        $mform->addRule('schoolids', get_string('required'), 'required', null, 'client');
-
         $mform->addElement('date_selector', 'date_of_joining', get_string('dateofjoining', 'local_regionalpoc'));
         $mform->setType('date_of_joining', PARAM_INT);
         $mform->addRule('date_of_joining', get_string('required'), 'required', null, 'client');
@@ -199,16 +194,6 @@ class regionalpoc_form extends moodleform
             $errors['designation'] = get_string('required');
         }
 
-
-        if (empty($data['schoolids']) || !is_array($data['schoolids'])) {
-            $errors['schoolids'] = get_string('required');
-        } else {
-            $allowed = array_map('intval', array_keys($this->_customdata['schooloptions'] ?? []));
-            $selected = array_map('intval', $data['schoolids']);
-            if (!empty(array_diff($selected, $allowed))) {
-                $errors['schoolids'] = 'Select only schools assigned to you.';
-            }
-        }
 
         if (!empty($data['password'])) {
             $errmsg="";

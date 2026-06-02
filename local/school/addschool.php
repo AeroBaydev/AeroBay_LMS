@@ -4,13 +4,20 @@ require_once($CFG->dirroot . '/user/lib.php');
 require_once($CFG->dirroot . '/cohort/lib.php');
 require_once('classes/form/school_form.php');
 require_once($CFG->dirroot.'/local/school/lib.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 
-global $PAGE, $CFG, $DB, $OUTPUT;
+global $PAGE, $CFG, $DB, $OUTPUT, $USER;
 
 require_login();
-require_admin();
 
 $PAGE->set_context(context_system::instance());
+$context = context_system::instance();
+$isadmin = is_siteadmin();
+$cancreateschool = local_regionalpoc_is_regional_manager_user((int) $USER->id);
+if (!$isadmin && !$cancreateschool) {
+    throw new required_capability_exception($context, 'local/school:manage', 'nopermissions', '');
+}
+
 $PAGE->set_pagelayout('course');
 $PAGE->set_title('New School');
 $PAGE->navbar->add('School Management', "$CFG->wwwroot/local/school/");
@@ -126,11 +133,16 @@ if ($mform->is_cancelled()) {
     }
        // Create category and sub category
 
-    $schoolassign = new stdClass();
-    $schoolassign->schoolid = $id;
-    $schoolassign->userid = $USER->id;
-    $schoolassign->timecreated = time();
-    // $DB->insert_record('schoolassign', $schoolassign);
+    if ($cancreateschool && !$DB->record_exists('schoolassign', [
+            'schoolid' => (int) $data->course_cat_id,
+            'userid' => (int) $USER->id,
+        ])) {
+        $schoolassign = new stdClass();
+        $schoolassign->schoolid = (int) $data->course_cat_id;
+        $schoolassign->userid = (int) $USER->id;
+        $schoolassign->timecreated = time();
+        $DB->insert_record('schoolassign', $schoolassign);
+    }
     
 
     redirect("$CFG->wwwroot/local/school/", get_string('schoolsuccess', 'local_school'), 2);

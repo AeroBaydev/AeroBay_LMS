@@ -2,13 +2,16 @@
 require_once('../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
 require_once($CFG->dirroot.'/course/classes/category.php');
+require_once($CFG->dirroot . '/local/dashboard/lib.php');
 
 $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title('Delete School');
 $PAGE->set_heading('Delete School');
 require_login();
-require_admin();
+if (!is_siteadmin() || local_dashboard_is_pocschool_user((int) $USER->id)) {
+    throw new required_capability_exception(context_system::instance(), 'moodle/site:config', 'nopermissions', '');
+}
 
 
 global $CFG, $DB;
@@ -22,6 +25,7 @@ if (optional_param('confirm', 0, PARAM_INT)) {
     if ($course_categories) {
         $coursecat = \core_course_category::get((int)$course_categories->id, IGNORE_MISSING, true);
         if ($coursecat) {
+            $DB->delete_records('schoolassign', array('schoolid' => (int)$course_categories->id));
             $coursecat->delete_full(false);
         }
     }

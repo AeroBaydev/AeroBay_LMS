@@ -39,10 +39,7 @@ if(isset($_POST['remove'])) { //if user has selected 'Remove'
 		// Retrieve each selected option 
 		foreach($_POST['existing_select'] as $school) { //select a user  
 			
-			$schoolassignid=$DB->get_record('schoolassign', array('schoolid'=>$school, 'userid'=>$pocId));
-				if($schoolassignid){
-			$DB->delete_records('schoolassign', array('id' => $schoolassignid->id));
-		}
+			$DB->delete_records('schoolassign', array('schoolid'=>$school, 'userid'=>$pocId));
 			
 
 		}	

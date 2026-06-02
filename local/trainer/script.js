@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const label = checkbox.parentElement;
             movedData.push(checkbox.value); 
             checkbox.checked = false;
+            if (action === 'assign') {
+                Array.from(targetContainer.getElementsByTagName('label')).forEach(existingLabel => {
+                    leftList.appendChild(existingLabel);
+                });
+            }
             targetContainer.appendChild(label);
         });
         updateCounts();
@@ -28,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function sendAjaxRequest(action, data) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', M.cfg.wwwroot + '/local/poc/get_school_data1.php', true);
+        xhr.open('POST', M.cfg.wwwroot + '/local/trainer/get_school_data1.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4 && xhr.status === 200) {
@@ -38,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         };
-        xhr.send('action=' + action + '&userId=' + userId.value + '&data=' + JSON.stringify(data));
+        xhr.send('action=' + encodeURIComponent(action) + '&userId=' + encodeURIComponent(userId.value) + '&data=' + encodeURIComponent(JSON.stringify(data)));
     }
 
     function filterList(searchInput, list) {
@@ -56,16 +61,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateCounts() {
-        assignedcount.textContent = leftList.getElementsByTagName('label').length;
-        availablecount.textContent = rightList.getElementsByTagName('label').length;
+        availablecount.textContent = leftList.getElementsByTagName('label').length;
+        assignedcount.textContent = rightList.getElementsByTagName('label').length;
     }
     moveRightButton.addEventListener('click', function() {
-        moveSelectedData(rightList, leftList, 'assign');
-        updateButtonState();
+        moveSelectedData(leftList, rightList, 'assign');
     });
 
     moveLeftButton.addEventListener('click', function() {
-        moveSelectedData(leftList, rightList, 'remove');
+        moveSelectedData(rightList, leftList, 'remove');
     });
 
     leftSearch.addEventListener('input', function() {
