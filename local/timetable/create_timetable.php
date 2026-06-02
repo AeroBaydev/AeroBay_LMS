@@ -43,7 +43,10 @@ $coursewhere = "c.visible = 1
         )";
 $courseparams = ['gradeid' => $catId, 'schoolid' => $schoolid];
 $trainercourses = local_pocschool_get_trainer_course_ids();
-if (local_pocschool_is_trainer_user() && !empty($trainercourses)) {
+if (local_pocschool_is_trainer_user() && empty($trainercourses)) {
+    $coursewhere .= " AND 1 = 0";
+} else if (local_pocschool_is_trainer_user()) {
+    // trainer visibility by school mapping
     list($coursesql, $courseinparams) = $DB->get_in_or_equal($trainercourses, SQL_PARAMS_NAMED, 'timetablecourse');
     $coursewhere .= " AND c.id {$coursesql}";
     $courseparams += $courseinparams;

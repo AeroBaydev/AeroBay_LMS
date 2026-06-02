@@ -16,13 +16,30 @@ class student_form extends moodleform {
       $userid=  $USER->id;
        }
 
-        $school = $DB->get_records_sql_menu(
-            "SELECT cc.id, cc.name
-               FROM {schoolassign} sa
-               JOIN {course_categories} cc ON sa.schoolid = cc.id
-              WHERE sa.userid = :userid",
-            ['userid' => $userid]
-        );
+        if (local_pocschool_is_trainer_user((int) $USER->id)) {
+            // assigned school visibility
+            $schoolids = local_pocschool_get_assigned_school_ids((int) $USER->id);
+            if (empty($schoolids)) {
+                $school = [];
+            } else {
+                list($schoolsql, $schoolparams) = $DB->get_in_or_equal($schoolids, SQL_PARAMS_NAMED, 'studentformschool');
+                $school = $DB->get_records_sql_menu(
+                    "SELECT cc.id, cc.name
+                       FROM {course_categories} cc
+                      WHERE cc.id {$schoolsql}
+                   ORDER BY cc.name",
+                    $schoolparams
+                );
+            }
+        } else {
+            $school = $DB->get_records_sql_menu(
+                "SELECT cc.id, cc.name
+                   FROM {schoolassign} sa
+                   JOIN {course_categories} cc ON sa.schoolid = cc.id
+                  WHERE sa.userid = :userid",
+                ['userid' => $userid]
+            );
+        }
         
         $mform = $this->_form;
         $schoolid = optional_param('schoolid', 0, PARAM_INT);

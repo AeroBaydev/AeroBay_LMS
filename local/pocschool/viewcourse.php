@@ -23,17 +23,31 @@ $schoolid = (int) $DB->get_field('course_categories', 'parent', ['id' => $catId]
 local_pocschool_require_grade_access($schoolid, $catId);
 $effectivepocid = local_pocschool_get_effective_poc_userid((int) $id);
 
+$coursewhere = "c.visible = 1
+        AND pcc.gradeid = :gradeid
+        AND pcc.schoolid = :schoolid
+        AND pcc.pocid = :pocid
+        AND pcc.status = 1";
+$courseparams = ['gradeid' => $catId, 'schoolid' => $schoolid, 'pocid' => $effectivepocid];
+if (local_pocschool_is_trainer_user()) {
+    $trainercourses = local_pocschool_get_trainer_course_ids();
+    if (empty($trainercourses)) {
+        $coursewhere .= " AND 1 = 0";
+    } else {
+        // trainer visibility by school mapping
+        list($coursesql, $trainercourseparams) = $DB->get_in_or_equal($trainercourses, SQL_PARAMS_NAMED, 'viewtrainercourse');
+        $coursewhere .= " AND c.id {$coursesql}";
+        $courseparams += $trainercourseparams;
+    }
+}
+
 $allCourses = $DB->get_records_sql(
     "SELECT c.*
        FROM {course} c
        JOIN {poc_copy_course} pcc ON pcc.courseid = c.id
-      WHERE c.visible = 1
-        AND pcc.gradeid = :gradeid
-        AND pcc.schoolid = :schoolid
-        AND pcc.pocid = :pocid
-        AND pcc.status = 1
+      WHERE {$coursewhere}
    ORDER BY c.sortorder, c.fullname",
-    ['gradeid' => $catId, 'schoolid' => $schoolid, 'pocid' => $effectivepocid]
+    $courseparams
 );
 
 $poc_session_date_id = $DB->get_record('poc_session_date', ['pocid' => $effectivepocid,'status'=>1]);

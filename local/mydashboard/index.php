@@ -114,6 +114,42 @@ if (is_siteadmin()) {
     echo $OUTPUT->render_from_template('local_mydashboard/admindashboard', array_merge($somdata, local_dashboard_get_admin_stats_context($scope)));
 } else if ($DB->record_exists('student', ['userid' => $USER->id])) {
     echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $somdata);
+} else if ($trainerrec = $DB->get_record('trainer', ['userid' => $USER->id])) {
+    // Trainer dashboard — isolated, UI demo only, no DB queries beyond role check.
+    $somdata['config'] = ['wwwroot' => $CFG->wwwroot];
+    $somdata['loggedinuserfullname'] = fullname($USER);
+    
+    $initials = '';
+    if (!empty($USER->firstname)) { $initials .= mb_substr(trim($USER->firstname), 0, 1); }
+    if (!empty($USER->lastname)) { $initials .= mb_substr(trim($USER->lastname), 0, 1); }
+    $somdata['loggedinuserinitials'] = !empty($initials) ? mb_strtoupper($initials) : 'TR';
+    
+    $rolename = 'Trainer';
+    if ($roles = $DB->get_records_sql("SELECT r.name, r.shortname FROM {role_assignments} ra JOIN {role} r ON ra.roleid = r.id WHERE ra.userid = :userid ORDER BY r.sortorder ASC", ['userid' => $USER->id], 0, 1)) {
+        $role = reset($roles);
+        $rolename = !empty($role->name) ? $role->name : ucfirst($role->shortname);
+        if (stripos($rolename, 'teacher') !== false) {
+            $rolename = 'Trainer';
+        }
+    }
+    $somdata['loggedinuserrole'] = strtoupper($rolename);
+
+    $somdata['hastrainerschool'] = false;
+    
+    $trainerschoolid = !empty($trainerrec->schoolid) ? $trainerrec->schoolid : $DB->get_field('schoolassign', 'schoolid', ['userid' => $USER->id]);
+    if (!empty($trainerschoolid)) {
+        $schoolcat = $DB->get_record('course_categories', ['id' => $trainerschoolid], 'id, name');
+        if ($schoolcat) {
+            $somdata['trainerschoolname'] = format_string($schoolcat->name);
+            $somdata['hastrainerschool'] = true;
+        }
+    }
+    
+    $somdata['trainerstudentcount'] = 0;
+    if (!empty($trainerschoolid)) {
+        $somdata['trainerstudentcount'] = $DB->count_records('student', ['schoolid' => $trainerschoolid]);
+    }
+    echo $OUTPUT->render_from_template('local_mydashboard/trainerdashboard', $somdata);
 } else {
     echo $OUTPUT->render_from_template('local_mydashboard/mydashboard', $somdata);
 }

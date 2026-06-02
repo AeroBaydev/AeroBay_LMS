@@ -163,12 +163,15 @@ $fields = "(@row_number := @row_number + 1) as serialno,
            st.student_id as studentid";
 
 $from = "{student} as st
-         JOIN {user} u ON st.userid = u.id
-         JOIN {schoolassign} sa ON sa.schoolid = st.schoolid";
-
-$safe_userid = (int)$userid;
-$where = "1=1 AND sa.userid = :pocuserid AND u.deleted = 0";
-$params = ['pocuserid' => $safe_userid];
+         JOIN {user} u ON st.userid = u.id";
+$where = "1=1 AND u.deleted = 0";
+$params = [];
+if (!local_pocschool_is_trainer_user()) {
+    $from .= " JOIN {schoolassign} sa ON sa.schoolid = st.schoolid";
+    $safe_userid = (int)$userid;
+    $where .= " AND sa.userid = :pocuserid";
+    $params['pocuserid'] = $safe_userid;
+}
 local_pocschool_apply_trainer_student_filter($where, $params, 'st');
 
 if ($search) {

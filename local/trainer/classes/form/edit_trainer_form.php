@@ -67,7 +67,6 @@ class edit_trainer_form extends moodleform {
 
         $mform->addElement('select', 'schoolid', get_string('assignedschool', 'local_trainer'), ['' => get_string('selectschool', 'local_trainer')] + $schools);
         $mform->setType('schoolid', PARAM_INT);
-        $mform->addRule('schoolid', get_string('required'), 'required', null, 'client');
 
         $mform->addElement('html', '<div id="trainer-school-mapped-courses" class="form-group row fitem"><div class="col-md-3 col-form-label d-flex pb-0 pr-md-0"><label>' . get_string('mappedgradescourses', 'local_trainer') . '</label></div><div class="col-md-9 form-inline align-items-start felement" id="trainer-school-mapped-courses-content">' . get_string('selectschoolfirst', 'local_trainer') . '</div></div>');
         $ajaxurl = new moodle_url('/local/trainer/get_school_courses.php');
@@ -221,9 +220,7 @@ class edit_trainer_form extends moodleform {
         if (empty(trim($data['lastname']))) {
             $errors['lastname'] = get_string('required', 'local_trainer');
         }
-        if (empty($data['schoolid'])) {
-            $errors['schoolid'] = get_string('required', 'local_trainer');
-        } else {
+        if (!empty($data['schoolid'])) {
             $pocuserid = $this->_customdata['pocuserid'] ?? 0;
             if (isset($_SESSION['userIdPoc'])) {
                 $pocuserid = $_SESSION['userIdPoc'];

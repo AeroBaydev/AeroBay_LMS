@@ -22,10 +22,10 @@
     #page-local-mydashboard-index #topofscroll,
     #page-mydashboard-index #region-main,
     #page-mydashboard-index #topofscroll {
-        background: transparent;
-        border: 0;
-        box-shadow: none;
-        padding: 0;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
     }
 
     #page-mydashboard-index #page-header,
@@ -42,7 +42,7 @@
             var(--aero-bg);
         color: var(--aero-text);
         font-family: Inter, Roboto, "Segoe UI", Arial, sans-serif;
-        margin: -1rem;
+        margin: 0;           /* #page padding zeroed in fix below — no bleed needed */
         min-height: 100vh;
         padding: 28px;
     }
@@ -1011,6 +1011,91 @@
             height: 270px;
         }
     }
+
+    /*
+     * ── LAYOUT + SCROLL FIX — Admin / POC / ARM dashboards ──────────
+     *
+     * AUDIT FINDINGS (reading moodle.css, custom.css, style-main.css):
+     *
+     * LEFT/RIGHT GAP CAUSES:
+     *  moodle.css  ≥768px : #page.drawers { padding-left:3rem; padding-right:3rem }
+     *  style-main  line570: #page.drawers { padding-left:1.2rem; padding-right:1.2rem !important }
+     *  moodle.css  ≥768px : #page.drawers .main-inner { padding: 1.5rem 0.5rem }
+     *  moodle.css  ≥768px : #page.drawers div[role=main] { padding: 0 15px }
+     *  → .aerobay-admin-dashboard margin:-1rem cancelled only inner padding;
+     *    outer #page padding-left/right remained → 2-3rem gaps on each side.
+     *
+     * RIGHT SCROLLBAR CAUSE:
+     *  style-main.css line 257 : div#topofscroll { min-height:calc(100vh - 190px) }
+     *  style-main.css line 565 : #page-mydashboard-index #topofscroll { margin-top:-15px }
+     *  → topofscroll taller than viewport → browser adds right scrollbar.
+     *
+     * DRAWER SCROLLBAR: already globally hidden in style-main.css:
+     *  #theme_boost-drawers-primary .drawercontent { scrollbar-width:none }
+     *  #theme_boost-drawers-primary .drawercontent::-webkit-scrollbar { display:none }
+     *  → no extra fix needed here.
+     *
+     * Scoped to the three page IDs this template renders under:
+     *  - #page-local-mydashboard-index  (via local/mydashboard/index.php)
+     *  - #page-mydashboard-index        (via mydashboard/index.php)
+     *  - #page-local-dashboard-admin-index (legacy admin path)
+     * ─────────────────────────────────────────────────────────────── */
+
+    /* 1. Zero out #page.drawers side padding → removes left/right gaps */
+    #page-local-dashboard-admin-index #page.drawers,
+    #page-local-mydashboard-index #page.drawers,
+    #page-mydashboard-index #page.drawers {
+        padding-left:  0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* 2. Zero .main-inner padding/margin-top → removes inner side gutters */
+    #page-local-dashboard-admin-index #page.drawers .main-inner,
+    #page-local-mydashboard-index #page.drawers .main-inner,
+    #page-mydashboard-index #page.drawers .main-inner {
+        padding:    0 !important;
+        margin-top: 0 !important;
+    }
+
+    /* 3. Zero div[role=main] side padding */
+    #page-local-dashboard-admin-index #page.drawers div[role="main"],
+    #page-local-mydashboard-index #page.drawers div[role="main"],
+    #page-mydashboard-index #page.drawers div[role="main"] {
+        padding-left:  0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* 4. Reset #topofscroll min-height — root cause of right scrollbar */
+    #page-local-dashboard-admin-index #topofscroll,
+    #page-local-mydashboard-index #topofscroll,
+    #page-mydashboard-index #topofscroll {
+        min-height:    0       !important;
+        height:        auto    !important;
+        margin-top:    0       !important;
+        border-radius: 0       !important;
+        overflow-x:    hidden  !important;
+        overflow-y:    visible !important;
+    }
+
+    /* 5. Remove padding/margin from #page-content and #region-main-box */
+    #page-local-dashboard-admin-index #page-content,
+    #page-local-dashboard-admin-index #region-main-box,
+    #page-local-mydashboard-index #page-content,
+    #page-local-mydashboard-index #region-main-box,
+    #page-mydashboard-index #page-content,
+    #page-mydashboard-index #region-main-box {
+        padding:    0 !important;
+        margin:     0 !important;
+        min-height: 0 !important;
+    }
+
+    /* 6. Prevent horizontal overflow at page level */
+    #page-local-dashboard-admin-index,
+    #page-local-mydashboard-index,
+    #page-mydashboard-index {
+        overflow-x: hidden !important;
+    }
+    /* ── END LAYOUT / SCROLL FIX ────────────────────────────────── */
 </style>
 
 <section class="aerobay-admin-dashboard">

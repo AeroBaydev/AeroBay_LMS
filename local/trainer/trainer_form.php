@@ -3,9 +3,9 @@ require_once('../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
 require_once('classes/form/trainer_form.php');
 require_once('../../lib/moodlelib.php');
-require_once($CFG->dirroot . '/enrol/manual/lib.php');
 require_once($CFG->dirroot.'/local/emailtemplates/email_sender.php');
 require_once($CFG->dirroot . '/local/dashboard/lib.php');
+require_once($CFG->dirroot . '/local/trainer/lib.php');
 global $PAGE, $CFG;
 
 require_login();
@@ -18,49 +18,6 @@ $PAGE->navbar->add('Add New Trainer', "$CFG->wwwroot/local/trainer/trainer_form.
 $PAGE->set_heading('Add New Trainer');
 
 $mform = new trainer_form();
-
-function local_trainer_enrol_in_course($courseid, $userid) {
-    global $DB;
-
-    $courseid = (int)$courseid;
-    $userid = (int)$userid;
-    if (empty($courseid) || empty($userid)) {
-        return false;
-    }
-
-    $coursecontext = context_course::instance($courseid, IGNORE_MISSING);
-    if (!$coursecontext || is_enrolled($coursecontext, $userid)) {
-        return true;
-    }
-
-    $manualplugin = enrol_get_plugin('manual');
-    if (!$manualplugin) {
-        return false;
-    }
-
-    $manualinstance = $DB->get_record('enrol', [
-        'courseid' => $courseid,
-        'enrol' => 'manual',
-        'status' => ENROL_INSTANCE_ENABLED
-    ]);
-    if (!$manualinstance) {
-        return false;
-    }
-
-    $role = $DB->get_record('role', ['shortname' => 'trainer']);
-    if (!$role) {
-        $role = $DB->get_record('role', ['shortname' => 'teacher']);
-    }
-    if (!$role) {
-        $role = $DB->get_record('role', ['shortname' => 'editingteacher']);
-    }
-    if (!$role) {
-        return false;
-    }
-
-    $manualplugin->enrol_user($manualinstance, $userid, $role->id, time());
-    return true;
-}
 
 if ($mform->is_cancelled()) {
     redirect("$CFG->wwwroot/local/trainer/trainer_manage.php");
@@ -107,49 +64,15 @@ if ($mform->is_cancelled()) {
     // set_user_preference('auth_forcepasswordchange', 1, $user_id);
     if ($user_id !== false) {
         $trainer->userid = $user_id;
-        if (array_key_exists('schoolid', $DB->get_columns('trainer'))) {
-            $trainer->schoolid = $data->schoolid;
-        }
+        $trainer->schoolid = !empty($data->schoolid) ? $data->schoolid : null;
         $insert=  $DB->insert_record('trainer', $trainer);
         if($insert){
-            $now = time();
-            if (!$DB->record_exists('schoolassign', ['userid' => $user_id, 'schoolid' => $data->schoolid])) {
-                $role = $DB->get_record_sql("SELECT roleid FROM {role_assignments} WHERE userid = :userid", ['userid' => $userid], IGNORE_MULTIPLE);
-
-                $schoolassign = new stdClass();
-                $schoolassign->schoolassignee = $userid;
-                $schoolassign->schoolassignedto = $user_id;
-                $schoolassign->assigneeroleid = $role ? $role->roleid : 0;
-                $schoolassign->userid = $user_id;
-                $schoolassign->schoolid = $data->schoolid;
-                $schoolassign->timecreated = $now;
-                $schoolassign->timemodified = $now;
-                $DB->insert_record('schoolassign', $schoolassign);
-            }
-
+            local_trainer_sync_school_assignment((int) $user_id, (int) $data->schoolid, (int) $userid);
             $mappedcourses = $DB->get_records('poc_copy_course', [
                 'pocid' => $userid,
                 'schoolid' => $data->schoolid,
                 'status' => 1
             ]);
-            $hasmappingtable = $DB->get_manager()->table_exists('trainer_course_mapping');
-            foreach ($mappedcourses as $mappedcourse) {
-                local_trainer_enrol_in_course($mappedcourse->courseid, $user_id);
-                if ($hasmappingtable) {
-                    $trainermapping = new stdClass();
-                    $trainermapping->trainerrecordid = $insert;
-                    $trainermapping->traineruserid = $user_id;
-                    $trainermapping->pocid = $userid;
-                    $trainermapping->schoolid = $data->schoolid;
-                    $trainermapping->gradeid = $mappedcourse->gradeid;
-                    $trainermapping->courseid = $mappedcourse->courseid;
-                    $trainermapping->poccourseid = $mappedcourse->id;
-                    $trainermapping->status = 1;
-                    $trainermapping->timecreated = $now;
-                    $trainermapping->timemodified = $now;
-                    $DB->insert_record('trainer_course_mapping', $trainermapping);
-                }
-            }
 
             $trainername = fullname((object) [
                 'firstname' => $trainer->firstname,

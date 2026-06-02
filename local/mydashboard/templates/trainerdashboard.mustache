@@ -1,0 +1,1171 @@
+{{!
+  Trainer Dashboard — local_mydashboard/trainerdashboard
+  UI DEMO ONLY — No DB queries, no API calls, no business logic.
+  Isolated from admin / student / POC / ARM dashboards.
+  Layout: Uses Moodle's existing navbar + drawer — NO custom sidebar/header.
+  Pattern follows admindashboard.mustache: margin:-1rem, padding:28px.
+}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{{config.wwwroot}}}/local/dashboard/css/all.min.css">
+
+<style>
+/* ============================================================
+   TRAINER DASHBOARD — CSS scoped to trainer page IDs only
+   ============================================================ */
+
+/* ── Moodle chrome cleanup (same as admindashboard) ── */
+#page-local-mydashboard-index #region-main,
+#page-local-mydashboard-index #topofscroll,
+#page-mydashboard-index #region-main,
+#page-mydashboard-index #topofscroll {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+#page-mydashboard-index #page-header,
+#page-mydashboard-index .page-header-headings,
+#page-local-mydashboard-index #page-header,
+#page-local-mydashboard-index .page-header-headings {
+    display: none !important;
+}
+
+/*
+ * ── LAYOUT + SCROLL FIXES (trainer page IDs only) ───────────────
+ *
+ * AUDIT FINDINGS (reading moodle.css, custom.css, style-main.css):
+ *
+ * LEFT/RIGHT GAP CAUSES:
+ *  moodle.css  ≥768px : #page.drawers { padding-left:3rem; padding-right:3rem }
+ *  style-main  line570: #page.drawers { padding-left:1.2rem !important; padding-right:1.2rem !important }
+ *  moodle.css  ≥768px : #page.drawers .main-inner { padding: 1.5rem 0.5rem }
+ *  moodle.css  ≥768px : #page.drawers div[role=main] { padding-left:15px; padding-right:15px }
+ *  → .td-wrap margin:-1rem only cancelled inner .main-inner padding;
+ *    the outer #page padding-left/right remained → ~2-3rem gaps on each side.
+ *
+ * RIGHT SCROLLBAR CAUSE:
+ *  style-main.css line 257 : div#topofscroll { min-height:calc(100vh - 190px) }
+ *  style-main.css line 565 : #page-mydashboard-index #topofscroll { margin-top:-15px }
+ *  → topofscroll taller than viewport → browser added right scrollbar.
+ *
+ * DRAWER SCROLLBAR: already globally hidden in style-main.css:
+ *  #theme_boost-drawers-primary .drawercontent { scrollbar-width:none }
+ *  #theme_boost-drawers-primary .drawercontent::-webkit-scrollbar { display:none }
+ *  → no extra fix needed here.
+ * ──────────────────────────────────────────────────────────────── */
+
+/* 1. Zero out #page.drawers side padding → removes left/right gaps */
+#page-local-mydashboard-index #page.drawers,
+#page-mydashboard-index #page.drawers {
+    padding-left:  0 !important;
+    padding-right: 0 !important;
+}
+
+/* 2. Zero .main-inner padding/margin-top → removes inner side gutters */
+#page-local-mydashboard-index #page.drawers .main-inner,
+#page-mydashboard-index #page.drawers .main-inner {
+    padding:    0 !important;
+    margin-top: 0 !important;
+}
+
+/* 3. Zero div[role=main] side padding */
+#page-local-mydashboard-index #page.drawers div[role="main"],
+#page-mydashboard-index #page.drawers div[role="main"] {
+    padding-left:  0 !important;
+    padding-right: 0 !important;
+}
+
+/* 4. Reset #topofscroll — this is the scrollbar root cause */
+#page-local-mydashboard-index #topofscroll,
+#page-mydashboard-index #topofscroll {
+    min-height:    0       !important;
+    height:        auto    !important;
+    margin-top:    0       !important;
+    border-radius: 0       !important;
+    overflow-x:    hidden  !important;
+    overflow-y:    visible !important;
+}
+
+/* 5. Remove padding/margin from #page-content and #region-main-box */
+#page-local-mydashboard-index #page-content,
+#page-local-mydashboard-index #region-main-box,
+#page-mydashboard-index #page-content,
+#page-mydashboard-index #region-main-box {
+    padding:    0 !important;
+    margin:     0 !important;
+    min-height: 0 !important;
+}
+
+/* 6. Prevent horizontal overflow at page level */
+#page-local-mydashboard-index,
+#page-mydashboard-index {
+    overflow-x: hidden !important;
+}
+/* ── END LAYOUT / SCROLL FIX ─────────────────────────────────── */
+
+/* ── CSS custom properties (light default) ─────────────────── */
+.td-wrap {
+    --td-bg:            #f0f4ff;
+    --td-surface:       #ffffff;
+    --td-surface2:      #f8faff;
+    --td-border:        #e2e8f5;
+    --td-text:          #0f172a;
+    --td-text2:         #334155;
+    --td-muted:         #64748b;
+    --td-primary:       #4f46e5;
+    --td-primary-light: #ede9fe;
+    --td-primary-dark:  #3730a3;
+    --td-cyan:          #0891b2;
+    --td-cyan-light:    #e0f2fe;
+    --td-green:         #059669;
+    --td-green-light:   #d1fae5;
+    --td-amber:         #d97706;
+    --td-amber-light:   #fef3c7;
+    --td-rose:          #e11d48;
+    --td-rose-light:    #ffe4e6;
+    --td-violet:        #7c3aed;
+    --td-violet-light:  #ede9fe;
+    --td-shadow-sm:     0 1px 3px rgba(0,0,0,0.08);
+    --td-shadow:        0 4px 16px rgba(15,23,42,0.10);
+    --td-radius:        16px;
+    --td-transition:    all 0.22s cubic-bezier(.4,0,.2,1);
+
+    /* ── Layout — same approach as aerobay-admin-dashboard ── */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background:
+        radial-gradient(circle at top left,  rgba(79,70,229,.10), transparent 32rem),
+        radial-gradient(circle at top right, rgba(8,145,178,.10), transparent 28rem),
+        var(--td-bg);
+    color: var(--td-text);
+    margin: 0;               /* #page padding zeroed above — no bleed needed */
+    min-height: 100vh;
+    padding: 28px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Dark theme — toggled by data-theme="dark" on the wrapper */
+.td-wrap[data-theme="dark"] {
+    --td-bg:            #0d0f1a;
+    --td-surface:       #151929;
+    --td-surface2:      #1a1f35;
+    --td-border:        #252d4a;
+    --td-text:          #f1f5ff;
+    --td-text2:         #cbd5e1;
+    --td-muted:         #94a3b8;
+    --td-primary:       #6366f1;
+    --td-primary-light: rgba(99,102,241,0.15);
+    --td-primary-dark:  #4f46e5;
+    --td-cyan:          #22d3ee;
+    --td-cyan-light:    rgba(34,211,238,0.12);
+    --td-green:         #34d399;
+    --td-green-light:   rgba(52,211,153,0.12);
+    --td-amber:         #fbbf24;
+    --td-amber-light:   rgba(251,191,36,0.12);
+    --td-rose:          #fb7185;
+    --td-rose-light:    rgba(251,113,133,0.12);
+    --td-violet:        #a78bfa;
+    --td-violet-light:  rgba(167,139,250,0.12);
+    --td-shadow-sm:     0 1px 3px rgba(0,0,0,0.3);
+    --td-shadow:        0 4px 16px rgba(0,0,0,0.35);
+}
+
+/* ── Shell (max-width container matching admindashboard pattern) */
+.td-shell {
+    max-width: 1480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ============================================================
+   DASHBOARD TOP BAR (welcome + controls — NOT a real header)
+   ============================================================ */
+.td-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.td-topbar-left h1 {
+    font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+    font-weight: 800;
+    color: var(--td-text);
+    margin: 0 0 4px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.td-topbar-left p {
+    font-size: 0.85rem;
+    color: var(--td-muted);
+    margin: 0;
+}
+
+.td-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* Date card */
+.td-date-card {
+    background: var(--td-primary-light);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 10px;
+    padding: 6px 14px;
+    text-align: center;
+    line-height: 1.25;
+    min-width: 90px;
+}
+.td-date-card .td-date-day   { font-size: 1.2rem; font-weight: 800; color: var(--td-primary); line-height: 1; display: block; }
+.td-date-card .td-date-label { font-size: 0.65rem; font-weight: 600; color: var(--td-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; }
+
+/* Icon button */
+.td-icon-btn {
+    width: 38px; height: 38px;
+    border: 1px solid var(--td-border);
+    border-radius: 10px;
+    background: var(--td-surface);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--td-muted);
+    cursor: pointer;
+    transition: var(--td-transition);
+    position: relative;
+    font-size: 0.9rem;
+    outline: none;
+}
+.td-icon-btn:hover { background: var(--td-primary-light); color: var(--td-primary); border-color: rgba(99,102,241,0.3); }
+
+.td-notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 7px; height: 7px;
+    background: var(--td-rose);
+    border-radius: 50%;
+    border: 1.5px solid var(--td-surface);
+}
+
+/* Theme toggle icon switching */
+.td-wrap[data-theme="dark"] .td-icon-sun  { display: inline; }
+.td-wrap[data-theme="dark"] .td-icon-moon { display: none; }
+.td-wrap:not([data-theme="dark"]) .td-icon-sun  { display: none; }
+.td-wrap:not([data-theme="dark"]) .td-icon-moon { display: inline; }
+
+/* Trainer profile chip */
+.td-trainer-chip {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--td-surface);
+    border: 1px solid var(--td-border);
+    border-radius: 12px;
+    padding: 6px 12px 6px 6px;
+    cursor: default;
+    transition: var(--td-transition);
+}
+.td-trainer-chip:hover { border-color: var(--td-primary); background: var(--td-primary-light); }
+
+.td-trainer-avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 0.82rem; font-weight: 800; flex-shrink: 0;
+}
+
+.td-trainer-chip strong { display: block; font-size: 0.8rem; font-weight: 700; color: var(--td-text); line-height: 1.2; }
+
+.td-role-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 0.6rem; font-weight: 700;
+    padding: 1px 7px; border-radius: 20px;
+    letter-spacing: 0.05em; text-transform: uppercase;
+}
+
+/* School banner strip */
+.td-school-banner {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--td-surface);
+    border: 1px solid var(--td-border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: -4px;
+}
+.td-school-banner i { color: var(--td-primary); font-size: 1rem; }
+.td-school-banner span { font-size: 0.82rem; font-weight: 600; color: var(--td-text2); }
+.td-school-banner small { font-size: 0.72rem; color: var(--td-muted); margin-left: 4px; }
+
+/* ============================================================
+   SUMMARY CARDS
+   ============================================================ */
+.td-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.td-summary-card {
+    background: var(--td-surface);
+    border: 1px solid var(--td-border);
+    border-radius: var(--td-radius);
+    padding: 22px 22px 20px;
+    display: flex; align-items: flex-start; gap: 16px;
+    box-shadow: var(--td-shadow-sm);
+    transition: var(--td-transition);
+    position: relative; overflow: hidden;
+}
+
+.td-summary-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; border-radius: 0 0 var(--td-radius) var(--td-radius);
+    transition: transform 0.3s; transform: scaleX(0); transform-origin: left;
+}
+.td-summary-card:hover { box-shadow: var(--td-shadow); transform: translateY(-2px); }
+.td-summary-card:hover::after { transform: scaleX(1); }
+.td-summary-card.sc-indigo::after { background: var(--td-primary); }
+.td-summary-card.sc-cyan::after   { background: var(--td-cyan); }
+.td-summary-card.sc-green::after  { background: var(--td-green); }
+
+.td-summary-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; flex-shrink: 0;
+}
+.td-summary-icon.si-indigo { background: var(--td-primary-light); color: var(--td-primary); }
+.td-summary-icon.si-cyan   { background: var(--td-cyan-light);    color: var(--td-cyan); }
+.td-summary-icon.si-green  { background: var(--td-green-light);   color: var(--td-green); }
+
+.td-summary-info { flex: 1; min-width: 0; }
+
+.td-summary-value {
+    font-size: 2rem; font-weight: 800; color: var(--td-text);
+    line-height: 1; letter-spacing: -0.02em;
+}
+.td-summary-label { font-size: 0.82rem; font-weight: 600; color: var(--td-text2); margin-top: 4px; }
+.td-summary-sub   { font-size: 0.72rem; color: var(--td-muted); margin-top: 2px; }
+
+.td-trend {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 0.7rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px; margin-top: 8px;
+}
+.td-trend-up   { background: var(--td-green-light);  color: var(--td-green); }
+.td-trend-same { background: var(--td-amber-light);  color: var(--td-amber); }
+
+/* ============================================================
+   TWO-COLUMN ROWS
+   ============================================================ */
+.td-row { display: grid; gap: 20px; }
+.td-row-3-1 { grid-template-columns: 2fr 1fr; }
+.td-row-2   { grid-template-columns: 1fr 1fr; }
+
+/* ============================================================
+   CARD COMPONENT
+   ============================================================ */
+.td-card {
+    background: var(--td-surface);
+    border: 1px solid var(--td-border);
+    border-radius: var(--td-radius);
+    box-shadow: var(--td-shadow-sm);
+    overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.td-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--td-border);
+}
+
+.td-card-title { display: flex; align-items: center; gap: 10px; }
+
+.td-card-title-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 0.85rem;
+}
+
+.td-card-title h3 { font-size: 0.93rem; font-weight: 700; color: var(--td-text); margin: 0; }
+.td-card-subtitle { font-size: 0.72rem; color: var(--td-muted); margin-top: 2px; }
+
+.td-card-body { padding: 16px 20px; }
+
+.td-view-all {
+    font-size: 0.75rem; font-weight: 600; color: var(--td-primary);
+    cursor: pointer; white-space: nowrap; text-decoration: none;
+    background: none; border: none; outline: none; padding: 0;
+    transition: var(--td-transition);
+}
+.td-view-all:hover { color: var(--td-primary-dark); text-decoration: underline; }
+
+/* ============================================================
+   TODAY'S SCHEDULE TABLE
+   ============================================================ */
+.td-schedule-wrap { overflow-x: auto; }
+
+.td-schedule-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+
+.td-schedule-table th {
+    font-size: 0.7rem; font-weight: 700; color: var(--td-muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 0 12px 10px 0; text-align: left; white-space: nowrap;
+    border-bottom: 1px solid var(--td-border);
+}
+
+.td-schedule-table td {
+    padding: 11px 12px 11px 0;
+    font-size: 0.83rem; color: var(--td-text2);
+    border-bottom: 1px solid var(--td-border);
+    vertical-align: middle;
+}
+
+.td-schedule-table tr:last-child td { border-bottom: none; }
+.td-schedule-table tbody tr:hover td { background: var(--td-surface2); }
+
+.td-time-badge {
+    font-size: 0.75rem; font-weight: 700; color: var(--td-primary);
+    background: var(--td-primary-light);
+    padding: 3px 9px; border-radius: 6px; white-space: nowrap; display: inline-block;
+}
+
+.td-course-name { font-weight: 600; color: var(--td-text); font-size: 0.85rem; }
+
+.td-grade-chip {
+    display: inline-block; padding: 2px 9px; border-radius: 20px;
+    font-size: 0.7rem; font-weight: 700;
+    background: var(--td-violet-light); color: var(--td-violet); white-space: nowrap;
+}
+
+.td-mode-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+}
+.td-mode-chip.mode-class  { background: var(--td-green-light);  color: var(--td-green); }
+.td-mode-chip.mode-online { background: var(--td-cyan-light);   color: var(--td-cyan); }
+
+.td-status {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; white-space: nowrap;
+}
+.td-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+
+.td-status.s-completed { background: var(--td-green-light);   color: var(--td-green); }
+.td-status.s-completed::before { background: var(--td-green); }
+.td-status.s-ongoing   { background: var(--td-amber-light);   color: var(--td-amber); }
+.td-status.s-ongoing::before   { background: var(--td-amber); animation: td-blink 1.8s infinite; }
+.td-status.s-upcoming  { background: var(--td-primary-light); color: var(--td-primary); }
+.td-status.s-upcoming::before  { background: var(--td-primary); }
+
+@keyframes td-blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.td-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 13px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+    cursor: pointer; transition: var(--td-transition); border: none; outline: none;
+    white-space: nowrap; text-decoration: none;
+}
+.td-btn-ghost   { background: var(--td-primary-light); color: var(--td-primary); border: 1px solid rgba(99,102,241,0.3); }
+.td-btn-ghost:hover   { background: var(--td-primary); color: #fff; text-decoration: none; }
+.td-btn-primary { background: var(--td-primary); color: #fff; }
+.td-btn-primary:hover { background: var(--td-primary-dark); color: #fff; text-decoration: none; }
+.td-btn-amber   { background: var(--td-amber-light); color: var(--td-amber); border: 1px solid rgba(217,119,6,0.25); }
+.td-btn-amber:hover   { background: var(--td-amber); color: #fff; text-decoration: none; }
+
+/* ============================================================
+   ATTENDANCE OVERVIEW
+   ============================================================ */
+.td-att-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+
+.td-att-stat {
+    background: var(--td-surface2); border: 1px solid var(--td-border);
+    border-radius: 12px; padding: 14px; text-align: center;
+}
+.td-att-val   { font-size: 1.8rem; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+.td-att-label { font-size: 0.72rem; font-weight: 600; color: var(--td-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+.att-present  { color: var(--td-green); }
+.att-absent   { color: var(--td-rose); }
+
+/* Weekly bar chart */
+.td-week-title { font-size: 0.72rem; font-weight: 700; color: var(--td-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+
+.td-week-bars { display: flex; align-items: flex-end; gap: 8px; height: 80px; }
+
+.td-week-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+
+.td-week-bar { width: 100%; border-radius: 5px 5px 0 0; min-height: 4px; transition: height 0.8s cubic-bezier(.4,0,.2,1); }
+.td-week-bar.wb-present { background: linear-gradient(180deg, var(--td-green), #a7f3d0); }
+
+.td-week-day { font-size: 0.65rem; font-weight: 700; color: var(--td-muted); }
+
+.td-week-legend { display: flex; gap: 16px; margin-top: 10px; }
+.td-week-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--td-muted); font-weight: 500; }
+.td-week-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ============================================================
+   GRADE-WISE ATTENDANCE
+   ============================================================ */
+.td-grade-list { display: flex; flex-direction: column; gap: 16px; }
+
+.td-grade-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.td-grade-name   { font-size: 0.82rem; font-weight: 700; color: var(--td-text2); }
+.td-grade-pct    { font-size: 0.8rem; font-weight: 800; color: var(--td-text); }
+
+.td-progress-track { height: 7px; background: var(--td-border); border-radius: 20px; overflow: hidden; }
+
+.td-progress-fill { height: 100%; border-radius: 20px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+.pf-9  { background: linear-gradient(90deg, #6366f1, #818cf8); }
+.pf-10 { background: linear-gradient(90deg, #0891b2, #38bdf8); }
+.pf-11 { background: linear-gradient(90deg, #059669, #34d399); }
+.pf-12 { background: linear-gradient(90deg, #d97706, #fbbf24); }
+
+/* ============================================================
+   STUDENT PERFORMANCE CARDS
+   ============================================================ */
+.td-student-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+.td-student-card {
+    background: var(--td-surface2); border: 1px solid var(--td-border);
+    border-radius: 12px; padding: 14px 12px; text-align: center;
+    transition: var(--td-transition);
+}
+.td-student-card:hover { border-color: var(--td-primary); box-shadow: 0 4px 16px rgba(99,102,241,0.12); transform: translateY(-2px); }
+
+.td-stu-avatar {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; font-weight: 700; color: #fff;
+    margin: 0 auto 10px;
+}
+.td-stu-name  { font-size: 0.78rem; font-weight: 700; color: var(--td-text); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.td-stu-grade { font-size: 0.68rem; color: var(--td-muted); margin-bottom: 8px; }
+
+.td-perf-badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.pb-excellent { background: var(--td-green-light);  color: var(--td-green); }
+.pb-good      { background: var(--td-cyan-light);   color: var(--td-cyan); }
+.pb-average   { background: var(--td-amber-light);  color: var(--td-amber); }
+.pb-needs     { background: var(--td-rose-light);   color: var(--td-rose); }
+
+/* ============================================================
+   PENDING ACTIONS
+   ============================================================ */
+.td-pending-list { display: flex; flex-direction: column; gap: 10px; }
+
+.td-pending-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--td-surface2); border: 1px solid var(--td-border);
+    border-radius: 10px; transition: var(--td-transition);
+}
+.td-pending-item:hover { border-color: var(--td-primary); background: var(--td-primary-light); }
+
+.td-pending-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+
+.td-pending-text { flex: 1; min-width: 0; }
+.td-pending-title { font-size: 0.82rem; font-weight: 600; color: var(--td-text); margin-bottom: 2px; }
+.td-pending-meta  { font-size: 0.7rem; color: var(--td-muted); }
+
+.td-pending-count { font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; flex-shrink: 0; }
+
+/* ============================================================
+   RECENT ACTIVITIES
+   ============================================================ */
+.td-activity-list { display: flex; flex-direction: column; }
+
+.td-activity-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--td-border); }
+.td-activity-item:last-child { border-bottom: none; }
+
+.td-activity-dot { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; margin-top: 1px; }
+
+.td-activity-content { flex: 1; min-width: 0; }
+.td-activity-text { font-size: 0.82rem; font-weight: 600; color: var(--td-text); line-height: 1.4; }
+.td-activity-time { font-size: 0.7rem; color: var(--td-muted); margin-top: 2px; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px) {
+    .td-row-3-1 { grid-template-columns: 1fr; }
+    .td-row-2   { grid-template-columns: 1fr; }
+    .td-summary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+    .td-wrap { padding: 16px; margin: -0.5rem; }
+    .td-summary-grid { grid-template-columns: 1fr; }
+    .td-att-stats { grid-template-columns: 1fr; }
+    .td-student-grid { grid-template-columns: repeat(2, 1fr); }
+    .td-topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .td-topbar-right { width: 100%; justify-content: flex-end; }
+}
+</style>
+
+<!-- ============================================================
+     TRAINER DASHBOARD — Content only (no custom sidebar/header)
+     Moodle's existing navbar and drawer remain intact above this.
+     ============================================================ -->
+<div class="td-wrap" id="td-wrap" data-theme="dark">
+<div class="td-shell">
+
+    <!-- ── TOP BAR: welcome + controls ── -->
+    <div class="td-topbar">
+        <div class="td-topbar-left">
+            <h1>Welcome back, {{loggedinuserfullname}} 👋</h1>
+            <p>Here's what's happening in your classes today</p>
+        </div>
+        <div class="td-topbar-right">
+            <!-- Live date card -->
+            <div class="td-date-card" id="td-date-card" aria-label="Today's date">
+                <span class="td-date-day"   id="td-date-day">02</span>
+                <span class="td-date-label" id="td-date-label">June 2026</span>
+            </div>
+            <!-- Theme toggle -->
+            <button class="td-icon-btn" id="td-theme-toggle" aria-label="Toggle dark/light mode" title="Toggle theme" onclick="tdToggleTheme()">
+                <span class="td-icon-moon"><i class="fas fa-moon"></i></span>
+                <span class="td-icon-sun"><i class="fas fa-sun"></i></span>
+            </button>
+            <!-- Notifications -->
+            <button class="td-icon-btn" id="td-notif-btn" aria-label="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="td-notif-dot" aria-hidden="true"></span>
+            </button>
+            <!-- Trainer profile chip -->
+            <div class="td-trainer-chip" id="td-trainer-chip">
+                <div class="td-trainer-avatar" aria-hidden="true">{{loggedinuserinitials}}</div>
+                <div>
+                    <strong>{{loggedinuserfullname}}</strong>
+                    <span class="td-role-badge">{{loggedinuserrole}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned school strip -->
+    <div class="td-school-banner" aria-label="Assigned school">
+        <i class="fas fa-school"></i>
+        {{#hastrainerschool}}
+            <span>{{trainerschoolname}}</span>
+            <small>— Assigned School</small>
+        {{/hastrainerschool}}
+        {{^hastrainerschool}}
+            <span>No school assigned</span>
+        {{/hastrainerschool}}
+    </div>
+
+    <!-- ── SUMMARY CARDS ── -->
+    <section class="td-summary-grid" aria-label="Summary statistics">
+
+        <a href="{{{config.wwwroot}}}/local/students/student_manage.php" class="td-summary-card sc-indigo" id="td-card-students" role="button" style="text-decoration: none; cursor: pointer; color: inherit;">
+            <div class="td-summary-icon si-indigo" aria-hidden="true"><i class="fas fa-users"></i></div>
+            <div class="td-summary-info">
+                <div class="td-summary-value" id="td-stat-students">{{trainerstudentcount}}</div>
+                <div class="td-summary-label">Total Students</div>
+                <div class="td-summary-sub">In this school</div>
+                <span class="td-trend td-trend-up"><i class="fas fa-arrow-up"></i> +6 this month</span>
+            </div>
+        </a>
+
+        <div class="td-summary-card sc-cyan" id="td-card-classes">
+            <div class="td-summary-icon si-cyan" aria-hidden="true"><i class="fas fa-chalkboard"></i></div>
+            <div class="td-summary-info">
+                <div class="td-summary-value" id="td-stat-classes">5</div>
+                <div class="td-summary-label">Today's Classes</div>
+                <div class="td-summary-sub">From timetable</div>
+                <span class="td-trend td-trend-same"><i class="fas fa-circle" style="font-size:.5rem;"></i> 2 completed</span>
+            </div>
+        </div>
+
+        <div class="td-summary-card sc-green" id="td-card-attendance">
+            <div class="td-summary-icon si-green" aria-hidden="true"><i class="fas fa-user-check"></i></div>
+            <div class="td-summary-info">
+                <div class="td-summary-value" id="td-stat-attendance">87%</div>
+                <div class="td-summary-label">Today's Attendance</div>
+                <div class="td-summary-sub">Daily attendance %</div>
+                <span class="td-trend td-trend-up"><i class="fas fa-arrow-up"></i> +3% vs yesterday</span>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ── ROW: SCHEDULE + PENDING ACTIONS ── -->
+    <div class="td-row td-row-3-1">
+
+        <!-- Today's Schedule -->
+        <div class="td-card" id="td-schedule-card">
+            <div class="td-card-header">
+                <div class="td-card-title">
+                    <div class="td-card-title-icon" style="background:var(--td-cyan-light);color:var(--td-cyan);">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div>
+                        <h3>Today's Schedule</h3>
+                        <div class="td-card-subtitle">Monday, 2 June 2026</div>
+                    </div>
+                </div>
+                <button class="td-view-all">View All</button>
+            </div>
+            <div class="td-card-body" style="padding:0 20px;">
+                <div class="td-schedule-wrap">
+                <table class="td-schedule-table" aria-label="Today's class schedule">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Course</th>
+                            <th>Grade</th>
+                            <th>Mode</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="td-time-badge">08:00 – 09:00</span></td>
+                            <td><span class="td-course-name">Mathematics</span></td>
+                            <td><span class="td-grade-chip">Grade 9</span></td>
+                            <td><span class="td-mode-chip mode-class"><i class="fas fa-door-open"></i> Classroom</span></td>
+                            <td><span class="td-status s-completed">Completed</span></td>
+                            <td><button class="td-btn td-btn-ghost" id="td-view-math9">View</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="td-time-badge">09:15 – 10:15</span></td>
+                            <td><span class="td-course-name">Science</span></td>
+                            <td><span class="td-grade-chip">Grade 10</span></td>
+                            <td><span class="td-mode-chip mode-class"><i class="fas fa-door-open"></i> Classroom</span></td>
+                            <td><span class="td-status s-completed">Completed</span></td>
+                            <td><button class="td-btn td-btn-ghost" id="td-view-sci10">View</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="td-time-badge">10:30 – 11:30</span></td>
+                            <td><span class="td-course-name">Physics</span></td>
+                            <td><span class="td-grade-chip">Grade 11</span></td>
+                            <td><span class="td-mode-chip mode-online"><i class="fas fa-video"></i> Online</span></td>
+                            <td><span class="td-status s-ongoing">Ongoing</span></td>
+                            <td><button class="td-btn td-btn-amber" id="td-mark-att-phys11">Mark Attendance</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="td-time-badge">12:00 – 13:00</span></td>
+                            <td><span class="td-course-name">Chemistry</span></td>
+                            <td><span class="td-grade-chip">Grade 12</span></td>
+                            <td><span class="td-mode-chip mode-class"><i class="fas fa-door-open"></i> Classroom</span></td>
+                            <td><span class="td-status s-upcoming">Upcoming</span></td>
+                            <td><button class="td-btn td-btn-primary" id="td-mark-att-chem12">Mark Attendance</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="td-time-badge">14:00 – 15:00</span></td>
+                            <td><span class="td-course-name">Mathematics</span></td>
+                            <td><span class="td-grade-chip">Grade 12</span></td>
+                            <td><span class="td-mode-chip mode-online"><i class="fas fa-video"></i> Online</span></td>
+                            <td><span class="td-status s-upcoming">Upcoming</span></td>
+                            <td><button class="td-btn td-btn-primary" id="td-mark-att-math12">Mark Attendance</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Actions -->
+        <div class="td-card" id="td-pending-card">
+            <div class="td-card-header">
+                <div class="td-card-title">
+                    <div class="td-card-title-icon" style="background:var(--td-rose-light);color:var(--td-rose);">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div>
+                        <h3>Pending Actions</h3>
+                        <div class="td-card-subtitle">Needs your attention</div>
+                    </div>
+                </div>
+            </div>
+            <div class="td-card-body">
+                <div class="td-pending-list">
+
+                    <div class="td-pending-item" id="td-pending-att">
+                        <div class="td-pending-icon" style="background:var(--td-amber-light);color:var(--td-amber);">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="td-pending-text">
+                            <div class="td-pending-title">Mark Attendance</div>
+                            <div class="td-pending-meta">3 classes pending today</div>
+                        </div>
+                        <span class="td-pending-count" style="background:var(--td-amber-light);color:var(--td-amber);">3</span>
+                    </div>
+
+                    <div class="td-pending-item" id="td-pending-notes">
+                        <div class="td-pending-icon" style="background:var(--td-cyan-light);color:var(--td-cyan);">
+                            <i class="fas fa-file-upload"></i>
+                        </div>
+                        <div class="td-pending-text">
+                            <div class="td-pending-title">Upload Session Notes</div>
+                            <div class="td-pending-meta">2 sessions from last week</div>
+                        </div>
+                        <span class="td-pending-count" style="background:var(--td-cyan-light);color:var(--td-cyan);">2</span>
+                    </div>
+
+                    <div class="td-pending-item" id="td-pending-review">
+                        <div class="td-pending-icon" style="background:var(--td-violet-light);color:var(--td-violet);">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div class="td-pending-text">
+                            <div class="td-pending-title">Review Assignments</div>
+                            <div class="td-pending-meta">5 submissions unreviewed</div>
+                        </div>
+                        <span class="td-pending-count" style="background:var(--td-violet-light);color:var(--td-violet);">5</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /SCHEDULE + PENDING -->
+
+    <!-- ── ROW: ATTENDANCE OVERVIEW + GRADE-WISE ── -->
+    <div class="td-row td-row-2">
+
+        <!-- Attendance Overview -->
+        <div class="td-card" id="td-attendance-card">
+            <div class="td-card-header">
+                <div class="td-card-title">
+                    <div class="td-card-title-icon" style="background:var(--td-green-light);color:var(--td-green);">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div>
+                        <h3>Attendance Overview</h3>
+                        <div class="td-card-subtitle">This week's summary</div>
+                    </div>
+                </div>
+                <button class="td-view-all">Details</button>
+            </div>
+            <div class="td-card-body">
+                <div class="td-att-stats">
+                    <div class="td-att-stat">
+                        <div class="td-att-val att-present">87%</div>
+                        <div class="td-att-label">Present</div>
+                    </div>
+                    <div class="td-att-stat">
+                        <div class="td-att-val att-absent">13%</div>
+                        <div class="td-att-label">Absent</div>
+                    </div>
+                </div>
+                <div class="td-week-title">Weekly Attendance</div>
+                <div class="td-week-bars" aria-label="Weekly attendance bars">
+                    <div class="td-week-bar-wrap">
+                        <div class="td-week-bar wb-present" style="height:80%" title="Mon 80%"></div>
+                        <div class="td-week-day">Mon</div>
+                    </div>
+                    <div class="td-week-bar-wrap">
+                        <div class="td-week-bar wb-present" style="height:92%" title="Tue 92%"></div>
+                        <div class="td-week-day">Tue</div>
+                    </div>
+                    <div class="td-week-bar-wrap">
+                        <div class="td-week-bar wb-present" style="height:75%" title="Wed 75%"></div>
+                        <div class="td-week-day">Wed</div>
+                    </div>
+                    <div class="td-week-bar-wrap">
+                        <div class="td-week-bar wb-present" style="height:88%" title="Thu 88%"></div>
+                        <div class="td-week-day">Thu</div>
+                    </div>
+                    <div class="td-week-bar-wrap">
+                        <div class="td-week-bar wb-present" style="height:87%" title="Fri 87%"></div>
+                        <div class="td-week-day">Fri</div>
+                    </div>
+                    <div class="td-week-bar-wrap">
+                        <div class="td-week-bar wb-present" style="height:70%" title="Sat 70%"></div>
+                        <div class="td-week-day">Sat</div>
+                    </div>
+                </div>
+                <div class="td-week-legend">
+                    <div class="td-week-legend-item">
+                        <div class="td-week-legend-dot" style="background:var(--td-green);"></div>Present
+                    </div>
+                    <div class="td-week-legend-item">
+                        <div class="td-week-legend-dot" style="background:var(--td-rose);"></div>Absent
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grade-wise Attendance -->
+        <div class="td-card" id="td-grade-card">
+            <div class="td-card-header">
+                <div class="td-card-title">
+                    <div class="td-card-title-icon" style="background:var(--td-violet-light);color:var(--td-violet);">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <h3>Grade-wise Attendance</h3>
+                        <div class="td-card-subtitle">This month</div>
+                    </div>
+                </div>
+            </div>
+            <div class="td-card-body">
+                <div class="td-grade-list">
+                    <div>
+                        <div class="td-grade-header">
+                            <span class="td-grade-name">Grade 9</span>
+                            <span class="td-grade-pct" style="color:var(--td-primary);">91%</span>
+                        </div>
+                        <div class="td-progress-track">
+                            <div class="td-progress-fill pf-9" style="width:91%;" role="progressbar" aria-valuenow="91" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="td-grade-header">
+                            <span class="td-grade-name">Grade 10</span>
+                            <span class="td-grade-pct" style="color:var(--td-cyan);">84%</span>
+                        </div>
+                        <div class="td-progress-track">
+                            <div class="td-progress-fill pf-10" style="width:84%;" role="progressbar" aria-valuenow="84" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="td-grade-header">
+                            <span class="td-grade-name">Grade 11</span>
+                            <span class="td-grade-pct" style="color:var(--td-green);">88%</span>
+                        </div>
+                        <div class="td-progress-track">
+                            <div class="td-progress-fill pf-11" style="width:88%;" role="progressbar" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="td-grade-header">
+                            <span class="td-grade-name">Grade 12</span>
+                            <span class="td-grade-pct" style="color:var(--td-amber);">79%</span>
+                        </div>
+                        <div class="td-progress-track">
+                            <div class="td-progress-fill pf-12" style="width:79%;" role="progressbar" aria-valuenow="79" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /ATTENDANCE ROW -->
+
+    <!-- ── ROW: STUDENT PERFORMANCE + RECENT ACTIVITIES ── -->
+    <div class="td-row td-row-2">
+
+        <!-- Student Performance -->
+        <div class="td-card" id="td-students-card">
+            <div class="td-card-header">
+                <div class="td-card-title">
+                    <div class="td-card-title-icon" style="background:var(--td-amber-light);color:var(--td-amber);">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div>
+                        <h3>Student Performance</h3>
+                        <div class="td-card-subtitle">Based on recent assessments</div>
+                    </div>
+                </div>
+                <button class="td-view-all">View All</button>
+            </div>
+            <div class="td-card-body">
+                <div class="td-student-grid">
+                    <div class="td-student-card" id="td-stu-1">
+                        <div class="td-stu-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">AR</div>
+                        <div class="td-stu-name">Arjun Rao</div>
+                        <div class="td-stu-grade">Grade 9</div>
+                        <span class="td-perf-badge pb-excellent">Excellent</span>
+                    </div>
+                    <div class="td-student-card" id="td-stu-2">
+                        <div class="td-stu-avatar" style="background:linear-gradient(135deg,#0891b2,#22d3ee);">SM</div>
+                        <div class="td-stu-name">Sneha Mehta</div>
+                        <div class="td-stu-grade">Grade 10</div>
+                        <span class="td-perf-badge pb-good">Good</span>
+                    </div>
+                    <div class="td-student-card" id="td-stu-3">
+                        <div class="td-stu-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">RK</div>
+                        <div class="td-stu-name">Rahul Kumar</div>
+                        <div class="td-stu-grade">Grade 11</div>
+                        <span class="td-perf-badge pb-excellent">Excellent</span>
+                    </div>
+                    <div class="td-student-card" id="td-stu-4">
+                        <div class="td-stu-avatar" style="background:linear-gradient(135deg,#d97706,#fbbf24);">AP</div>
+                        <div class="td-stu-name">Anjali Patel</div>
+                        <div class="td-stu-grade">Grade 12</div>
+                        <span class="td-perf-badge pb-good">Good</span>
+                    </div>
+                    <div class="td-student-card" id="td-stu-5">
+                        <div class="td-stu-avatar" style="background:linear-gradient(135deg,#e11d48,#fb7185);">VN</div>
+                        <div class="td-stu-name">Vikram Nair</div>
+                        <div class="td-stu-grade">Grade 9</div>
+                        <span class="td-perf-badge pb-average">Average</span>
+                    </div>
+                    <div class="td-student-card" id="td-stu-6">
+                        <div class="td-stu-avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">PD</div>
+                        <div class="td-stu-name">Pooja Desai</div>
+                        <div class="td-stu-grade">Grade 10</div>
+                        <span class="td-perf-badge pb-needs">Needs Help</span>
+                    </div>
+                    <div class="td-student-card" id="td-stu-7">
+                        <div class="td-stu-avatar" style="background:linear-gradient(135deg,#0891b2,#6366f1);">KS</div>
+                        <div class="td-stu-name">Kavya Singh</div>
+                        <div class="td-stu-grade">Grade 11</div>
+                        <span class="td-perf-badge pb-excellent">Excellent</span>
+                    </div>
+                    <div class="td-student-card" id="td-stu-8">
+                        <div class="td-stu-avatar" style="background:linear-gradient(135deg,#059669,#0891b2);">MT</div>
+                        <div class="td-stu-name">Mohit Tiwari</div>
+                        <div class="td-stu-grade">Grade 12</div>
+                        <span class="td-perf-badge pb-good">Good</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="td-card" id="td-activity-card">
+            <div class="td-card-header">
+                <div class="td-card-title">
+                    <div class="td-card-title-icon" style="background:var(--td-primary-light);color:var(--td-primary);">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>
+                        <h3>Recent Activities</h3>
+                        <div class="td-card-subtitle">Your latest actions</div>
+                    </div>
+                </div>
+            </div>
+            <div class="td-card-body">
+                <div class="td-activity-list">
+                    <div class="td-activity-item">
+                        <div class="td-activity-dot" style="background:var(--td-green-light);color:var(--td-green);"><i class="fas fa-check-circle"></i></div>
+                        <div class="td-activity-content">
+                            <div class="td-activity-text">Attendance marked — Grade 9, Mathematics</div>
+                            <div class="td-activity-time"><i class="fas fa-clock" style="font-size:.6rem;"></i> Today, 08:58 AM</div>
+                        </div>
+                    </div>
+                    <div class="td-activity-item">
+                        <div class="td-activity-dot" style="background:var(--td-violet-light);color:var(--td-violet);"><i class="fas fa-clipboard-check"></i></div>
+                        <div class="td-activity-content">
+                            <div class="td-activity-text">Assignment reviewed — Grade 10 Science (12 submissions)</div>
+                            <div class="td-activity-time"><i class="fas fa-clock" style="font-size:.6rem;"></i> Today, 08:15 AM</div>
+                        </div>
+                    </div>
+                    <div class="td-activity-item">
+                        <div class="td-activity-dot" style="background:var(--td-cyan-light);color:var(--td-cyan);"><i class="fas fa-file-upload"></i></div>
+                        <div class="td-activity-content">
+                            <div class="td-activity-text">Session notes uploaded — Grade 11 Physics</div>
+                            <div class="td-activity-time"><i class="fas fa-clock" style="font-size:.6rem;"></i> Yesterday, 05:30 PM</div>
+                        </div>
+                    </div>
+                    <div class="td-activity-item">
+                        <div class="td-activity-dot" style="background:var(--td-amber-light);color:var(--td-amber);"><i class="fas fa-calendar-check"></i></div>
+                        <div class="td-activity-content">
+                            <div class="td-activity-text">Schedule updated for next week — 3 slots adjusted</div>
+                            <div class="td-activity-time"><i class="fas fa-clock" style="font-size:.6rem;"></i> Yesterday, 02:10 PM</div>
+                        </div>
+                    </div>
+                    <div class="td-activity-item">
+                        <div class="td-activity-dot" style="background:var(--td-green-light);color:var(--td-green);"><i class="fas fa-check-circle"></i></div>
+                        <div class="td-activity-content">
+                            <div class="td-activity-text">Attendance marked — Grade 12, Chemistry</div>
+                            <div class="td-activity-time"><i class="fas fa-clock" style="font-size:.6rem;"></i> Yesterday, 12:05 PM</div>
+                        </div>
+                    </div>
+                    <div class="td-activity-item">
+                        <div class="td-activity-dot" style="background:var(--td-rose-light);color:var(--td-rose);"><i class="fas fa-exclamation-circle"></i></div>
+                        <div class="td-activity-content">
+                            <div class="td-activity-text">Low attendance alert — Grade 12 (79%)</div>
+                            <div class="td-activity-time"><i class="fas fa-clock" style="font-size:.6rem;"></i> 2 days ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /STUDENT + ACTIVITY ROW -->
+
+</div><!-- /.td-shell -->
+</div><!-- /.td-wrap -->
+
+<script>
+/* ============================================================
+   TRAINER DASHBOARD — Isolated UI JS only
+   No API calls, no DB queries, no Moodle globals touched.
+   ============================================================ */
+(function () {
+    'use strict';
+
+    var WRAP_ID = 'td-wrap';
+    var LS_KEY  = 'td_trainer_theme';
+    var wrap    = document.getElementById(WRAP_ID);
+
+    /* Theme */
+    function applyTheme(theme) {
+        if (!wrap) { return; }
+        wrap.setAttribute('data-theme', theme);
+        localStorage.setItem(LS_KEY, theme);
+    }
+
+    (function initTheme() {
+        var saved = localStorage.getItem(LS_KEY);
+        applyTheme(saved === 'light' ? 'light' : 'dark');
+    }());
+
+    window.tdToggleTheme = function () {
+        var cur = wrap ? wrap.getAttribute('data-theme') : 'dark';
+        applyTheme(cur === 'dark' ? 'light' : 'dark');
+    };
+
+    /* Live date card */
+    (function updateDate() {
+        var dayEl = document.getElementById('td-date-day');
+        var lblEl = document.getElementById('td-date-label');
+        if (!dayEl || !lblEl) { return; }
+        var now = new Date();
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        dayEl.textContent = String(now.getDate()).padStart(2, '0');
+        lblEl.textContent = months[now.getMonth()] + ' ' + now.getFullYear();
+    }());
+
+    /* Animate progress bars */
+    (function animateBars() {
+        var bars = document.querySelectorAll('#td-wrap .td-progress-fill');
+        bars.forEach(function (bar) {
+            var target = bar.style.width;
+            bar.style.width = '0';
+            setTimeout(function () { bar.style.width = target; }, 120);
+        });
+        var wbars = document.querySelectorAll('#td-wrap .td-week-bar');
+        wbars.forEach(function (bar, i) {
+            var target = bar.style.height;
+            bar.style.height = '0';
+            setTimeout(function () { bar.style.height = target; }, 100 + i * 70);
+        });
+    }());
+
+    /* Counter animation */
+    (function animateCounters() {
+        function count(el, target, suffix, ms) {
+            if (!el) { return; }
+            var start = null;
+            function step(ts) {
+                if (!start) { start = ts; }
+                var p = Math.min((ts - start) / ms, 1);
+                var e = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.floor(e * target) + suffix;
+                if (p < 1) { requestAnimationFrame(step); }
+            }
+            requestAnimationFrame(step);
+        }
+        count(document.getElementById('td-stat-students'),  {{trainerstudentcount}}, '',  900);
+        count(document.getElementById('td-stat-classes'),   5,   '',  600);
+        count(document.getElementById('td-stat-attendance'), 87, '%', 900);
+    }());
+
+}());
+</script>

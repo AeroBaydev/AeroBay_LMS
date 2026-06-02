@@ -39,7 +39,8 @@ if ($mform->is_cancelled()) {
 
     if (local_pocschool_is_trainer_user()) {
         $trainercourses = local_pocschool_get_trainer_course_ids();
-        if (!empty($courseid) && !empty($trainercourses) && !in_array((int)$courseid, $trainercourses, true)) {
+        // trainer visibility by school mapping
+        if (!empty($courseid) && (empty($trainercourses) || !in_array((int)$courseid, $trainercourses, true))) {
             throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
         }
     }
