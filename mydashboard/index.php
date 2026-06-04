@@ -434,9 +434,211 @@ if (empty($user->lastlogin))  {
         }
         
         $somdata['trainerstudentcount'] = 0;
+        $somdata['studentsaddedthismonth'] = 0;
         if (!empty($trainerschoolid)) {
             $somdata['trainerstudentcount'] = $DB->count_records('student', ['schoolid' => $trainerschoolid]);
+            $start_of_month = strtotime('first day of this month 00:00:00');
+            $sql_new_studs = "SELECT COUNT(s.id) FROM {student} s JOIN {user} u ON u.id = s.userid WHERE s.schoolid = ? AND u.timecreated >= ?";
+            $somdata['studentsaddedthismonth'] = $DB->count_records_sql($sql_new_studs, [$trainerschoolid, $start_of_month]);
         }
+
+        $somdata['todayclassescount'] = 0;
+        $somdata['todaycompletedcount'] = 0;
+        $trainerassignedschoolid = !empty($trainer->schoolid) ? (int) $trainer->schoolid : 0;
+        $somdata['trainerschoolid'] = $trainerassignedschoolid;
+        
+        if (!empty($trainerassignedschoolid) && $DB->get_manager()->table_exists('timetable')) {
+            $timetablecolumns = $DB->get_columns('timetable');
+            $todayclasseswhere = "tt.schoolid = :trainerschoolid
+                    AND tt.day = :todayday
+                    AND tt.period IS NOT NULL
+                    AND tt.period <> ''
+                    AND EXISTS (
+                        SELECT 1
+                          FROM {course_categories} gradecat
+                         WHERE gradecat.id = tt.gradeid
+                           AND gradecat.parent = :trainergradeschoolid
+                    )";
+            $todayclassesparams = [
+                'trainerschoolid' => $trainerassignedschoolid,
+                'todayday' => local_dashboard_get_weekday_name(usergetmidnight(time())),
+                'trainergradeschoolid' => $trainerassignedschoolid,
+            ];
+
+            $somdata['todayclassescount'] = (int) $DB->count_records_sql(
+                "SELECT COUNT(DISTINCT tt.id)
+                   FROM {timetable} tt
+                  WHERE {$todayclasseswhere}",
+                $todayclassesparams
+            );
+        }
+        
+        $today_midnight = usergetmidnight(time());
+        $completed_tt_ids = [];
+        if ($DB->get_manager()->table_exists('local_dashboard_activity_logs')) {
+            $completed_sql = "SELECT dedupekey FROM {local_dashboard_activity_logs} WHERE activitytype = 'tt_completed' AND timecreated >= :midnight";
+            $completed_records = $DB->get_records_sql($completed_sql, ['midnight' => $today_midnight]);
+            foreach ($completed_records as $rec) {
+                $parts = explode('_', $rec->dedupekey);
+                if (isset($parts[2])) {
+                    $completed_tt_ids[] = (int) $parts[2];
+                }
+            }
+        }
+
+        // ── Full-week timetable JSON for schedule modal ───────────────────────────
+        // Schema: timetable(schoolid INT, gradeid INT, period VARCHAR, day VARCHAR)
+        // Grade name  : course_categories.name via gradeid
+        // Course name : poc_copy_course (VARCHAR schoolid/gradeid) → course.fullname
+        // Period      : stored as '1'–'9' → displayed as Roman numeral
+        $somdata['timetablejson'] = '[]';
+        if (!empty($trainerassignedschoolid) && $DB->get_manager()->table_exists('timetable')) {
+            $period_roman = [
+                '1' => 'I',  '2' => 'II',  '3' => 'III', '4' => 'IV',
+                '5' => 'V',  '6' => 'VI',  '7' => 'VII', '8' => 'VIII',
+                '9' => 'IX', '10' => 'X',
+            ];
+            $week_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+            // Fetch all rows for this school across all days, joined to grade name and course name.
+            $all_rows = $DB->get_records_sql(
+                'SELECT t.id, t.day, t.period,
+                        cc.name AS gradename,
+                        c.fullname AS coursename
+                   FROM {timetable} t
+              LEFT JOIN {course_categories} cc ON cc.id = t.gradeid
+              LEFT JOIN {poc_copy_course} pcc
+                     ON CAST(pcc.schoolid AS UNSIGNED) = t.schoolid
+                    AND CAST(pcc.gradeid  AS UNSIGNED) = t.gradeid
+                    AND pcc.status = 1
+              LEFT JOIN {course} c ON c.id = pcc.courseid
+                  WHERE t.schoolid = :schoolid
+               ORDER BY CAST(t.period AS UNSIGNED)',
+                ['schoolid' => $trainerassignedschoolid]
+            );
+
+            // Build day-keyed array.
+            $timetable_all = [];
+            foreach ($week_days as $wd) {
+                $timetable_all[$wd] = [];
+            }
+            foreach ($all_rows as $row) {
+                $day_key = $row->day;
+                if (!isset($timetable_all[$day_key])) {
+                    $timetable_all[$day_key] = [];
+                }
+                $period_num = trim((string) $row->period);
+                $timetable_all[$day_key][] = [
+                    'id'         => $row->id,
+                    'period'     => isset($period_roman[$period_num])
+                                        ? 'Period ' . $period_roman[$period_num]
+                                        : 'Period ' . $period_num,
+                    'gradename'  => !empty($row->gradename)  ? $row->gradename  : '—',
+                    'coursename' => !empty($row->coursename) ? $row->coursename : '—',
+                    'iscompleted'=> in_array($row->id, $completed_tt_ids)
+                ];
+            }
+
+            // Re-align todayclassescount from this dataset (single source of truth).
+            $today_day = local_dashboard_get_weekday_name(usergetmidnight(time()));
+            $somdata['todayclassescount'] = count($timetable_all[$today_day] ?? []);
+            
+            // Re-align todaycompletedcount from this dataset for today only.
+            $somdata['todaycompletedcount'] = 0;
+            if (isset($timetable_all[$today_day])) {
+                foreach ($timetable_all[$today_day] as $tt) {
+                    if ($tt['iscompleted']) {
+                        $somdata['todaycompletedcount']++;
+                    }
+                }
+            }
+
+            // Embed as JSON — all special chars escaped for safe HTML/JS embedding.
+            $somdata['timetablejson'] = json_encode(
+                $timetable_all,
+                JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+            );
+        }
+        // ── End timetable block ──────────────────────────────────────────────────
+        
+        // ── Today's Attendance ────────────────────────────────────────────────────────
+        $somdata['todayattendancepercent'] = 0;
+        $somdata['todaypresentcount']      = 0;
+        $somdata['todaytotalcount']        = 0;
+        
+        if (!empty($trainerassignedschoolid) && $DB->get_manager()->table_exists('attendance') && $DB->get_manager()->table_exists('attendance_student')) {
+            $today_midnight = usergetmidnight(time());
+            $next_midnight  = $today_midnight + 86400;
+            
+            $sql = "SELECT
+                        SUM(CASE WHEN ast.status = 'P' THEN 1 ELSE 0 END) AS present
+                    FROM {attendance} att
+                    JOIN {attendance_student} ast ON ast.attendanceid = att.id
+                    WHERE att.schoolid = :schoolid
+                      AND att.date >= :midnight
+                      AND att.date < :nextmidnight";
+                      
+            $params = [
+                'schoolid' => $trainerassignedschoolid,
+                'midnight' => $today_midnight,
+                'nextmidnight' => $next_midnight
+            ];
+            
+            $att_record = $DB->get_record_sql($sql, $params);
+            
+            // Total students in the entire school across all grades
+            $total = isset($somdata['trainerstudentcount']) ? (int) $somdata['trainerstudentcount'] : 0;
+            $present = ($att_record && !empty($att_record->present)) ? (int) $att_record->present : 0;
+            
+            $somdata['todaytotalcount'] = $total;
+            $somdata['todaypresentcount'] = $present;
+            $somdata['todayattendancepercent'] = ($total > 0) ? round(($present / $total) * 100) : 0;
+        }
+        // ── Grade-wise Attendance (This Month) ────────────────────────────────────────
+        $somdata['gradewiseattendance'] = [];
+        if (!empty($trainerassignedschoolid) && $DB->get_manager()->table_exists('attendance') && $DB->get_manager()->table_exists('attendance_student')) {
+            $start_of_month = strtotime('first day of this month 00:00:00');
+            $start_of_next_month = strtotime('first day of next month 00:00:00');
+            
+            $sql = "SELECT 
+                        cc.id, 
+                        cc.name as gradename,
+                        COUNT(ast.id) as total,
+                        SUM(CASE WHEN ast.status = 'P' THEN 1 ELSE 0 END) as present
+                    FROM {course_categories} cc
+                    LEFT JOIN {attendance} att ON att.gradeid = cc.id 
+                          AND att.schoolid = :schoolid 
+                          AND att.date >= :start_of_month 
+                          AND att.date < :start_of_next_month
+                    LEFT JOIN {attendance_student} ast ON ast.attendanceid = att.id
+                    WHERE cc.parent = :parent_schoolid
+                    GROUP BY cc.id, cc.name
+                    ORDER BY (SUM(CASE WHEN ast.status = 'P' THEN 1 ELSE 0 END) / NULLIF(COUNT(ast.id), 0)) DESC, cc.name ASC
+                    LIMIT 4";
+            
+            $params = [
+                'schoolid' => $trainerassignedschoolid,
+                'parent_schoolid' => $trainerassignedschoolid,
+                'start_of_month' => $start_of_month,
+                'start_of_next_month' => $start_of_next_month
+            ];
+            
+            $records = $DB->get_records_sql($sql, $params);
+            
+            $colors = ['primary', 'cyan', 'green', 'amber', 'rose', 'indigo'];
+            $i = 0;
+            foreach ($records as $r) {
+                $pct = ($r->total > 0) ? round(($r->present / $r->total) * 100) : 0;
+                $color = $colors[$i % count($colors)];
+                $somdata['gradewiseattendance'][] = [
+                    'gradename' => format_string($r->gradename),
+                    'percent' => $pct,
+                    'colorclass' => $color
+                ];
+                $i++;
+            }
+        }
+        
         echo $OUTPUT->render_from_template('local_mydashboard/trainerdashboard', $somdata);
     } else {
         echo $OUTPUT->render_from_template('local_mydashboard/mydashboard', $somdata);

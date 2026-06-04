@@ -802,19 +802,17 @@ function local_dashboard_get_trainer_activity_summary(int $daystart, int $dayend
         }
     }
 
-    $where = "tcm.status = 1
-            AND tcm.traineruserid IS NOT NULL
-            AND tcm.traineruserid <> 0
+    $where = "t.userid IS NOT NULL
+            AND t.userid <> 0
             AND u.deleted = 0
             AND u.suspended = 0";
     $params = [];
-    local_dashboard_apply_school_scope($where, $params, $scope, 'tcm', 'schoolid');
+    local_dashboard_apply_school_scope($where, $params, $scope, 't', 'schoolid');
 
     $totalassigned = (int) $DB->count_records_sql(
-        "SELECT COUNT(DISTINCT tcm.traineruserid)
-           FROM {trainer_course_mapping} tcm
-           JOIN {trainer} t ON t.userid = tcm.traineruserid
-           JOIN {user} u ON u.id = tcm.traineruserid
+        "SELECT COUNT(DISTINCT t.userid)
+           FROM {trainer} t
+           JOIN {user} u ON u.id = t.userid
           WHERE {$where}",
         $params
     );
@@ -850,14 +848,10 @@ function local_dashboard_get_trainer_activity_summary(int $daystart, int $dayend
                     l.metadata LIKE CONCAT('%\"attendanceid\":', att.id, ',%')
                     OR l.metadata LIKE CONCAT('%\"attendanceid\":', att.id, '}%')
                 )
-               JOIN {trainer_course_mapping} tcm ON tcm.traineruserid = l.actorid
-                AND tcm.status = 1
-                AND tcm.schoolid = att.schoolid
-                AND tcm.gradeid = att.gradeid
                JOIN {trainer} t ON t.userid = l.actorid
                JOIN {user} u ON u.id = l.actorid
-              WHERE {$activewhere}",
-            $activeparams
+              WHERE {$activewhere} AND {$where}",
+            array_merge($activeparams, $params)
         );
     }
 
@@ -872,13 +866,11 @@ function local_dashboard_get_trainer_activity_summary(int $daystart, int $dayend
                 AND tt.gradeid <> 0
                 AND EXISTS (
                     SELECT 1
-                      FROM {trainer_course_mapping} tcm
-                      JOIN {user} u ON u.id = tcm.traineruserid
-                     WHERE tcm.status = 1
-                       AND tcm.schoolid = tt.schoolid
-                       AND tcm.gradeid = tt.gradeid
-                       AND tcm.traineruserid IS NOT NULL
-                       AND tcm.traineruserid <> 0
+                      FROM {trainer} t
+                      JOIN {user} u ON u.id = t.userid
+                     WHERE t.schoolid = tt.schoolid
+                       AND t.userid IS NOT NULL
+                       AND t.userid <> 0
                        AND u.deleted = 0
                        AND u.suspended = 0
                 )";
@@ -977,7 +969,7 @@ function local_dashboard_get_trainer_activity_rows(int $daystart, int $dayend, a
 
     $scope = local_dashboard_normalize_school_scope($scope);
     $dbman = $DB->get_manager();
-    foreach (['trainer', 'trainer_course_mapping', 'user'] as $table) {
+    foreach (['trainer', 'user'] as $table) {
         if (!$dbman->table_exists($table)) {
             return [];
         }
@@ -992,9 +984,8 @@ function local_dashboard_get_trainer_activity_rows(int $daystart, int $dayend, a
     ];
     $where = "u.deleted = 0
             AND u.suspended = 0
-            AND tcm.status = 1
-            AND tcm.traineruserid IS NOT NULL
-            AND tcm.traineruserid <> 0";
+            AND t.userid IS NOT NULL
+            AND t.userid <> 0";
 
     if (!empty($filters['search'])) {
         $where .= " AND (" . $DB->sql_like($DB->sql_concat('u.firstname', "' '", 'u.lastname'), ':search', false) .
@@ -1004,13 +995,13 @@ function local_dashboard_get_trainer_activity_rows(int $daystart, int $dayend, a
     }
 
     if (!empty($filters['schoolid'])) {
-        $where .= " AND tcm.schoolid = :filterschoolid";
+        $where .= " AND t.schoolid = :filterschoolid";
         $params['filterschoolid'] = (int) $filters['schoolid'];
     }
-    local_dashboard_apply_school_scope($where, $params, $scope, 'tcm', 'schoolid');
+    local_dashboard_apply_school_scope($where, $params, $scope, 't', 'schoolid');
 
     $schooljoin = $dbman->table_exists('school') ?
-        "LEFT JOIN {school} sc ON sc.course_cat_id = tcm.schoolid" :
+        "LEFT JOIN {school} sc ON sc.course_cat_id = t.schoolid" :
         "";
     $schoolfield = $dbman->table_exists('school') ?
         "COALESCE(sc.school_name, schoolcat.name)" :
@@ -1050,8 +1041,7 @@ function local_dashboard_get_trainer_activity_rows(int $daystart, int $dayend, a
         ", activity.todaysubmitted, activity.lastactivity" :
         "";
     $sessionjoin = $dbman->table_exists('timetable') ?
-        "LEFT JOIN {timetable} tt ON tt.schoolid = tcm.schoolid
-                 AND tt.gradeid = tcm.gradeid
+        "LEFT JOIN {timetable} tt ON tt.schoolid = t.schoolid
                  AND tt.day = :dayname
                  AND tt.period IS NOT NULL
                  AND tt.period <> ''
@@ -1073,11 +1063,10 @@ function local_dashboard_get_trainer_activity_rows(int $daystart, int $dayend, a
                 GROUP_CONCAT(DISTINCT gradecat.name ORDER BY gradecat.name SEPARATOR ', ') AS gradenames,
                 {$sessionfield},
                 {$activityfields}
-           FROM {trainer_course_mapping} tcm
-           JOIN {trainer} tr ON tr.userid = tcm.traineruserid
-           JOIN {user} u ON u.id = tcm.traineruserid
-      LEFT JOIN {course_categories} schoolcat ON schoolcat.id = tcm.schoolid
-      LEFT JOIN {course_categories} gradecat ON gradecat.id = tcm.gradeid
+           FROM {trainer} t
+           JOIN {user} u ON u.id = t.userid
+      LEFT JOIN {course_categories} schoolcat ON schoolcat.id = t.schoolid
+      LEFT JOIN {course_categories} gradecat ON gradecat.parent = t.schoolid
            {$schooljoin}
            {$sessionjoin}
            {$activityjoin}
