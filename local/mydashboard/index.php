@@ -3,6 +3,7 @@
 require_once('../../config.php');
 require_once($CFG->dirroot . '/enrol/manual/lib.php');
 require_once($CFG->dirroot . '/local/dashboard/lib.php');
+require_once($CFG->dirroot . '/local/mydashboard/lib.php');
 
 global $DB, $USER, $CFG;
 require_login();
@@ -112,7 +113,8 @@ if (is_siteadmin()) {
 } else if (local_dashboard_is_pocschool_user((int) $USER->id)) {
     $scope = local_dashboard_get_pocschool_scope((int) $USER->id);
     echo $OUTPUT->render_from_template('local_mydashboard/admindashboard', array_merge($somdata, local_dashboard_get_admin_stats_context($scope)));
-} else if ($DB->record_exists('student', ['userid' => $USER->id])) {
+} else if ($studentrec = $DB->get_record('student', ['userid' => $USER->id])) {
+    $somdata = array_merge($somdata, local_mydashboard_get_student_progress_context($studentrec));
     echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $somdata);
 } else if ($trainerrec = $DB->get_record('trainer', ['userid' => $USER->id])) {
     // Trainer dashboard — isolated, UI demo only, no DB queries beyond role check.

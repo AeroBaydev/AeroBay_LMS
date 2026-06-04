@@ -3,6 +3,7 @@
 require_once('../config.php');
 require_once($CFG->dirroot . '/local/timetable/lib.php');
 require_once($CFG->dirroot . '/local/dashboard/lib.php');
+require_once($CFG->dirroot . '/local/mydashboard/lib.php');
 
 
 global $DB, $USER;
@@ -221,11 +222,13 @@ $data = [
         'onlineValues' => json_encode(array_values($onlineValues)),
         'months' => json_encode($allMonths)
     ],
-    'newslist' => array_values((array) $news_records),
-    'milestones' => [],  // Ensures it's always an array
-    'quizzes' => $quizzes,
-    'jsondata' => json_encode($quizzes) // JSON format for JS
-];
+	    'newslist' => array_values((array) $news_records),
+	    'milestones' => [],  // Ensures it's always an array
+	    'quizzes' => $quizzes,
+	    'jsondata' => json_encode($quizzes) // JSON format for JS
+		];
+
+$data = array_merge($data, local_mydashboard_get_student_progress_context($student_records));
 
 // print_r($data);
 // die;

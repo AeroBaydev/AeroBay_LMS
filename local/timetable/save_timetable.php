@@ -35,6 +35,24 @@ foreach ($existingRecords as $record) {
     $existingEntries[$record->day][$record->period] = $record->id;
 }
 
+$hasremovals = false;
+foreach ($existingEntries as $day => $periods) {
+    foreach ($periods as $period => $recordId) {
+        if (!isset($timetable[$day][$period])) {
+            $hasremovals = true;
+            break 2;
+        }
+    }
+}
+
+if ($hasremovals && $DB->record_exists('attendance', ['schoolid' => $schoolid, 'gradeid' => $gradeid])) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Attendance records exist for this school and grade. Delete attendance records first to avoid orphan attendance data."
+    ]);
+    exit();
+}
+
 // Process the submitted timetable
 foreach ($timetable as $day => $periods) {
     foreach ($periods as $period => $value) {

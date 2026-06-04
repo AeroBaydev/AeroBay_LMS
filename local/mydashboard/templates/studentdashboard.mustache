@@ -71,7 +71,7 @@
 /* ─── HERO BANNER ─── */
 .ab-hero {
   background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 45%, #06b6d4 100%);
-  padding: 20px 28px 72px;
+  padding: 18px 28px 58px;
   position: relative;
   overflow: hidden;
 }
@@ -105,8 +105,21 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   width: 100%;
+}
+.ab-hero-left {
+  flex: 1;
+  min-width: 0;
+}
+.ab-hero-right {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+  margin-top: -2px;
 }
 .ab-hero-greeting {
   font-size: 0.72rem;
@@ -117,17 +130,77 @@
   margin-bottom: 5px;
 }
 .ab-hero-name {
-  font-size: 1.75rem;
+  font-size: 1.95rem;
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 0;
+  position: relative;
+  display: inline-block;
+  text-align: right;
+}
+.ab-name-hi {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 1px;
+}
+.ab-name-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(251,191,36,0.18);
+  border: 1px solid rgba(251,191,36,0.4);
+  border-radius: 20px;
+  padding: 3px 11px;
+  font-size: 0.62rem;
   font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  backdrop-filter: blur(4px);
+}
+/* ── Name text: trainer-style letter wave ── */
+.ab-name-text {
+  display: inline-block;
   color: #fff;
-  line-height: 1.2;
-  margin-bottom: 12px;
+  cursor: default;
+  white-space: pre-wrap;
+}
+.ab-name-text .ab-letter {
+  display: inline-block;
+  color: #fff;
+  will-change: transform, color, text-shadow;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+/* On load: play wave twice (~5 sec total) */
+.ab-name-text.is-animating .ab-letter {
+  animation: abLetterWave 2s ease-in-out 2;
+}
+/* On hover: play once */
+.ab-name-text:hover .ab-letter {
+  animation: abLetterWave 2s ease-in-out 1;
+}
+@keyframes abLetterWave {
+  0%,100% {
+    transform: translateY(0);
+    color: #fff;
+    text-shadow: none;
+  }
+  40% {
+    transform: translateY(-5px);
+    color: #fbbf24;
+    text-shadow: 0 4px 14px rgba(251,191,36,0.6);
+  }
 }
 .ab-hero-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 .ab-chip {
   background: rgba(255,255,255,0.14);
@@ -159,14 +232,13 @@
 }
 .ab-hero-cta:hover { background: rgba(255,255,255,0.28); color: #fff; }
 .ab-hero-streak-box {
-  flex-shrink: 0;
   background: rgba(255,255,255,0.14);
   border: 1.5px solid rgba(255,255,255,0.28);
   border-radius: 14px;
-  padding: 14px 20px;
+  padding: 9px 18px;
   text-align: center;
   backdrop-filter: blur(8px);
-  min-width: 110px;
+  min-width: 100px;
 }
 .ab-streak-num { font-size: 2.2rem; font-weight: 800; color: #fbbf24; display: block; line-height: 1; }
 .ab-streak-label { font-size: 0.65rem; color: rgba(255,255,255,0.75); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
@@ -175,12 +247,12 @@
 .ab-page { width: 100%; padding: 0 28px; }
 .ab-kpi-row {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
-  margin-top: -44px;
+  margin-top: -50px;
   position: relative;
   z-index: 10;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 .ab-kpi {
   background: #fff;
@@ -488,6 +560,10 @@
 .ab-sd-c.miss   { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.3); }
 .ab-sd-l { font-size:0.56rem; color:rgba(255,255,255,0.45); font-weight:600; text-transform:uppercase; }
 .ab-streak-tip { margin-top:14px; padding:10px 12px; background:rgba(255,255,255,0.08); border-radius:9px; font-size:0.73rem; color:rgba(255,255,255,0.65); }
+.ab-streak-meta { margin-top:10px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+.ab-streak-meta-item { background:rgba(255,255,255,0.08); border-radius:8px; padding:7px 6px; min-width:0; }
+.ab-streak-meta-label { font-size:0.55rem; color:rgba(255,255,255,0.48); font-weight:700; text-transform:uppercase; line-height:1.15; }
+.ab-streak-meta-value { margin-top:3px; font-size:0.74rem; color:rgba(255,255,255,0.9); font-weight:800; line-height:1.15; overflow-wrap:anywhere; }
 
 /* ─── ACHIEVEMENTS ─── */
 .ab-badges-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
@@ -593,17 +669,18 @@
   .ab-badges-grid{ grid-template-columns:repeat(4,1fr); }
 }
 @media (max-width:768px) {
-  .ab-kpi-row    { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .ab-kpi-row    { grid-template-columns:repeat(3,1fr); gap:10px; }
   .ab-grid-2     { grid-template-columns:1fr; }
   .ab-grid-3     { grid-template-columns:1fr; }
   .ab-badges-grid{ grid-template-columns:repeat(3,1fr); }
-  .ab-hero       { padding:22px 16px 68px; }
-  .ab-hero-name  { font-size:1.4rem; }
-  .ab-hero-right { display:none; }
+  .ab-hero       { padding:18px 16px 58px; }
+  .ab-hero-inner { flex-direction: column; gap: 16px; }
+  .ab-hero-right { align-items: flex-start; text-align: left; }
+  .ab-hero-name  { font-size:1.45rem; text-align: left; }
   .ab-page       { padding:0 12px; }
 }
 @media (max-width:480px) {
-  .ab-kpi-row    { grid-template-columns:1fr 1fr; gap:9px; }
+  .ab-kpi-row    { grid-template-columns:1fr; gap:9px; }
   .ab-badges-grid{ grid-template-columns:repeat(2,1fr); }
 }
 </style>
@@ -614,21 +691,32 @@
   <div class="ab-hero">
     <div class="ab-hero-deco">🛸🚀✈️</div>
     <div class="ab-hero-inner">
-      <div>
+
+      {{! Left — greeting, chips, CTA }}
+      <div class="ab-hero-left">
         <div class="ab-hero-greeting">Welcome back to AeroBay STEAM Labs</div>
-        <div class="ab-hero-name">Hi, {{userfullname}}! 👋</div>
-        <div class="ab-hero-chips">
+        <div class="ab-hero-chips" style="margin-top:10px;">
           <span class="ab-chip"><i class="fa-solid fa-flask"></i> Session 3 · Active</span>
           <span class="ab-chip"><i class="fa-solid fa-graduation-cap"></i> Grade 9–10</span>
           <span class="ab-chip"><i class="fa-solid fa-school"></i> AeroBay In-House</span>
           <span class="ab-chip"><i class="fa-solid fa-user-tie"></i> Trainer: Angad Sharma</span>
         </div>
-        <a class="ab-hero-cta"><i class="fa-solid fa-play"></i> Continue Learning</a>
+        <a class="ab-hero-cta" style="margin-top:14px;"><i class="fa-solid fa-play"></i> Continue Learning</a>
       </div>
-      <div class="ab-hero-streak-box">
-        <span class="ab-streak-num">🔥 7</span>
-        <div class="ab-streak-label">Day Streak</div>
+
+      {{! Right — Name on top, Streak below }}
+      <div class="ab-hero-right">
+        <div class="ab-hero-name">
+          <div class="ab-name-badge" style="justify-content:flex-end;"><i class="fa-solid fa-star"></i> AeroBay Scholar</div>
+          <span class="ab-name-hi" style="text-align:right;">Hey there 👋</span>
+          <span class="ab-name-text">{{userfullname}}!</span>
+        </div>
+        <div class="ab-hero-streak-box">
+          <span class="ab-streak-num">🔥 {{currentstreak}}</span>
+          <div class="ab-streak-label">Login Streak</div>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -638,39 +726,21 @@
     <div class="ab-kpi-row">
       <div class="ab-kpi k-blue">
         <div class="ab-kpi-icon"><i class="fa-solid fa-circle-half-stroke"></i></div>
-        <div class="ab-kpi-val" data-target="68" data-suffix="%">0%</div>
+        <div class="ab-kpi-val" data-target="{{overallprogressnumber}}" data-suffix="%">{{overallprogress}}</div>
         <div class="ab-kpi-lbl">Overall Progress</div>
-        <div class="ab-kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +12% this week</div>
-      </div>
-      <div class="ab-kpi k-green">
-        <div class="ab-kpi-icon"><i class="fa-solid fa-clock"></i></div>
-        <div class="ab-kpi-val" data-target="24" data-suffix="h">0h</div>
-        <div class="ab-kpi-lbl">Lab Hours</div>
-        <div class="ab-kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +3h this month</div>
-      </div>
-      <div class="ab-kpi k-amber">
-        <div class="ab-kpi-icon"><i class="fa-solid fa-diagram-project"></i></div>
-        <div class="ab-kpi-val" data-target="3" data-suffix="">0</div>
-        <div class="ab-kpi-lbl">Projects Done</div>
-        <div class="ab-kpi-trend neu"><i class="fa-solid fa-minus"></i> 1 in progress</div>
+        <div class="ab-kpi-trend neu"><i class="fa-solid fa-minus"></i> Attendance + assessments</div>
       </div>
       <div class="ab-kpi k-purple">
         <div class="ab-kpi-icon"><i class="fa-solid fa-file-circle-check"></i></div>
-        <div class="ab-kpi-val" data-target="5" data-suffix="">0</div>
+        <div class="ab-kpi-val" data-target="{{assessmentpercentnumber}}" data-suffix="%">{{assessmentpercent}}</div>
         <div class="ab-kpi-lbl">Assessments</div>
-        <div class="ab-kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> Avg 82%</div>
-      </div>
-      <div class="ab-kpi k-rose">
-        <div class="ab-kpi-icon"><i class="fa-solid fa-medal"></i></div>
-        <div class="ab-kpi-val" data-target="4" data-suffix="">0</div>
-        <div class="ab-kpi-lbl">Badges Earned</div>
-        <div class="ab-kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> 2 unlockable</div>
+        <div class="ab-kpi-trend neu"><i class="fa-solid fa-minus"></i> {{assessmentattemptedcount}} / {{assessmenttotalcount}} completed</div>
       </div>
       <div class="ab-kpi k-indigo">
         <div class="ab-kpi-icon"><i class="fa-solid fa-user-check"></i></div>
-        <div class="ab-kpi-val" data-target="91" data-suffix="%">0%</div>
+        <div class="ab-kpi-val" data-target="{{attendancepercentnumber}}" data-suffix="%">{{attendancepercent}}</div>
         <div class="ab-kpi-lbl">Attendance</div>
-        <div class="ab-kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> This month</div>
+        <div class="ab-kpi-trend neu"><i class="fa-solid fa-minus"></i> This month</div>
       </div>
     </div>
 
@@ -986,21 +1056,35 @@
       {{! Streak }}
       <div class="ab-streak-card">
         <div class="ab-streak-hd">
-          <div class="ab-streak-hd-title">🔥 Learning Streak</div>
+          <div class="ab-streak-hd-title">🔥 Login Streak</div>
           <span style="background:rgba(251,191,36,0.18);color:#fbbf24;font-size:0.62rem;font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid rgba(251,191,36,0.3);">This Week</span>
         </div>
-        <div class="ab-streak-big">7</div>
-        <div class="ab-streak-sub">Days in a row — Keep it up! 🎯</div>
+        <div class="ab-streak-big">{{currentstreak}}</div>
+        <div class="ab-streak-sub">Consecutive login days</div>
         <div class="ab-streak-days">
-          <div class="ab-sd"><div class="ab-sd-c done">✓</div><div class="ab-sd-l">Mon</div></div>
-          <div class="ab-sd"><div class="ab-sd-c done">✓</div><div class="ab-sd-l">Tue</div></div>
-          <div class="ab-sd"><div class="ab-sd-c done">✓</div><div class="ab-sd-l">Wed</div></div>
-          <div class="ab-sd"><div class="ab-sd-c done">✓</div><div class="ab-sd-l">Thu</div></div>
-          <div class="ab-sd"><div class="ab-sd-c done">✓</div><div class="ab-sd-l">Fri</div></div>
-          <div class="ab-sd"><div class="ab-sd-c done">✓</div><div class="ab-sd-l">Sat</div></div>
-          <div class="ab-sd"><div class="ab-sd-c today">→</div><div class="ab-sd-l">Sun</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#mon_logged}}done{{/mon_logged}}{{^mon_logged}}miss{{/mon_logged}}">{{#mon_logged}}✓{{/mon_logged}}{{^mon_logged}}○{{/mon_logged}}</div><div class="ab-sd-l">Mon</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#tue_logged}}done{{/tue_logged}}{{^tue_logged}}miss{{/tue_logged}}">{{#tue_logged}}✓{{/tue_logged}}{{^tue_logged}}○{{/tue_logged}}</div><div class="ab-sd-l">Tue</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#wed_logged}}done{{/wed_logged}}{{^wed_logged}}miss{{/wed_logged}}">{{#wed_logged}}✓{{/wed_logged}}{{^wed_logged}}○{{/wed_logged}}</div><div class="ab-sd-l">Wed</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#thu_logged}}done{{/thu_logged}}{{^thu_logged}}miss{{/thu_logged}}">{{#thu_logged}}✓{{/thu_logged}}{{^thu_logged}}○{{/thu_logged}}</div><div class="ab-sd-l">Thu</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#fri_logged}}done{{/fri_logged}}{{^fri_logged}}miss{{/fri_logged}}">{{#fri_logged}}✓{{/fri_logged}}{{^fri_logged}}○{{/fri_logged}}</div><div class="ab-sd-l">Fri</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#sat_logged}}done{{/sat_logged}}{{^sat_logged}}miss{{/sat_logged}}">{{#sat_logged}}✓{{/sat_logged}}{{^sat_logged}}○{{/sat_logged}}</div><div class="ab-sd-l">Sat</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#sun_logged}}done{{/sun_logged}}{{^sun_logged}}miss{{/sun_logged}}">{{#sun_logged}}✓{{/sun_logged}}{{^sun_logged}}○{{/sun_logged}}</div><div class="ab-sd-l">Sun</div></div>
         </div>
-        <div class="ab-streak-tip"><i class="fa-solid fa-circle-info" style="color:#fbbf24;margin-right:5px;"></i>Complete today's session to keep your streak!</div>
+        <div class="ab-streak-tip"><i class="fa-solid fa-circle-info" style="color:#fbbf24;margin-right:5px;"></i>Login today to maintain your streak</div>
+        <div class="ab-streak-meta">
+          <div class="ab-streak-meta-item">
+            <div class="ab-streak-meta-label">Current Streak</div>
+            <div class="ab-streak-meta-value">{{currentstreak}}</div>
+          </div>
+          <div class="ab-streak-meta-item">
+            <div class="ab-streak-meta-label">Longest Streak</div>
+            <div class="ab-streak-meta-value">{{longeststreak}}</div>
+          </div>
+          <div class="ab-streak-meta-item">
+            <div class="ab-streak-meta-label">Last Login</div>
+            <div class="ab-streak-meta-value">{{lastlogindate}}</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1029,7 +1113,7 @@
           <div class="ab-badge"><span class="ab-badge-em">🚀</span><div class="ab-badge-nm">Launchpad</div><div class="ab-badge-ds">First session done</div></div>
           <div class="ab-badge"><span class="ab-badge-em">🏅</span><div class="ab-badge-nm">Quick Learner</div><div class="ab-badge-ds">Scored 90%+ in quiz</div></div>
           <div class="ab-badge"><span class="ab-badge-em">🔬</span><div class="ab-badge-nm">Lab Explorer</div><div class="ab-badge-ds">5 lab sessions done</div></div>
-          <div class="ab-badge"><span class="ab-badge-em">🎯</span><div class="ab-badge-nm">On Target</div><div class="ab-badge-ds">7-day streak</div></div>
+          <div class="ab-badge"><span class="ab-badge-em">🎯</span><div class="ab-badge-nm">On Target</div><div class="ab-badge-ds">{{currentstreak}}-day streak</div></div>
           <div class="ab-badge locked"><span class="ab-badge-em">🛸</span><div class="ab-badge-nm">Innovator</div><div class="ab-badge-ds">Complete a project</div></div>
           <div class="ab-badge locked"><span class="ab-badge-em">🤖</span><div class="ab-badge-nm">Robotics Star</div><div class="ab-badge-ds">Finish robotics session</div></div>
         </div>
@@ -1111,6 +1195,7 @@
     /* KPI counter animation */
     document.querySelectorAll('.ab-kpi-val[data-target]').forEach(function(el){
       var target = parseFloat(el.getAttribute('data-target'));
+      if (!isFinite(target)) { target = 0; }
       var suffix = el.getAttribute('data-suffix')||'';
       el.textContent = '0'+suffix;
       var st=null;
@@ -1149,6 +1234,33 @@
         }
       });
     }
+
+    /* ── Name: trainer-style letter wave ── */
+    (function(){
+      var nameEl = document.querySelector('.ab-name-text');
+      if (!nameEl) return;
+      var text = nameEl.textContent;
+      nameEl.textContent = '';
+      var delayIdx = 0;
+      for (var i = 0; i < text.length; i++) {
+        if (text[i] === ' ') {
+          nameEl.appendChild(document.createTextNode(' '));
+        } else {
+          var span = document.createElement('span');
+          span.textContent = text[i];
+          span.className = 'ab-letter';
+          span.style.animationDelay = (delayIdx * 0.05) + 's';
+          delayIdx++;
+          nameEl.appendChild(span);
+        }
+      }
+      /* Play on load for ~5 sec */
+      nameEl.classList.add('is-animating');
+      setTimeout(function() {
+        nameEl.classList.remove('is-animating');
+      }, 5500);
+    }());
+
   });
 })();
 </script>
