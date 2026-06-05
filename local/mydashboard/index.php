@@ -115,6 +115,12 @@ if (is_siteadmin()) {
     echo $OUTPUT->render_from_template('local_mydashboard/admindashboard', array_merge($somdata, local_dashboard_get_admin_stats_context($scope)));
 } else if ($studentrec = $DB->get_record('student', ['userid' => $USER->id])) {
     $somdata = array_merge($somdata, local_mydashboard_get_student_progress_context($studentrec));
+    if (!isset($somdata['schoolname']) && !empty($studentrec->schoolid)) {
+        $schoolcat = $DB->get_record('course_categories', ['id' => $studentrec->schoolid], 'name');
+        if ($schoolcat) {
+            $somdata['schoolname'] = format_string($schoolcat->name);
+        }
+    }
     echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $somdata);
 } else if ($trainerrec = $DB->get_record('trainer', ['userid' => $USER->id])) {
     // Trainer dashboard — isolated, UI demo only, no DB queries beyond role check.
@@ -156,7 +162,7 @@ if (is_siteadmin()) {
     // Verified schema: timetable(id, schoolid, gradeid, period, day)
     // Period stored as varchar integer '1'–'9' → display as Roman numeral.
     // Grade name: course_categories.name via gradeid.
-    // Course name: poc_copy_course (varchar schoolid/gradeid) → course.fullname.
+    // Course name: valid poc_copy_course mapping → course.fullname.
     // No status column → completed always 0.
     $period_roman = ['1'=>'I','2'=>'II','3'=>'III','4'=>'IV','5'=>'V',
                      '6'=>'VI','7'=>'VII','8'=>'VIII','9'=>'IX','10'=>'X'];
@@ -173,35 +179,182 @@ if (is_siteadmin()) {
         $timetable_all = [];
         $all_rows = $DB->get_records_sql(
             'SELECT t.id, t.day, t.period,
-                    cc.name AS gradename, c.fullname AS coursename
+                    t.schoolid, t.gradeid,
+                    cc.name AS gradename
                FROM {timetable} t
           LEFT JOIN {course_categories} cc ON cc.id = t.gradeid
-          LEFT JOIN {poc_copy_course} pcc
-                 ON CAST(pcc.schoolid AS UNSIGNED) = t.schoolid
-                AND CAST(pcc.gradeid  AS UNSIGNED) = t.gradeid
-                AND pcc.status = 1
-          LEFT JOIN {course} c ON c.id = pcc.courseid
               WHERE t.schoolid = :schoolid
            ORDER BY CAST(t.period AS UNSIGNED)',
             ['schoolid' => $timetable_schoolid]
         );
 
+        $validcoursebygrade = [];
+        foreach ($all_rows as $row) {
+            $mappingkey = ((int) $row->schoolid) . ':' . ((int) $row->gradeid);
+            if (array_key_exists($mappingkey, $validcoursebygrade)) {
+                continue;
+            }
+
+            $mapping = local_mydashboard_get_learning_path_course_mapping((int) $row->schoolid, (int) $row->gradeid);
+            $validcoursebygrade[$mappingkey] = $mapping ? [
+                'courseid' => (int) $mapping->courseid,
+                'coursename' => format_string($mapping->coursename),
+            ] : null;
+        }
+
+        $courseids = [];
+        foreach ($all_rows as $row) {
+            $mappingkey = ((int) $row->schoolid) . ':' . ((int) $row->gradeid);
+            $courseid = (int) ($validcoursebygrade[$mappingkey]['courseid'] ?? 0);
+            if ($courseid > 0) {
+                $courseids[$courseid] = $courseid;
+            }
+        }
+
+        $sectionsbycourse = [];
+        $sectionidsbycourse = [];
+        $modulecountsbycourse = [];
+        if (!empty($courseids)) {
+            list($coursesql, $courseparams) = $DB->get_in_or_equal(array_values($courseids), SQL_PARAMS_NAMED, 'ttcourse');
+            $sectionrows = $DB->get_records_sql(
+                "SELECT id, course, section, name, visible, sequence
+                   FROM {course_sections}
+                  WHERE course {$coursesql}
+                    AND section > 0
+               ORDER BY course, section",
+                $courseparams
+            );
+
+            foreach ($sectionrows as $section) {
+                $sectioncourseid = (int) $section->course;
+                if (!isset($sectionsbycourse[$sectioncourseid])) {
+                    $sectionsbycourse[$sectioncourseid] = [];
+                    $sectionidsbycourse[$sectioncourseid] = [];
+                }
+
+                $sectionnumber = (int) $section->section;
+                $sectionidsbycourse[$sectioncourseid][] = (int) $section->id;
+                $sectionsbycourse[$sectioncourseid][] = [
+                    'sectionid' => (int) $section->id,
+                    'sectionnumber' => $sectionnumber,
+                    'sectionname' => !empty($section->name) ? format_string($section->name) : 'Session ' . $sectionnumber,
+                    'visible' => (int) $section->visible,
+                ];
+            }
+
+            $modulerows = $DB->get_records_sql(
+                "SELECT cm.course, COUNT(cm.id) AS modulecount
+                   FROM {course_modules} cm
+                   JOIN {course_sections} cs ON cs.id = cm.section
+                  WHERE cm.course {$coursesql}
+                    AND cs.course = cm.course
+                    AND cs.section > 0
+                    AND FIND_IN_SET(cm.id, cs.sequence)
+               GROUP BY cm.course",
+                $courseparams
+            );
+            foreach ($modulerows as $modulerow) {
+                $modulecountsbycourse[(int) $modulerow->course] = (int) $modulerow->modulecount;
+            }
+        }
+
+        $progressbysection = [];
+        if (!empty($courseids) && $DB->get_manager()->table_exists('local_session_progress')) {
+            list($progresscoursesql, $progresscourseparams) = $DB->get_in_or_equal(array_values($courseids), SQL_PARAMS_NAMED, 'ttprogresscourse');
+            $progressrows = $DB->get_records_sql(
+                "SELECT id, schoolid, gradeid, courseid, sectionid, trainerid, status, completeddays, timecompleted
+                   FROM {local_session_progress}
+                  WHERE schoolid = :progressschoolid
+                    AND courseid {$progresscoursesql}",
+                ['progressschoolid' => $timetable_schoolid] + $progresscourseparams
+            );
+
+            foreach ($progressrows as $progress) {
+                $progresskey = implode(':', [
+                    (int) $progress->schoolid,
+                    (int) $progress->gradeid,
+                    (int) $progress->courseid,
+                    (int) $progress->sectionid,
+                ]);
+                $progressbysection[$progresskey] = [
+                    'trainerid' => (int) $progress->trainerid,
+                    'status' => !empty($progress->status) ? $progress->status : 'pending',
+                    'completeddays' => (int) $progress->completeddays,
+                    'timecompleted' => (int) $progress->timecompleted,
+                ];
+            }
+        }
+
         // Organise by day
         foreach ($week_days as $wd) {
             $timetable_all[$wd] = [];
         }
+        $missingmappinglogged = [];
+        $sessiondebuglogged = [];
         foreach ($all_rows as $row) {
             $day_key = $row->day;
             if (!isset($timetable_all[$day_key])) {
                 $timetable_all[$day_key] = [];
             }
             $period_num = trim((string) $row->period);
+            $mappingkey = ((int) $row->schoolid) . ':' . ((int) $row->gradeid);
+            $coursemapping = $validcoursebygrade[$mappingkey] ?? null;
+            $courseid = (int) ($coursemapping['courseid'] ?? 0);
+            $coursename = !empty($coursemapping['coursename']) ? $coursemapping['coursename'] : 'No course mapped';
+            $sessions = [];
+            if ($courseid > 0) {
+                foreach ($sectionsbycourse[$courseid] ?? [] as $section) {
+                    $progresskey = implode(':', [
+                        (int) $row->schoolid,
+                        (int) $row->gradeid,
+                        $courseid,
+                        (int) $section['sectionid'],
+                    ]);
+                    $progress = $progressbysection[$progresskey] ?? null;
+                    $sessions[] = $section + [
+                        'status' => $progress['status'] ?? 'pending',
+                        'completeddays' => $progress['completeddays'] ?? 0,
+                        'timecompleted' => $progress['timecompleted'] ?? 0,
+                        'trainerid' => $progress['trainerid'] ?? 0,
+                    ];
+                }
+                if (!isset($sessiondebuglogged[$mappingkey])) {
+                    $sessiondebuglogged[$mappingkey] = true;
+                    error_log('local_mydashboard session extraction debug');
+                    error_log('mappingkey=' . $mappingkey);
+                    error_log('schoolid=' . (int) $row->schoolid);
+                    error_log('gradeid=' . (int) $row->gradeid);
+                    error_log('resolved courseid=' . $courseid);
+                    error_log('section count=' . count($sectionsbycourse[$courseid] ?? []));
+                    error_log('module count=' . (int) ($modulecountsbycourse[$courseid] ?? 0));
+                    error_log('section ids loaded=' . implode(',', $sectionidsbycourse[$courseid] ?? []));
+                    error_log('final sessions array count=' . count($sessions));
+                }
+            } else if (!isset($missingmappinglogged[$mappingkey])) {
+                $missingmappinglogged[$mappingkey] = true;
+                $schoolid = (int) $row->schoolid;
+                $gradeid = (int) $row->gradeid;
+                error_log('local_mydashboard timetable course mapping missing');
+                error_log('schoolid=' . $schoolid);
+                error_log('gradeid=' . $gradeid);
+                error_log('mappingkey=' . $mappingkey);
+                error_log('resolved courseid=' . $courseid);
+                error_log('sessions count=' . count($sessions));
+            }
+
             $timetable_all[$day_key][] = [
                 'period'     => isset($period_roman[$period_num])
                                     ? 'Period ' . $period_roman[$period_num]
                                     : 'Period ' . $period_num,
                 'gradename'  => !empty($row->gradename)  ? $row->gradename  : '—',
-                'coursename' => !empty($row->coursename) ? $row->coursename : '—',
+                'coursename' => $coursename,
+                'courseid'   => $courseid,
+                'sessions'   => $sessions,
+                'mappingdebug' => [
+                    'courseid' => $courseid,
+                    'courseexists' => $courseid > 0,
+                    'sectioncount' => count($sessions),
+                ],
             ];
         }
 

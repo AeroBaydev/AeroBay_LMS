@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/mydashboard/db" VERSION="2026060400" COMMENT="XMLDB file for local_mydashboard"
+<XMLDB PATH="local/mydashboard/db" VERSION="2026060500" COMMENT="XMLDB file for local_mydashboard"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
@@ -34,6 +34,29 @@
       <INDEXES>
         <INDEX NAME="userid-logindate" UNIQUE="true" FIELDS="userid, logindate"/>
         <INDEX NAME="logindate" UNIQUE="false" FIELDS="logindate"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_session_progress" COMMENT="Trainer-driven course section completion state">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="schoolid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="gradeid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="sectionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="trainerid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending" SEQUENCE="false"/>
+        <FIELD NAME="completeddays" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecompleted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="school-grade-course-section" UNIQUE="true" FIELDS="schoolid, gradeid, courseid, sectionid"/>
+        <INDEX NAME="sectionid" UNIQUE="false" FIELDS="sectionid"/>
+        <INDEX NAME="school-grade-course" UNIQUE="false" FIELDS="schoolid, gradeid, courseid"/>
       </INDEXES>
     </TABLE>
   </TABLES>

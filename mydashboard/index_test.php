@@ -674,6 +674,19 @@ if (!empty($school_number)) {
             );
         }
         
+        $today_midnight = usergetmidnight(time());
+        $completed_tt_ids = [];
+        if ($DB->get_manager()->table_exists('local_dashboard_activity_logs')) {
+            $completed_sql = "SELECT dedupekey FROM {local_dashboard_activity_logs} WHERE activitytype = 'tt_completed' AND timecreated >= :midnight";
+            $completed_records = $DB->get_records_sql($completed_sql, ['midnight' => $today_midnight]);
+            foreach ($completed_records as $rec) {
+                $parts = explode('_', $rec->dedupekey);
+                if (isset($parts[2])) {
+                    $completed_tt_ids[] = (int) $parts[2];
+                }
+            }
+        }
+
         // ── Full-week timetable JSON for schedule modal ───────────────────────────
         // Schema: timetable(schoolid INT, gradeid INT, period VARCHAR, day VARCHAR)
         // Grade name  : course_categories.name via gradeid
@@ -691,8 +704,6 @@ if (!empty($school_number)) {
             // Fetch all rows for this school across all days, joined to grade name and course name.
             $all_rows = $DB->get_records_sql(
                 'SELECT t.id, t.day, t.period,
-                        t.schoolid, t.gradeid,
-                        pcc.courseid,
                         cc.name AS gradename,
                         c.fullname AS coursename
                    FROM {timetable} t
@@ -707,71 +718,6 @@ if (!empty($school_number)) {
                 ['schoolid' => $trainerassignedschoolid]
             );
 
-            $courseids = [];
-            foreach ($all_rows as $row) {
-                $courseid = (int) ($row->courseid ?? 0);
-                if ($courseid > 0) {
-                    $courseids[$courseid] = $courseid;
-                }
-            }
-
-            $sectionsbycourse = [];
-            if (!empty($courseids)) {
-                list($coursesql, $courseparams) = $DB->get_in_or_equal(array_values($courseids), SQL_PARAMS_NAMED, 'mydashcourse');
-                $sectionrecords = $DB->get_records_sql(
-                    "SELECT cs.id, cs.course, cs.section, cs.name, cs.visible, COUNT(cm.id) AS modulecount
-                       FROM {course_sections} cs
-                       JOIN {course_modules} cm ON cm.course = cs.course
-                        AND cm.section = cs.id
-                        AND FIND_IN_SET(cm.id, cs.sequence)
-                      WHERE cs.course {$coursesql}
-                        AND cs.section > 0
-                   GROUP BY cs.id, cs.course, cs.section, cs.name, cs.visible
-                   ORDER BY cs.course, cs.section",
-                    $courseparams
-                );
-                foreach ($sectionrecords as $sectionrecord) {
-                    $sectioncourseid = (int) $sectionrecord->course;
-                    if (!isset($sectionsbycourse[$sectioncourseid])) {
-                        $sectionsbycourse[$sectioncourseid] = [];
-                    }
-                    $sectionnumber = (int) $sectionrecord->section;
-                    $sectionsbycourse[$sectioncourseid][] = [
-                        'sectionid' => (int) $sectionrecord->id,
-                        'sectionnumber' => $sectionnumber,
-                        'sectionname' => !empty($sectionrecord->name) ? format_string($sectionrecord->name) : 'Session ' . $sectionnumber,
-                        'visible' => (int) $sectionrecord->visible,
-                    ];
-                }
-            }
-
-            $progressbysection = [];
-            if (!empty($courseids) && $DB->get_manager()->table_exists('local_session_progress')) {
-                list($progresscoursesql, $progresscourseparams) = $DB->get_in_or_equal(array_values($courseids), SQL_PARAMS_NAMED, 'mydashprogresscourse');
-                $progressrecords = $DB->get_records_sql(
-                    "SELECT sectionid, schoolid, gradeid, courseid, trainerid, status, completeddays, timecompleted
-                       FROM {local_session_progress}
-                      WHERE schoolid = :progressschoolid
-                        AND courseid {$progresscoursesql}",
-                    ['progressschoolid' => $trainerassignedschoolid] + $progresscourseparams
-                );
-
-                foreach ($progressrecords as $progressrecord) {
-                    $progresskey = implode(':', [
-                        (int) $progressrecord->schoolid,
-                        (int) $progressrecord->gradeid,
-                        (int) $progressrecord->courseid,
-                        (int) $progressrecord->sectionid,
-                    ]);
-                    $progressbysection[$progresskey] = [
-                        'trainerid' => (int) $progressrecord->trainerid,
-                        'status' => !empty($progressrecord->status) ? strtolower(trim((string) $progressrecord->status)) : 'pending',
-                        'completeddays' => (int) $progressrecord->completeddays,
-                        'timecompleted' => (int) $progressrecord->timecompleted,
-                    ];
-                }
-            }
-
             // Build day-keyed array.
             $timetable_all = [];
             foreach ($week_days as $wd) {
@@ -783,30 +729,6 @@ if (!empty($school_number)) {
                     $timetable_all[$day_key] = [];
                 }
                 $period_num = trim((string) $row->period);
-                $courseid = (int) ($row->courseid ?? 0);
-                $sessions = [];
-                foreach ($sectionsbycourse[$courseid] ?? [] as $section) {
-                    $progresskey = implode(':', [
-                        (int) ($row->schoolid ?? 0),
-                        (int) ($row->gradeid ?? 0),
-                        $courseid,
-                        (int) $section['sectionid'],
-                    ]);
-                    $progress = $progressbysection[$progresskey] ?? null;
-                    $sessions[] = $section + [
-                        'status' => $progress['status'] ?? 'pending',
-                        'completeddays' => $progress['completeddays'] ?? 0,
-                        'timecompleted' => $progress['timecompleted'] ?? 0,
-                        'trainerid' => $progress['trainerid'] ?? 0,
-                    ];
-                }
-                $selectedsession = null;
-                foreach ($sessions as $session) {
-                    if ((int) $session['visible'] === 1 && (int) $session['sectionnumber'] > 0) {
-                        $selectedsession = $session;
-                        break;
-                    }
-                }
                 $timetable_all[$day_key][] = [
                     'id'         => $row->id,
                     'period'     => isset($period_roman[$period_num])
@@ -814,10 +736,7 @@ if (!empty($school_number)) {
                                         : 'Period ' . $period_num,
                     'gradename'  => !empty($row->gradename)  ? $row->gradename  : '—',
                     'coursename' => !empty($row->coursename) ? $row->coursename : '—',
-                    'gradeid'    => (int) ($row->gradeid ?? 0),
-                    'courseid'   => $courseid,
-                    'sessions'   => $sessions,
-                    'iscompleted'=> $selectedsession && ($selectedsession['status'] ?? 'pending') === 'completed'
+                    'iscompleted'=> in_array($row->id, $completed_tt_ids)
                 ];
             }
 

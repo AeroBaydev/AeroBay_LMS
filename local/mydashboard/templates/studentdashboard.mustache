@@ -382,20 +382,31 @@
 .ab-trainer-hd {
   background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
   padding: 20px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
   border-bottom: 1px solid var(--ab-border);
 }
 .ab-trainer-av {
-  width: 64px; height: 64px; border-radius: 50%;
+  width: 120px; height: 120px; border-radius: 20px;
   background: linear-gradient(135deg, var(--ab-indigo), var(--ab-blue));
-  color: #fff; font-size: 1.5rem; font-weight: 800;
+  color: #fff; font-size: 3.5rem; font-weight: 800;
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 10px;
-  border: 3px solid #fff;
+  margin: 0; flex-shrink: 0;
+  border: 4px solid #fff;
   box-shadow: 0 4px 16px rgba(79,70,229,0.25);
+  overflow: hidden;
 }
-.ab-trainer-name { font-size: 0.92rem; font-weight: 700; color: var(--ab-text); margin-bottom: 2px; }
-.ab-trainer-role { font-size: 0.7rem; color: var(--ab-text-3); }
+.ab-trainer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.ab-trainer-name { font-size: 1.05rem; font-weight: 800; color: var(--ab-text); margin-bottom: 2px; line-height: 1.2; }
+.ab-trainer-role { font-size: 0.75rem; color: var(--ab-text-2); font-weight: 600; margin-bottom: 2px; }
+.ab-trainer-school { font-size: 0.7rem; color: var(--ab-text-3); font-weight: 500; }
 .ab-online-pill {
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 0.68rem; font-weight: 700; color: #10b981;
@@ -449,6 +460,99 @@
 .ab-tag.ur { background:#ffe4e6; color:#9f1239; }
 .ab-tag.am { background:#fef3c7; color:#92400e; }
 .ab-tag.gr { background:#d1fae5; color:#065f46; }
+
+/* ─── WEEKLY TIMETABLE ─── */
+.ab-timetable-card { grid-column: span 2; }
+.ab-timetable-summary {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ab-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.ab-timetable-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--ab-border);
+  border-radius: var(--ab-radius-sm);
+}
+.ab-timetable {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 0.76rem;
+}
+.ab-timetable th,
+.ab-timetable td {
+  border-right: 1px solid var(--ab-border);
+  border-bottom: 1px solid var(--ab-border);
+  padding: 10px 8px;
+  text-align: center;
+  vertical-align: middle;
+  background: #fff;
+}
+.ab-timetable thead th {
+  background: #f8faff;
+  color: var(--ab-text-2);
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.ab-timetable tr:last-child td { border-bottom: 0; }
+.ab-timetable th:last-child,
+.ab-timetable td:last-child { border-right: 0; }
+.ab-timetable-day {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 96px;
+  min-width: 96px;
+  color: var(--ab-blue-dark);
+  font-weight: 800;
+  box-shadow: 8px 0 14px rgba(15,23,42,0.04);
+}
+.ab-timetable thead .ab-timetable-day {
+  z-index: 3;
+  background: #eff6ff;
+}
+.ab-timetable tbody .ab-timetable-day {
+  background: #f8faff;
+  text-align: left;
+}
+.ab-timetable-short {
+  display: block;
+  font-size: 0.62rem;
+  color: var(--ab-text-3);
+  font-weight: 700;
+  margin-top: 1px;
+}
+.ab-timetable-slot {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  padding: 6px 8px;
+  color: var(--ab-text-3);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.ab-timetable-slot.has-class {
+  background: #e0f2fe;
+  color: #075985;
+  border: 1px solid #bae6fd;
+}
+.ab-timetable-empty {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--ab-radius-sm);
+  background: #f8faff;
+  color: var(--ab-text-3);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
 
 /* ─── LEARNING PATH ─── */
 .ab-lp-scroll { overflow-x: auto; padding-bottom: 4px; }
@@ -627,6 +731,9 @@
 .ab-modal-close:hover { background:rgba(255,255,255,0.32); }
 .ab-modal-bd { padding:20px 22px; overflow-y:auto; font-size:0.88rem; color:#334155; line-height:1.7; white-space:pre-wrap; }
 .ab-modal-list { padding:14px 18px; overflow-y:auto; max-height:calc(82vh - 68px); }
+.ab-star-rating { font-size: 2rem; color: #cbd5e1; display: inline-flex; gap: 8px; cursor: pointer; }
+.ab-star-rating i { transition: color 0.2s; }
+.ab-star-rating i.active, .ab-star-rating i:hover ~ i { /* hover logic handled via js */ }
 
 /* ─── WELCOME POPUP ─── */
 .ab-welcome-overlay {
@@ -672,6 +779,7 @@
   .ab-kpi-row    { grid-template-columns:repeat(3,1fr); gap:10px; }
   .ab-grid-2     { grid-template-columns:1fr; }
   .ab-grid-3     { grid-template-columns:1fr; }
+  .ab-timetable-card { grid-column: auto; }
   .ab-badges-grid{ grid-template-columns:repeat(3,1fr); }
   .ab-hero       { padding:18px 16px 58px; }
   .ab-hero-inner { flex-direction: column; gap: 16px; }
@@ -744,96 +852,82 @@
       </div>
     </div>
 
-    {{! ── ROW 1: Lab Plan + Tasks + Trainer ── }}
+    {{! ── ROW 1: Weekly Timetable + Trainer ── }}
     <div class="ab-grid-3" style="margin-bottom:18px;">
 
-      {{! Today's Lab }}
-      <div class="ab-lab-card">
-        <div class="ab-lab-tag"><i class="fa-solid fa-circle-play"></i> Today's Session</div>
-        <div class="ab-lab-name">Aerodynamics & Wing Design Lab</div>
-        <div class="ab-lab-sub">Hands-on: Build & test a paper aerofoil model</div>
-        <div class="ab-lab-meta">
-          <div class="ab-lab-meta-item">
-            <div class="ab-lm-label">Time</div>
-            <div class="ab-lm-val">10:00 – 11:30 AM</div>
-          </div>
-          <div class="ab-lab-meta-item">
-            <div class="ab-lm-label">Lab Room</div>
-            <div class="ab-lm-val">STEAM Lab 2</div>
-          </div>
-          <div class="ab-lab-meta-item">
-            <div class="ab-lm-label">Trainer</div>
-            <div class="ab-lm-val">Angad Sharma</div>
-          </div>
-          <div class="ab-lab-meta-item">
-            <div class="ab-lm-label">Session</div>
-            <div class="ab-lm-val">3 of 12</div>
-          </div>
-        </div>
-        <a class="ab-lab-btn"><i class="fa-solid fa-rocket"></i> View Session</a>
-      </div>
-
-      {{! Pending Tasks }}
-      <div class="ab-card">
+      {{! Weekly Timetable }}
+      <div class="ab-card ab-timetable-card">
         <div class="ab-card-hd">
           <div class="ab-card-title">
-            <div class="ic" style="background:#ffe4e6;color:#f43f5e;"><i class="fa-solid fa-list-check"></i></div>
-            Pending Tasks
+            <div class="ic" style="background:#e0f2fe;color:#0284c7;"><i class="fa-solid fa-calendar-week"></i></div>
+            Weekly Timetable Overview
           </div>
-          <a class="ab-card-btn">View All</a>
+          <div class="ab-timetable-summary">Monday-Saturday</div>
         </div>
         <div class="ab-card-bd">
-          <div class="ab-task">
-            <div class="ab-task-dot r"></div>
-            <div class="ab-task-info">
-              <div class="ab-task-name">Assessment: Aerodynamics Basics</div>
-              <div class="ab-task-due">Due: Tomorrow, Jun 4</div>
-            </div>
-            <span class="ab-tag ur">Urgent</span>
+          <div class="ab-timetable-scroll">
+            <table class="ab-timetable">
+              <thead>
+                <tr>
+                  <th class="ab-timetable-day">Day</th>
+                  <th>Period 1</th>
+                  <th>Period 2</th>
+                  <th>Period 3</th>
+                  <th>Period 4</th>
+                  <th>Period 5</th>
+                  <th>Period 6</th>
+                  <th>Period 7</th>
+                  <th>Period 8</th>
+                  <th>Period 9</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#timetable.days}}
+                <tr>
+                  <td class="ab-timetable-day">{{day}}<span class="ab-timetable-short">{{shortday}}</span></td>
+                  {{#periods}}
+                  <td>
+                    <div class="ab-timetable-slot {{#hasclass}}has-class{{/hasclass}}">{{coursename}}</div>
+                  </td>
+                  {{/periods}}
+                </tr>
+                {{/timetable.days}}
+              </tbody>
+            </table>
           </div>
-          <div class="ab-task">
-            <div class="ab-task-dot a"></div>
-            <div class="ab-task-info">
-              <div class="ab-task-name">Lab Manual: Session 2 Writeup</div>
-              <div class="ab-task-due">Due: Jun 6</div>
-            </div>
-            <span class="ab-tag am">Pending</span>
-          </div>
-          <div class="ab-task">
-            <div class="ab-task-dot a"></div>
-            <div class="ab-task-info">
-              <div class="ab-task-name">Project Update: Wing Model Report</div>
-              <div class="ab-task-due">Due: Jun 10</div>
-            </div>
-            <span class="ab-tag am">Pending</span>
-          </div>
-          <div class="ab-task">
-            <div class="ab-task-dot g"></div>
-            <div class="ab-task-info">
-              <div class="ab-task-name">Watch: Intro to Propulsion Systems</div>
-              <div class="ab-task-due">No deadline</div>
-            </div>
-            <span class="ab-tag gr">Optional</span>
-          </div>
+          {{^timetable.hasitems}}
+          <div class="ab-timetable-empty">No timetable has been published for this grade yet.</div>
+          {{/timetable.hasitems}}
         </div>
       </div>
 
       {{! Trainer Card }}
       <div class="ab-card" style="overflow:hidden;">
         <div class="ab-trainer-hd">
-          <div class="ab-trainer-av">A</div>
-          <div class="ab-trainer-name">Angad Sharma</div>
-          <div class="ab-trainer-role">STEAM Trainer · AeroBay</div>
-          <div class="ab-online-pill"><div class="ab-online-dot"></div> Online Now</div>
+          <div class="ab-trainer-av">
+            {{#trainerimageurl}}
+              <img src="{{trainerimageurl}}" alt="Trainer Avatar" style="width:100%; height:100%; object-fit:cover; object-position:center; border-radius:inherit; aspect-ratio:1/1;">
+            {{/trainerimageurl}}
+            {{^trainerimageurl}}
+              <i class="fa-solid fa-user"></i>
+            {{/trainerimageurl}}
+          </div>
+          <div class="ab-trainer-info">
+            <div class="ab-trainer-name">Angad Sharma</div>
+            <div class="ab-trainer-role">STEAM Trainer</div>
+            <div class="ab-trainer-school">{{#schoolname}}{{schoolname}}{{/schoolname}}{{^schoolname}}AeroBay{{/schoolname}}</div>
+            <div class="ab-online-pill"><div class="ab-online-dot"></div> {{trainerstatus}}</div>
+          </div>
         </div>
         <div class="ab-trainer-bd">
           <div class="ab-trainer-row"><span>Specialization</span><strong>Aerodynamics, Robotics</strong></div>
-          <div class="ab-trainer-row"><span>Sessions Taught</span><strong>48 Sessions</strong></div>
+          <div class="ab-trainer-row"><span>Sessions Taught</span><strong>{{trainersessionstaught}} Sessions</strong></div>
           <div class="ab-trainer-row"><span>Rating</span><strong>⭐ 4.9 / 5.0</strong></div>
           <div class="ab-divider"></div>
           <div class="ab-btn-grid">
             <a class="ab-btn ab-btn-prim"><i class="fa-solid fa-comment"></i> Message</a>
             <a class="ab-btn ab-btn-out"><i class="fa-solid fa-circle-question"></i> Ask Doubt</a>
+            <a class="ab-btn ab-btn-out" style="grid-column: span 2;" onclick="abOpenRateTrainer()"><i class="fa-solid fa-star"></i> Rate Trainer</a>
           </div>
         </div>
       </div>
@@ -847,61 +941,28 @@
           Learning Path — STEAM Lab Sessions
         </div>
         <div style="display:flex;gap:7px;align-items:center;">
-          <span class="ab-tag" style="background:#d1fae5;color:#065f46;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">✓ 2 Done</span>
-          <span class="ab-tag" style="background:#dbeafe;color:#1d4ed8;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">● Active</span>
-          <span class="ab-tag" style="background:#f1f5f9;color:#94a3b8;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">🔒 9 Locked</span>
-          <a class="ab-card-btn">Full Path</a>
+          <span class="ab-tag" style="background:#d1fae5;color:#065f46;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">✓ {{learningpath.completed_count}} Done</span>
+          <span class="ab-tag" style="background:#dbeafe;color:#1d4ed8;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">● {{learningpath.active_count}} Active</span>
+          <span class="ab-tag" style="background:#f1f5f9;color:#94a3b8;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">🔒 {{learningpath.locked_count}} Locked</span>
         </div>
       </div>
       <div class="ab-lp-scroll">
         <div class="ab-lp-track">
+          {{#learningpath.nodes}}
+          {{#hasconnector}}<div class="ab-lp-conn {{connectorclass}}"></div>{{/hasconnector}}
           <div class="ab-lp-node">
-            <div class="ab-lp-circ done"><i class="fa-solid fa-check"></i></div>
-            <div class="ab-lp-lbl">Session 1<br>Intro to STEAM</div>
-            <span class="ab-lp-status done">Done</span>
+            <div class="ab-lp-circ {{nodeclass}}"><i class="fa-solid {{iconclass}}"></i></div>
+            <div class="ab-lp-lbl">{{sectionname}}</div>
+            <span class="ab-lp-status {{statusclass}}">{{statustext}}</span>
           </div>
-          <div class="ab-lp-conn done"></div>
-          <div class="ab-lp-node">
-            <div class="ab-lp-circ done"><i class="fa-solid fa-check"></i></div>
-            <div class="ab-lp-lbl">Session 2<br>Forces & Motion</div>
-            <span class="ab-lp-status done">Done</span>
-          </div>
-          <div class="ab-lp-conn act"></div>
-          <div class="ab-lp-node">
-            <div class="ab-lp-circ act"><i class="fa-solid fa-flask"></i></div>
-            <div class="ab-lp-lbl">Session 3<br>Aerodynamics</div>
-            <span class="ab-lp-status act">In Progress</span>
-          </div>
-          <div class="ab-lp-conn lock"></div>
+          {{/learningpath.nodes}}
+          {{^learningpath.hasitems}}
           <div class="ab-lp-node">
             <div class="ab-lp-circ lock"><i class="fa-solid fa-lock"></i></div>
-            <div class="ab-lp-lbl">Session 4<br>Wing Design</div>
-            <span class="ab-lp-status lock">Locked</span>
+            <div class="ab-lp-lbl">No sessions<br>Course not mapped</div>
+            <span class="ab-lp-status lock">LOCKED</span>
           </div>
-          <div class="ab-lp-conn lock"></div>
-          <div class="ab-lp-node">
-            <div class="ab-lp-circ lock"><i class="fa-solid fa-lock"></i></div>
-            <div class="ab-lp-lbl">Session 5<br>Propulsion</div>
-            <span class="ab-lp-status lock">Locked</span>
-          </div>
-          <div class="ab-lp-conn lock"></div>
-          <div class="ab-lp-node">
-            <div class="ab-lp-circ lock"><i class="fa-solid fa-lock"></i></div>
-            <div class="ab-lp-lbl">Session 6<br>Robotics</div>
-            <span class="ab-lp-status lock">Locked</span>
-          </div>
-          <div class="ab-lp-conn lock"></div>
-          <div class="ab-lp-node">
-            <div class="ab-lp-circ lock"><i class="fa-solid fa-lock"></i></div>
-            <div class="ab-lp-lbl">Session 7<br>Coding</div>
-            <span class="ab-lp-status lock">Locked</span>
-          </div>
-          <div class="ab-lp-conn lock"></div>
-          <div class="ab-lp-node">
-            <div class="ab-lp-circ lock"><i class="fa-solid fa-lock"></i></div>
-            <div class="ab-lp-lbl">Session 8<br>Final Project</div>
-            <span class="ab-lp-status lock">Locked</span>
-          </div>
+          {{/learningpath.hasitems}}
         </div>
       </div>
     </div>
@@ -1154,6 +1215,40 @@
   </div>
 </div>
 
+{{! ── RATE TRAINER MODAL ── }}
+<div id="abRateTrainerModal" class="ab-modal-overlay" onclick="if(event.target===this)abCloseRateTrainer()">
+  <div class="ab-modal-box" style="max-width: 460px; height: auto; min-height: 0; max-height: none; overflow: hidden;">
+    <div class="ab-modal-hd">
+      <h3><i class="fa-solid fa-star"></i> Rate Your Trainer</h3>
+      <button class="ab-modal-close" onclick="abCloseRateTrainer()">✕</button>
+    </div>
+    <div class="ab-modal-bd" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 16px; overflow-y: visible; min-height: 0;">
+      <form id="abRateTrainerForm" onsubmit="event.preventDefault(); /* DB save not implemented yet */" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; margin: 0; min-height: 0;">
+        <input type="hidden" name="trainerid" value="{{trainerid}}">
+        <input type="hidden" name="studentid" value="{{studentid}}">
+        
+        <div style="text-align: center; margin: 8px 0;">
+          <div class="ab-star-rating" id="abStarRating" style="margin: 0; font-size: 34px;">
+            <i class="fa-solid fa-star" data-rating="1"></i>
+            <i class="fa-solid fa-star" data-rating="2"></i>
+            <i class="fa-solid fa-star" data-rating="3"></i>
+            <i class="fa-solid fa-star" data-rating="4"></i>
+            <i class="fa-solid fa-star" data-rating="5"></i>
+          </div>
+          <input type="hidden" name="rating" id="abRatingValue" value="0">
+        </div>
+
+        <textarea class="ab-form-control" name="feedback" rows="3" placeholder="Share your feedback" style="width: 100%; margin-top: 0; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#cbd5e1'"></textarea>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end; width: 100%; margin: 0;">
+          <button type="button" class="ab-btn ab-btn-out" onclick="abCloseRateTrainer()">Cancel</button>
+          <button type="submit" class="ab-btn ab-btn-prim">Submit Rating</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 {{! ── WELCOME POPUP ── }}
 {{#first_login}}
 <div id="abWelcomeOverlay" class="ab-welcome-overlay">
@@ -1184,6 +1279,8 @@
   window.abCloseNews = function(){ document.getElementById('abNewsModal').classList.remove('open'); document.body.style.overflow=''; };
   window.abOpenAllNotif = function(){ document.getElementById('abAllNotifModal').classList.add('open'); document.body.style.overflow='hidden'; };
   window.abCloseAllNotif = function(){ document.getElementById('abAllNotifModal').classList.remove('open'); document.body.style.overflow=''; };
+  window.abOpenRateTrainer = function(){ document.getElementById('abRateTrainerModal').classList.add('open'); document.body.style.overflow='hidden'; };
+  window.abCloseRateTrainer = function(){ document.getElementById('abRateTrainerModal').classList.remove('open'); document.body.style.overflow=''; };
   window.abDismissWelcome = function(){ var e=document.getElementById('abWelcomeOverlay'); if(e){e.classList.remove('open');document.body.style.overflow='';try{sessionStorage.setItem('ab_wl','1');}catch(x){}} };
 
   document.addEventListener('DOMContentLoaded', function(){
@@ -1191,6 +1288,25 @@
     /* Welcome popup */
     var wl = document.getElementById('abWelcomeOverlay');
     if(wl){ try{ if(!sessionStorage.getItem('ab_wl')){wl.classList.add('open');document.body.style.overflow='hidden';} }catch(e){wl.classList.add('open');} }
+
+    /* Star rating logic */
+    var stars = document.querySelectorAll('#abStarRating i');
+    var ratingInput = document.getElementById('abRatingValue');
+    if(stars.length > 0) {
+      stars.forEach(function(star) {
+        star.addEventListener('click', function() {
+          var val = parseInt(this.getAttribute('data-rating'));
+          ratingInput.value = val;
+          stars.forEach(function(s) {
+            if(parseInt(s.getAttribute('data-rating')) <= val) {
+              s.style.color = '#fbbf24';
+            } else {
+              s.style.color = '#cbd5e1';
+            }
+          });
+        });
+      });
+    }
 
     /* KPI counter animation */
     document.querySelectorAll('.ab-kpi-val[data-target]').forEach(function(el){

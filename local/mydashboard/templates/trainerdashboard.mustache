@@ -888,6 +888,129 @@
     outline-offset: 2px;
 }
 
+/* ── Phase 3A: Session Progression UI ── */
+.td-sched-table.has-session-col {
+    min-width: 680px;
+}
+
+/* Session cell wrapper — stacks dropdown + buttons vertically on small rows */
+.td-sess-cell {
+    min-width: 220px;
+    max-width: 320px;
+}
+
+/* Session dropdown */
+.td-sess-select {
+    width: 100%;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--td-text2, #334155);
+    background: var(--td-surface, #fff);
+    border: 1px solid var(--td-border, #e2e8f5);
+    border-radius: 7px;
+    padding: 5px 28px 5px 9px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+.td-sess-select:focus {
+    border-color: var(--td-primary, #6366f1);
+    box-shadow: 0 0 0 2px var(--td-primary-light, rgba(99,102,241,0.18));
+}
+.td-sess-select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* "No sessions available" fallback text */
+.td-sess-none {
+    font-size: 0.72rem;
+    color: var(--td-muted, #64748b);
+    font-style: italic;
+    display: block;
+    padding: 2px 0;
+}
+
+/* Action buttons row — sits below the dropdown */
+.td-sess-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 7px;
+    flex-wrap: wrap;
+}
+
+/* Shared base for both new buttons */
+.td-btn-save-progress,
+.td-btn-mark-complete {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border-color 0.18s, opacity 0.18s;
+    white-space: nowrap;
+    line-height: 1.4;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Save Progress — outlined indigo */
+.td-btn-save-progress {
+    background: transparent;
+    color: var(--td-primary, #6366f1);
+    border-color: var(--td-primary, #6366f1);
+}
+.td-btn-save-progress:hover:not(:disabled) {
+    background: var(--td-primary-light, rgba(99,102,241,0.12));
+}
+.td-btn-save-progress:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Mark Complete — solid green */
+.td-btn-mark-complete {
+    background: var(--td-green, #34d399);
+    color: #fff;
+    border-color: var(--td-green, #34d399);
+}
+.td-btn-mark-complete:hover:not(:disabled) {
+    background: #10b981;
+    border-color: #10b981;
+}
+.td-btn-mark-complete.is-completed {
+    background: #059669;
+    border-color: #059669;
+}
+.td-btn-mark-complete:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Dark mode adjustments */
+[data-td-theme="dark"] .td-sess-select {
+    background-color: var(--td-surface, #151929);
+    color: var(--td-text2, #cbd5e1);
+    border-color: var(--td-border, #252d4a);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+}
+[data-td-theme="dark"] .td-sess-select option {
+    background: var(--td-surface, #151929);
+    color: var(--td-text2, #cbd5e1);
+}
+
+/* Responsive: on small viewports stack the session cell fully */
+@media (max-width: 600px) {
+    .td-sess-cell { min-width: 160px; max-width: 200px; }
+    .td-btn-save-progress, .td-btn-mark-complete { font-size: 0.65rem; padding: 3px 7px; }
+}
+
 @media (max-width: 600px) {
     .td-sched-modal { max-height: calc(100vh - 32px); border-radius: 14px; }
     .td-sched-header, .td-sched-nav { padding: 14px 14px 10px; }
@@ -1448,12 +1571,13 @@
 
         <!-- Scrollable table body -->
         <div class="td-sched-body" role="region" aria-label="Class schedule">
-            <table class="td-sched-table" aria-label="Today's class schedule">
+            <table class="td-sched-table has-session-col" aria-label="Today's class schedule">
                 <thead>
                     <tr>
                         <th scope="col">Period</th>
                         <th scope="col">Grade</th>
                         <th scope="col">Course</th>
+                        <th scope="col">Session</th>
                     </tr>
                 </thead>
                 <tbody id="td-sched-tbody">
@@ -1584,65 +1708,243 @@
 
         if (!backdrop || !modal) { return; }
 
+        function findTimetableRowByTtid(ttid) {
+            var found = null;
+            DAYS.forEach(function(day) {
+                if (found || !Array.isArray(timetable[day])) { return; }
+                timetable[day].forEach(function(r) {
+                    if (!found && String(r.id || '') === String(ttid || '')) {
+                        found = r;
+                    }
+                });
+            });
+            return found;
+        }
+
+        function findSessionInRow(row, sectionid) {
+            if (!row || !Array.isArray(row.sessions)) { return null; }
+            var found = null;
+            row.sessions.forEach(function(session) {
+                if (!found && String(session.sectionid || '') === String(sectionid || '')) {
+                    found = session;
+                }
+            });
+            return found;
+        }
+
+        function sessionSaveLabel(session) {
+            var completeddays = parseInt(session && session.completeddays, 10) || 0;
+            return completeddays > 0 ? 'Saved (x' + completeddays + ')' : 'Save Progress';
+        }
+
+        function sessionIsCompleted(session) {
+            return !!(session && session.status === 'completed');
+        }
+
+        function getRenderableSessions(row) {
+            return row && Array.isArray(row.sessions)
+                ? row.sessions.filter(function(s) { return parseInt(s.visible, 10) === 1 && parseInt(s.sectionnumber, 10) > 0; })
+                : [];
+        }
+
+        function applyRowSessionStatus(cell, isCompleted) {
+            var rowEl = cell && cell.closest ? cell.closest('tr') : null;
+            var statusEl = rowEl ? rowEl.querySelector('[data-role="row-session-status"]') : null;
+            if (!statusEl) { return; }
+            statusEl.textContent = isCompleted ? 'Completed' : 'Mark Done';
+            statusEl.style.background = isCompleted ? '#20c997' : 'transparent';
+            statusEl.style.color = isCompleted ? '#fff' : 'inherit';
+            statusEl.style.borderColor = isCompleted ? '#20c997' : '#ccc';
+        }
+
+        function applySessionButtonState(select) {
+            if (!select) { return; }
+            var cell = select.closest ? select.closest('.td-sess-cell') : null;
+            if (!cell) { return; }
+            var saveBtn = cell.querySelector('[data-role="save-progress"]');
+            var completeBtn = cell.querySelector('[data-role="mark-complete"]');
+            var row = findTimetableRowByTtid(saveBtn ? saveBtn.getAttribute('data-ttid') : '');
+            var session = findSessionInRow(row, select.value);
+            var isCompleted = sessionIsCompleted(session);
+            if (row) {
+                row.iscompleted = isCompleted;
+            }
+            applyRowSessionStatus(cell, isCompleted);
+
+            if (saveBtn) {
+                saveBtn.textContent = sessionSaveLabel(session);
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+            }
+            if (completeBtn) {
+                completeBtn.textContent = isCompleted ? 'Completed' : 'Mark Complete';
+                completeBtn.disabled = !!isCompleted;
+                completeBtn.style.opacity = '1';
+                completeBtn.classList.toggle('is-completed', !!isCompleted);
+            }
+        }
+
         /* ── event listener for complete button ── */
         tbody.addEventListener('click', function(e) {
             var btn = e.target;
-            if (btn.tagName === 'BUTTON' && btn.classList.contains('td-btn-done')) {
-                var ttid = btn.getAttribute('data-ttid');
-                var schoolid = '{{trainerschoolid}}';
-                
-                btn.textContent = 'Saving...';
+            if (btn && btn.tagName !== 'BUTTON' && btn.closest) {
+                btn = btn.closest('button');
+            }
+            if (!btn) { return; }
+
+            if (btn.tagName === 'BUTTON' && btn.dataset && (btn.dataset.role === 'save-progress' || btn.dataset.role === 'mark-complete')) {
+                var role = btn.dataset.role;
+                var selectid = btn.getAttribute('data-selectid');
+                var select = selectid ? document.getElementById(selectid) : null;
+                var sectionid = select ? select.value : '';
+
+                if (!select || !sectionid) {
+                    btn.textContent = 'Select session';
+                    setTimeout(function() {
+                        btn.textContent = role === 'save-progress' ? 'Save Progress' : 'Mark Complete';
+                    }, 1200);
+                    return;
+                }
+
+                var sessionTtid = btn.getAttribute('data-ttid') || '';
+                var row = findTimetableRowByTtid(sessionTtid);
+                var selectedSession = findSessionInRow(row, sectionid);
+
+                var originalText = btn.textContent;
                 btn.disabled = true;
                 btn.style.opacity = '0.7';
-                
-                var sess = (typeof M !== 'undefined' && M.cfg) ? M.cfg.sesskey : '';
-                var payload = 'action=toggle_complete&sesskey=' + sess + '&ttid=' + encodeURIComponent(ttid) + '&schoolid=' + encodeURIComponent(schoolid);
-                var url = (typeof M !== 'undefined' && M.cfg ? M.cfg.wwwroot : '') + '/local/mydashboard/ajax_timetable.php';
-                
-                fetch(url, {
+                btn.textContent = role === 'save-progress' ? 'Saving...' : 'Completing...';
+
+                var sesskey = (typeof M !== 'undefined' && M.cfg) ? M.cfg.sesskey : '';
+                var trainerid = (typeof M !== 'undefined' && M.cfg && M.cfg.userid) ? M.cfg.userid : 0;
+                var action = role === 'save-progress' ? 'save_progress' : 'mark_complete';
+                var progressPayload = 'action=' + encodeURIComponent(action)
+                    + '&sesskey=' + encodeURIComponent(sesskey)
+                    + '&schoolid=' + encodeURIComponent('{{trainerschoolid}}')
+                    + '&gradeid=' + encodeURIComponent(row && row.gradeid ? row.gradeid : 0)
+                    + '&courseid=' + encodeURIComponent(row && row.courseid ? row.courseid : 0)
+                    + '&sectionid=' + encodeURIComponent(sectionid)
+                    + '&trainerid=' + encodeURIComponent(trainerid)
+                    + '&ttid=' + encodeURIComponent(sessionTtid);
+                var progressUrl = (typeof M !== 'undefined' && M.cfg ? M.cfg.wwwroot : '') + '/local/mydashboard/ajax_timetable.php';
+
+                fetch(progressUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: payload
+                    body: progressPayload
                 })
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
                     if (data.status === 'success') {
-                        var isC = data.completed;
-                        btn.textContent = isC ? 'Completed' : 'Mark Done';
-                        btn.style.background = isC ? '#20c997' : 'transparent';
-                        btn.style.color = isC ? '#fff' : 'inherit';
-                        btn.style.borderColor = isC ? '#20c997' : '#ccc';
-                        
-                        if (timetable[today]) {
-                            timetable[today].forEach(function(r) {
-                                if (String(r.id) === String(ttid)) { r.iscompleted = isC; }
-                            });
-                            var compCount = 0;
-                            timetable[today].forEach(function(r) { if (r.iscompleted) compCount++; });
-                            var cEl = document.getElementById('td-stat-completed');
-                            if (cEl) {
-                                cEl.innerHTML = '<i class="fas fa-circle" style="font-size:.5rem;"></i> ' + compCount + ' completed';
+                        if (selectedSession && role === 'save-progress') {
+                            selectedSession.completeddays = parseInt(data.completeddays, 10) || ((parseInt(selectedSession.completeddays, 10) || 0) + 1);
+                            selectedSession.status = selectedSession.status === 'completed' ? 'completed' : 'inprogress';
+                        }
+                        if (selectedSession && role === 'mark-complete') {
+                            selectedSession.status = 'completed';
+                            selectedSession.timecompleted = Math.floor(Date.now() / 1000);
+                            if ((parseInt(selectedSession.completeddays, 10) || 0) <= 0) {
+                                selectedSession.completeddays = 1;
                             }
                         }
+                        btn.textContent = role === 'save-progress' ? sessionSaveLabel(selectedSession) : 'Completed';
+                        if (role === 'mark-complete') {
+                            btn.classList.add('is-completed');
+                            btn.disabled = true;
+                        }
+                        if (role === 'save-progress') {
+                            setTimeout(function() {
+                                applySessionButtonState(select);
+                            }, 1200);
+                        }
+                        if (role === 'mark-complete') {
+                            applySessionButtonState(select);
+                        }
                     } else {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
                         btn.textContent = 'Error';
+                        setTimeout(function() { btn.textContent = originalText; }, 1400);
                     }
                 })
-                .catch(function(err) {
+                .catch(function() {
                     btn.disabled = false;
                     btn.style.opacity = '1';
                     btn.textContent = 'Error';
+                    setTimeout(function() { btn.textContent = originalText; }, 1400);
                 });
             }
         });
 
+        tbody.addEventListener('change', function(e) {
+            if (e.target && e.target.classList && e.target.classList.contains('td-sess-select')) {
+                applySessionButtonState(e.target);
+            }
+        });
+
         /* ── render ── */
+        function buildSessionCell(r) {
+            /* Filter: visible=1 and section>0 (already guaranteed by PHP, but guard here too) */
+            var sessions = getRenderableSessions(r);
+
+            if (sessions.length === 0) {
+                /* No sessions available for this course */
+                return '<td class="td-sess-cell"><span class="td-sess-none">No sessions available</span></td>';
+            }
+
+            /* Build select options */
+            var opts = sessions.map(function(s) {
+                return '<option value="' + s.sectionid + '" data-status="' + esc(s.status || 'pending') + '" data-completeddays="' + (parseInt(s.completeddays, 10) || 0) + '" data-timecompleted="' + (parseInt(s.timecompleted, 10) || 0) + '">'
+                    + esc(s.sectionname)
+                    + '</option>';
+            }).join('');
+
+            var selectId = 'td-sess-sel-' + (r.id || Math.random().toString(36).slice(2));
+            var selectedSession = sessions[0] || null;
+            var selectedCompleted = sessionIsCompleted(selectedSession);
+            var saveLabel = sessionSaveLabel(selectedSession);
+            var completeLabel = selectedCompleted ? 'Completed' : 'Mark Complete';
+            var completeClass = selectedCompleted ? ' is-completed' : '';
+            var completeDisabled = selectedCompleted ? ' disabled' : '';
+
+            var html = '<td class="td-sess-cell">'
+                + '<select class="td-sess-select" id="' + selectId + '" aria-label="Select session for ' + esc(r.coursename) + '">'
+                + opts
+                + '</select>'
+                + '<div class="td-sess-actions">'
+                + '<button type="button" class="td-btn-save-progress" data-role="save-progress" data-ttid="' + (r.id || '') + '" data-selectid="' + selectId + '" aria-label="Save progress for ' + esc(r.coursename) + '">'
+                + '<i class="fas fa-bookmark" aria-hidden="true"></i> ' + saveLabel
+                + '</button>'
+                + '<button type="button" class="td-btn-mark-complete' + completeClass + '" data-role="mark-complete" data-ttid="' + (r.id || '') + '" data-selectid="' + selectId + '" aria-label="Mark session complete for ' + esc(r.coursename) + '"' + completeDisabled + '>'
+                + '<i class="fas fa-check-circle" aria-hidden="true"></i> ' + completeLabel
+                + '</button>'
+                + '</div>'
+                + '</td>';
+
+            return html;
+        }
+
+        var _debugLogged = false;
         function renderDay(day) {
             currentDay = day;
             var rows = (timetable[day] && timetable[day].length) ? timetable[day] : [];
             var isToday = (day === today);
+
+            /* ── Phase 3A DEBUG: print first row JSON once ── */
+            if (!_debugLogged && rows.length > 0) {
+                _debugLogged = true;
+                var _r = rows[0];
+                console.group('[Phase3A] First timetable row — ' + day);
+                console.log('courseid    :', _r.courseid);
+                console.log('coursename  :', _r.coursename);
+                console.log('sessions count (row.sessions)        :', Array.isArray(_r.sessions) ? _r.sessions.length : 'NOT AN ARRAY — value: ' + _r.sessions);
+                console.log('sessions exists at row.sessions       :', 'sessions' in _r);
+                console.log('sessions exists at row.payload.sessions:', (_r.payload && 'sessions' in _r.payload) ? true : false);
+                console.log('first session object:', Array.isArray(_r.sessions) && _r.sessions.length > 0 ? _r.sessions[0] : 'NONE');
+                console.log('full row JSON:', JSON.parse(JSON.stringify(_r)));
+                console.groupEnd();
+            }
+            /* ── END DEBUG ── */
 
             /* Day label */
             dayLabel.innerHTML = day
@@ -1660,17 +1962,25 @@
                 emptyEl.style.display = 'none';
                 var html = '';
                 rows.forEach(function(r) {
+                    /* ── Existing Mark Done button (preserved exactly) ── */
                     var actionHtml = '';
                     if (isToday && r.id) {
-                        var isC = r.iscompleted;
+                        var selectedRowSession = getRenderableSessions(r)[0] || null;
+                        var isC = sessionIsCompleted(selectedRowSession);
+                        r.iscompleted = isC;
                         var btnTxt = isC ? 'Completed' : 'Mark Done';
                         var btnSty = isC ? 'background:#20c997;color:#fff;border-color:#20c997;' : 'background:transparent;color:inherit;';
-                        actionHtml = '<button class="td-btn-done" data-ttid="'+r.id+'" style="margin-left:10px; padding:2px 8px; border-radius:4px; border:1px solid #ccc; font-size:0.75rem; cursor:pointer; transition:all 0.2s; ' + btnSty + '">' + btnTxt + '</button>';
+                        actionHtml = '<span class="td-btn-done" data-role="row-session-status" data-ttid="'+r.id+'" style="margin-left:10px; padding:2px 8px; border-radius:4px; border:1px solid #ccc; font-size:0.75rem; cursor:default; transition:all 0.2s; ' + btnSty + '">' + btnTxt + '</span>';
                     }
+
+                    /* ── Phase 3A: Session progression cell ── */
+                    var sessCell = buildSessionCell(r);
+
                     html += '<tr>'
                         + '<td><span class="td-sched-period">' + esc(r.period)    + '</span></td>'
                         + '<td><span class="td-sched-grade">'  + esc(r.gradename) + '</span></td>'
                         + '<td><span class="td-sched-course" style="display:flex; justify-content:space-between; align-items:center;"><span>' + esc(r.coursename)+ '</span>' + actionHtml + '</span></td>'
+                        + sessCell
                         + '</tr>';
                 });
                 tbody.innerHTML = html;

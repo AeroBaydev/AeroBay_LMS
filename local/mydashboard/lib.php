@@ -76,6 +76,257 @@ function local_mydashboard_get_weekly_login_flags(int $userid): array {
     return $flags;
 }
 
+function local_mydashboard_get_student_timetable_context(stdClass $student): array {
+    global $DB;
+
+    $days = [
+        'Monday' => 'Mon',
+        'Tuesday' => 'Tue',
+        'Wednesday' => 'Wed',
+        'Thursday' => 'Thu',
+        'Friday' => 'Fri',
+        'Saturday' => 'Sat',
+    ];
+    $periods = range(1, 9);
+    $daylookup = [];
+    $rows = [];
+    $hasitems = false;
+
+    foreach ($days as $day => $shortday) {
+        $daylookup[strtolower($day)] = $day;
+        $row = [
+            'day' => $day,
+            'shortday' => $shortday,
+            'periods' => [],
+        ];
+        foreach ($periods as $period) {
+            $row['periods'][$period] = [
+                'periodnumber' => $period,
+                'coursename' => '—',
+                'hasclass' => false,
+            ];
+        }
+        $rows[$day] = $row;
+    }
+
+    $schoolid = (int) ($student->schoolid ?? 0);
+    $gradeid = (int) ($student->gradeid ?? 0);
+    if ($schoolid > 0 && $gradeid > 0 && $DB->get_manager()->table_exists('timetable')) {
+        list($periodsql, $periodparams) = $DB->get_in_or_equal(array_map('strval', $periods), SQL_PARAMS_NAMED, 'timetableperiod');
+        $records = $DB->get_recordset_sql(
+            "SELECT day, period
+               FROM {timetable}
+              WHERE schoolid = :schoolid
+                AND gradeid = :gradeid
+                AND period IS NOT NULL
+                AND period <> ''
+                AND period {$periodsql}
+           GROUP BY day, period
+           ORDER BY day, period",
+            [
+                'schoolid' => $schoolid,
+                'gradeid' => $gradeid,
+            ] + $periodparams
+        );
+
+        foreach ($records as $record) {
+            $day = $daylookup[strtolower(trim((string) $record->day))] ?? null;
+            $period = (int) trim((string) $record->period);
+            if ($day === null || $period < 1 || $period > 9) {
+                continue;
+            }
+
+            $rows[$day]['periods'][$period]['coursename'] = 'Scheduled';
+            $rows[$day]['periods'][$period]['hasclass'] = true;
+            $hasitems = true;
+        }
+        $records->close();
+    }
+
+    foreach ($rows as &$row) {
+        $row['periods'] = array_values($row['periods']);
+    }
+    unset($row);
+
+    return [
+        'timetable' => [
+            'hasitems' => $hasitems,
+            'days' => array_values($rows),
+        ],
+    ];
+}
+
+function local_mydashboard_get_learning_path_course_mapping(int $schoolid, int $gradeid): ?stdClass {
+    global $DB;
+
+    if ($schoolid <= 0 || $gradeid <= 0 || !$DB->get_manager()->table_exists('poc_copy_course')) {
+        return null;
+    }
+
+    $mapping = $DB->get_record_sql(
+        'SELECT pcc.id AS mappingid,
+                CAST(pcc.schoolid AS UNSIGNED) AS schoolid,
+                CAST(pcc.gradeid AS UNSIGNED) AS gradeid,
+                c.id AS courseid,
+                c.fullname AS coursename
+           FROM {poc_copy_course} pcc
+           JOIN {course} c ON c.id = CAST(pcc.courseid AS UNSIGNED)
+          WHERE CAST(pcc.schoolid AS UNSIGNED) = :schoolid
+            AND CAST(pcc.gradeid AS UNSIGNED) = :gradeid
+       ORDER BY CAST(pcc.status AS UNSIGNED) DESC, pcc.id DESC',
+        [
+            'schoolid' => $schoolid,
+            'gradeid' => $gradeid,
+        ],
+        IGNORE_MULTIPLE
+    );
+
+    return $mapping ?: null;
+}
+
+function local_mydashboard_get_student_learning_path_context(stdClass $student): array {
+    global $DB;
+
+    $schoolid = (int) ($student->schoolid ?? 0);
+    $gradeid = (int) ($student->gradeid ?? 0);
+    $courseid = 0;
+    $sections = [];
+    $progressbysection = [];
+
+    $mapping = local_mydashboard_get_learning_path_course_mapping($schoolid, $gradeid);
+    if ($mapping) {
+        $courseid = (int) $mapping->courseid;
+    }
+
+    if ($courseid > 0 && $DB->get_manager()->table_exists('course_sections')) {
+        $sectionrecords = $DB->get_records_sql(
+            "SELECT id, section, name, visible
+               FROM {course_sections}
+              WHERE course = :courseid
+                AND section > 0
+           ORDER BY section",
+            ['courseid' => $courseid]
+        );
+
+        foreach ($sectionrecords as $section) {
+            $sectionnumber = (int) $section->section;
+            $sections[] = [
+                'sectionid' => (int) $section->id,
+                'sectionnumber' => $sectionnumber,
+                'sectionname' => !empty($section->name) ? format_string($section->name) : 'Session ' . $sectionnumber,
+                'visible' => (int) $section->visible,
+            ];
+        }
+    }
+
+    if ($courseid > 0 && $DB->get_manager()->table_exists('local_session_progress')) {
+        $progressrecords = $DB->get_records_sql(
+            "SELECT sectionid, status, completeddays, timecompleted
+               FROM {local_session_progress}
+              WHERE schoolid = :schoolid
+                AND gradeid = :gradeid
+                AND courseid = :courseid",
+            [
+                'schoolid' => $schoolid,
+                'gradeid' => $gradeid,
+                'courseid' => $courseid,
+            ]
+        );
+
+        foreach ($progressrecords as $progress) {
+            $progressbysection[(int) $progress->sectionid] = [
+                'status' => !empty($progress->status) ? strtolower((string) $progress->status) : 'pending',
+                'completeddays' => (int) $progress->completeddays,
+                'timecompleted' => (int) $progress->timecompleted,
+            ];
+        }
+    }
+
+    $latestcompletedindex = -1;
+    $hasinprogress = false;
+    foreach ($sections as $index => $section) {
+        $progress = $progressbysection[$section['sectionid']] ?? null;
+        $status = $progress['status'] ?? 'pending';
+        if ($status === 'completed') {
+            $latestcompletedindex = $index;
+        } else if ($status === 'inprogress') {
+            $hasinprogress = true;
+        }
+    }
+
+    $fallbackactiveindex = -1;
+    if (!$hasinprogress) {
+        foreach ($sections as $index => $section) {
+            if ($index <= $latestcompletedindex) {
+                continue;
+            }
+            $progress = $progressbysection[$section['sectionid']] ?? null;
+            if (($progress['status'] ?? 'pending') !== 'completed') {
+                $fallbackactiveindex = $index;
+                break;
+            }
+        }
+    }
+
+    $nodes = [];
+    $completedcount = 0;
+    $activecount = 0;
+    $lockedcount = 0;
+    $activesession = '—';
+    $previousstate = '';
+
+    foreach ($sections as $index => $section) {
+        $progress = $progressbysection[$section['sectionid']] ?? null;
+        $storedstatus = $progress['status'] ?? 'pending';
+        $state = 'lock';
+        $statustext = 'LOCKED';
+        $icon = 'fa-lock';
+
+        if ($storedstatus === 'completed') {
+            $state = 'done';
+            $statustext = 'DONE';
+            $icon = 'fa-check';
+            $completedcount++;
+        } else if ($storedstatus === 'inprogress' || $index === $fallbackactiveindex) {
+            $state = 'act';
+            $statustext = 'ACTIVE';
+            $icon = 'fa-flask';
+            $activecount++;
+            if ($activesession === '—') {
+                $activesession = 'Session ' . $section['sectionnumber'];
+            }
+        } else {
+            $lockedcount++;
+        }
+
+        $nodes[] = [
+            'hasconnector' => $index > 0,
+            'connectorclass' => $previousstate !== '' ? $previousstate : $state,
+            'nodeclass' => $state,
+            'statusclass' => $state,
+            'iconclass' => $icon,
+            'sessionnumber' => $section['sectionnumber'],
+            'sectionname' => $section['sectionname'],
+            'statustext' => $statustext,
+        ];
+        $previousstate = $state;
+    }
+
+    return [
+        'learningpath' => [
+            'gradeid' => $gradeid,
+            'courseid' => $courseid,
+            'hasitems' => !empty($nodes),
+            'total_sections' => count($sections),
+            'completed_count' => $completedcount,
+            'active_count' => $activecount,
+            'active_session' => $activesession,
+            'locked_count' => $lockedcount,
+            'nodes' => $nodes,
+        ],
+    ];
+}
+
 function local_mydashboard_get_student_progress_context(stdClass $student): array {
     global $DB, $USER;
 
@@ -180,6 +431,8 @@ function local_mydashboard_get_student_progress_context(stdClass $student): arra
         }
     }
     $weeklyloginflags = local_mydashboard_get_weekly_login_flags($studentuserid);
+    $timetablecontext = local_mydashboard_get_student_timetable_context($student);
+    $learningpathcontext = local_mydashboard_get_student_learning_path_context($student);
 
     return array_merge([
         'overallprogressnumber' => (string) round($overallprogress),
@@ -196,5 +449,5 @@ function local_mydashboard_get_student_progress_context(stdClass $student): arra
         'currentstreak' => $currentstreak,
         'longeststreak' => $longeststreak,
         'lastlogindate' => $lastlogindate,
-    ], $weeklyloginflags);
+    ], $weeklyloginflags, $timetablecontext, $learningpathcontext);
 }

@@ -48,5 +48,31 @@ function xmldb_local_mydashboard_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026060400, 'local', 'mydashboard');
     }
 
+    if ($oldversion < 2026060500) {
+        $table = new xmldb_table('local_session_progress');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+            $table->add_field('schoolid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('gradeid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('sectionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('trainerid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('status', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'pending');
+            $table->add_field('completeddays', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timecompleted', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_index('school-grade-course-section', XMLDB_INDEX_UNIQUE, ['schoolid', 'gradeid', 'courseid', 'sectionid']);
+            $table->add_index('sectionid', XMLDB_INDEX_NOTUNIQUE, ['sectionid']);
+            $table->add_index('school-grade-course', XMLDB_INDEX_NOTUNIQUE, ['schoolid', 'gradeid', 'courseid']);
+
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026060500, 'local', 'mydashboard');
+    }
+
     return true;
 }
