@@ -10,8 +10,8 @@ class student_table extends table_sql
 
         // Define columns including the new checkbox column
         $columns = local_pocschool_is_trainer_user()
-            ? array('serialno', 'studentid', 'Fullname')
-            : array('checkbox', 'serialno', 'studentid', 'Fullname');
+            ? array('serialno', 'studentid', 'Fullname', 'grade')
+            : array('checkbox', 'serialno', 'studentid', 'Fullname', 'grade');
         if (!local_pocschool_is_trainer_user()) {
             $columns = array_merge($columns, array('edit', 'approve', 'approvedby'));
         }
@@ -19,8 +19,8 @@ class student_table extends table_sql
 
         // Define headers including the new checkbox column
         $headers = local_pocschool_is_trainer_user()
-            ? array('S.No', 'Student Id', 'Full Name')
-            : array( '<input type="checkbox" id="select-all" />', 'S.No', 'Student Id', 'Full Name');
+            ? array('S.No', 'Student Id', 'Full Name', 'Grade')
+            : array( '<input type="checkbox" id="select-all" />', 'S.No', 'Student Id', 'Full Name', 'Grade');
         if (!local_pocschool_is_trainer_user()) {
             $headers = array_merge($headers, array('Action', 'Approve/Reject', 'Action By'));
         }
@@ -72,6 +72,18 @@ class student_table extends table_sql
             '.$disabled.' />';
 }
 
+
+    function col_grade($values) {
+        if (!empty($values->grade)) {
+            $grade = format_string($values->grade);
+            if (stripos($grade, 'grade') === false) {
+                return 'Grade ' . $grade;
+            }
+            return $grade;
+        } else {
+            return '-';
+        }
+    }
 
     function col_edit($values)
     {

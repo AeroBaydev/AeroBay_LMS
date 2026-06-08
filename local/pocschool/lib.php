@@ -153,3 +153,32 @@ function local_pocschool_myprofile_navigation(core_user\output\myprofile\tree $t
         $tree->add_node($node);
     }
 }
+
+/**
+ * Allow trainers and POCs to view profiles of students in their assigned schools.
+ */
+function local_pocschool_control_view_profile($targetuser, $course, $usercontext) {
+    global $USER, $DB;
+
+    // Only apply logic for trainers and POCs.
+    if (local_pocschool_is_trainer_user($USER->id) || local_pocschool_is_poc_user($USER->id)) {
+        
+        // If the target user is a student, check if they belong to an accessible school.
+        $studentschool = $DB->get_field('student', 'schoolid', ['userid' => $targetuser->id]);
+        if (!empty($studentschool)) {
+            if (local_pocschool_user_can_access_school($studentschool, $USER->id)) {
+                return core_user::VIEWPROFILE_FORCE_ALLOW;
+            }
+        }
+
+        // If the target user is a trainer, check if they belong to an accessible school.
+        $trainerschool = $DB->get_field('trainer', 'schoolid', ['userid' => $targetuser->id]);
+        if (!empty($trainerschool)) {
+            if (local_pocschool_user_can_access_school($trainerschool, $USER->id)) {
+                return core_user::VIEWPROFILE_FORCE_ALLOW;
+            }
+        }
+    }
+
+    return core_user::VIEWPROFILE_DO_NOT_PREVENT;
+}

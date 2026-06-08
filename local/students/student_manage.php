@@ -160,10 +160,12 @@ $fields = "(@row_number := @row_number + 1) as serialno,
            u.firstname as firstname,
            u.lastname as lastname,
            st.address as address,
-           st.student_id as studentid";
+           st.student_id as studentid,
+           cc.name as grade";
 
 $from = "{student} as st
-         JOIN {user} u ON st.userid = u.id";
+         JOIN {user} u ON st.userid = u.id
+         LEFT JOIN {course_categories} cc ON st.gradeid = cc.id";
 $where = "1=1 AND u.deleted = 0";
 $params = [];
 if (!local_pocschool_is_trainer_user()) {
@@ -175,10 +177,11 @@ if (!local_pocschool_is_trainer_user()) {
 local_pocschool_apply_trainer_student_filter($where, $params, 'st');
 
 if ($search) {
-    $where .= " AND (u.firstname LIKE :search1 OR u.lastname LIKE :search2 OR st.student_id LIKE :search3)";
+    $where .= " AND (u.firstname LIKE :search1 OR u.lastname LIKE :search2 OR st.student_id LIKE :search3 OR cc.name LIKE :search4)";
     $params['search1'] = "%$search%";
     $params['search2'] = "%$search%";
     $params['search3'] = "%$search%";
+    $params['search4'] = "%$search%";
 }
 
 $table->set_sql($fields, $from, $where, $params);

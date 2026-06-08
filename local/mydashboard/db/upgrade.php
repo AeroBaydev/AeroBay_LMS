@@ -73,6 +73,27 @@ function xmldb_local_mydashboard_upgrade($oldversion) {
 
         upgrade_plugin_savepoint(true, 2026060500, 'local', 'mydashboard');
     }
+    if ($oldversion < 2026060600) {
+        $table = new xmldb_table('local_trainer_rating');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+            $table->add_field('studentid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('trainerid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('schoolid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('gradeid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('rating', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('feedback', XMLDB_TYPE_TEXT, null, null, null, null, null);
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_index('student-trainer', XMLDB_INDEX_UNIQUE, ['studentid', 'trainerid']);
+
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026060600, 'local', 'mydashboard');
+    }
 
     return true;
 }

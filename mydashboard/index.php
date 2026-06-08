@@ -550,7 +550,35 @@ if (empty($user->lastlogin))  {
 $data['trainerimageurl'] = '';
 $data['trainersessionstaught'] = 0;
 $data['trainerstatus'] = 'Offline';
+$data['trainercardschoolname'] = 'School Not Assigned';
+
 if (!empty($school_number)) {
+    // Resolve trainer card school name
+    if ($DB->get_manager()->table_exists('trainer_course_mapping')) {
+        $trainercourseschools = $DB->get_fieldset_sql(
+            "SELECT DISTINCT cc.name
+               FROM {trainer_course_mapping} tcm
+               JOIN {course_categories} cc ON cc.id = tcm.schoolid
+              WHERE tcm.schoolid = :schoolid
+                AND tcm.status = 1",
+            ['schoolid' => $school_number]
+        );
+        if (!empty($trainercourseschools)) {
+            $data['trainercardschoolname'] = count($trainercourseschools) === 1
+                ? format_string(reset($trainercourseschools))
+                : 'Multiple Schools';
+        }
+    }
+    if ($data['trainercardschoolname'] === 'School Not Assigned') {
+        $trainerrec = $DB->get_record('trainer', ['schoolid' => $school_number], 'id, schoolid', IGNORE_MULTIPLE);
+        if ($trainerrec && !empty($trainerrec->schoolid)) {
+            $trainercat = $DB->get_record('course_categories', ['id' => $trainerrec->schoolid], 'name');
+            if ($trainercat) {
+                $data['trainercardschoolname'] = format_string($trainercat->name);
+            }
+        }
+    }
+
     // 1. Try trainer table
     $traineruserid = $DB->get_field('trainer', 'userid', ['schoolid' => $school_number], IGNORE_MULTIPLE);
     if (!$traineruserid && !empty($courseid) && $DB->get_manager()->table_exists('trainer_course_mapping')) {
@@ -568,13 +596,14 @@ if (!empty($school_number)) {
             $userpicture->size = 100;
             $data['trainerimageurl'] = $userpicture->get_url($PAGE)->out(false);
             
+            $data['istraineronline'] = false;
+            $data['trainerstatus'] = 'Offline';
             $lastaccess = isset($traineruser->lastaccess) ? (int)$traineruser->lastaccess : 0;
             if ($lastaccess > 0) {
                 $diff = time() - $lastaccess;
-                if ($diff <= 600) {
-                    $data['trainerstatus'] = 'Online Now';
-                } elseif ($diff <= 3600) {
-                    $data['trainerstatus'] = 'Recently Active';
+                if ($diff <= 3600) {
+                    $data['istraineronline'] = true;
+                    $data['trainerstatus'] = 'Online';
                 }
             }
         }
@@ -582,8 +611,26 @@ if (!empty($school_number)) {
         if ($DB->get_manager()->table_exists('local_session_progress')) {
             $data['trainersessionstaught'] = (int) $DB->count_records('local_session_progress', [
                 'trainerid' => $traineruserid,
+                'schoolid' => $school_number,
+                'gradeid' => $gradeid,
+                'courseid' => $courseid,
                 'status' => 'completed'
             ]);
+        }
+        
+        $data['trainerid'] = $traineruserid;
+        $data['schoolid'] = $school_number;
+        $data['gradeid'] = $gradeid;
+        $data['sesskey'] = sesskey();
+
+        if ($DB->get_manager()->table_exists('local_trainer_rating')) {
+            $sql = "SELECT AVG(rating) AS avgrating, COUNT(rating) AS countrating FROM {local_trainer_rating} WHERE trainerid = :trainerid";
+            $stats = $DB->get_record_sql($sql, ['trainerid' => $traineruserid]);
+            $data['trainer_avg_rating'] = $stats->avgrating ? round($stats->avgrating, 1) : '0.0';
+            $data['trainer_count_rating'] = (int)$stats->countrating;
+        } else {
+            $data['trainer_avg_rating'] = '0.0';
+            $data['trainer_count_rating'] = 0;
         }
     }
 }
@@ -920,6 +967,88 @@ if (!empty($school_number)) {
                 $i++;
             }
         }
+
+        // ── Trainer Ratings ───────────────────────────────────────────────────────────
+        $somdata['hasratings'] = false;
+        if ($DB->get_manager()->table_exists('local_trainer_rating')) {
+            $overall = $DB->get_record_sql("SELECT AVG(rating) as avg, COUNT(*) as count FROM {local_trainer_rating} WHERE trainerid = :tid", ['tid' => $USER->id]);
+            if ($overall && $overall->count > 0) {
+                $somdata['hasratings'] = true;
+                $somdata['rating_avg'] = round($overall->avg, 1);
+                $somdata['rating_count'] = $overall->count;
+                
+                $star_counts = [5=>0, 4=>0, 3=>0, 2=>0, 1=>0];
+                $stars_sql = $DB->get_records_sql("SELECT rating, COUNT(*) as count FROM {local_trainer_rating} WHERE trainerid = :tid GROUP BY rating", ['tid' => $USER->id]);
+                foreach ($stars_sql as $st) {
+                    $star_counts[$st->rating] = $st->count;
+                }
+                $somdata['star_5'] = $star_counts[5];
+                $somdata['star_4'] = $star_counts[4];
+                $somdata['star_3'] = $star_counts[3];
+                $somdata['star_2'] = $star_counts[2];
+                $somdata['star_1'] = $star_counts[1];
+
+                $grade_sql = "
+                    SELECT r.gradeid, c.name as gradename, AVG(r.rating) as avg, COUNT(*) as count
+                    FROM {local_trainer_rating} r
+                    JOIN {course_categories} c ON c.id = r.gradeid
+                    WHERE r.trainerid = :tid
+                    GROUP BY r.gradeid, c.name
+                    ORDER BY c.name ASC
+                ";
+                $grades = $DB->get_records_sql($grade_sql, ['tid' => $USER->id]);
+                $somdata['rating_grades'] = [];
+                foreach ($grades as $g) {
+                    $somdata['rating_grades'][] = [
+                        'gradename' => format_string($g->gradename),
+                        'avg' => round($g->avg, 1),
+                        'count' => $g->count
+                    ];
+                }
+
+                $recent_sql = "
+                    SELECT r.id, r.rating, r.feedback, r.timecreated, u.firstname, u.lastname, c.name as gradename
+                    FROM {local_trainer_rating} r
+                    JOIN {user} u ON u.id = r.studentid
+                    JOIN {course_categories} c ON c.id = r.gradeid
+                    WHERE r.trainerid = :tid
+                    ORDER BY r.timecreated DESC
+                    LIMIT 20
+                ";
+                $recent = $DB->get_records_sql($recent_sql, ['tid' => $USER->id]);
+                $somdata['recent_ratings'] = [];
+                foreach ($recent as $r) {
+                    $rawfb = trim(strip_tags($r->feedback));
+                    if (empty($rawfb)) {
+                        $hasfb = false;
+                        $shortfb = '<em style="color:#94a3b8;">No written feedback</em>';
+                        $fullfb = '';
+                    } else {
+                        $hasfb = true;
+                        $fullfb = htmlspecialchars($rawfb, ENT_QUOTES, 'UTF-8');
+                        if (core_text::strlen($rawfb) > 85) {
+                            $shortfb = htmlspecialchars(core_text::substr($rawfb, 0, 85), ENT_QUOTES, 'UTF-8') . '...';
+                        } else {
+                            $shortfb = htmlspecialchars($rawfb, ENT_QUOTES, 'UTF-8');
+                        }
+                    }
+
+                    $somdata['recent_ratings'][] = [
+                        'stars' => str_repeat('⭐', $r->rating),
+                        'studentname' => fullname($r),
+                        'gradename' => format_string($r->gradename),
+                        'shortfeedback' => $shortfb,
+                        'fullfeedback' => $fullfb,
+                        'hasfeedback' => $hasfb,
+                        'date' => date('d M', $r->timecreated)
+                    ];
+                }
+            } else {
+                $somdata['rating_avg'] = '0.0';
+                $somdata['rating_count'] = 0;
+            }
+        }
+
         
         echo $OUTPUT->render_from_template('local_mydashboard/trainerdashboard', $somdata);
     } else {

@@ -409,13 +409,16 @@
 .ab-trainer-school { font-size: 0.7rem; color: var(--ab-text-3); font-weight: 500; }
 .ab-online-pill {
   display: inline-flex; align-items: center; gap: 5px;
-  font-size: 0.68rem; font-weight: 700; color: #10b981;
-  background: #d1fae5; padding: 3px 10px; border-radius: 20px; margin-top: 8px;
+  font-size: 0.68rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px; margin-top: 8px;
 }
+.ab-online-pill.online { color: #10b981; background: #d1fae5; }
+.ab-online-pill.offline { color: #ef4444; background: #fee2e2; }
 .ab-online-dot {
-  width: 7px; height: 7px; background: #10b981; border-radius: 50%;
-  animation: abPulse 1.5s infinite;
+  width: 7px; height: 7px; border-radius: 50%;
 }
+.ab-online-dot.online { background: #10b981; animation: abPulse 1.5s infinite; }
+.ab-online-dot.offline { background: #ef4444; }
 @keyframes abPulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(1.4);} }
 .ab-trainer-bd { padding: 14px 18px; }
 .ab-trainer-row { display:flex; justify-content:space-between; font-size:0.77rem; color:var(--ab-text-2); margin-bottom:7px; }
@@ -543,6 +546,13 @@
   background: #e0f2fe;
   color: #075985;
   border: 1px solid #bae6fd;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin: -6px -4px;
+  min-height: 44px;
 }
 .ab-timetable-empty {
   margin-top: 10px;
@@ -915,14 +925,14 @@
           <div class="ab-trainer-info">
             <div class="ab-trainer-name">Angad Sharma</div>
             <div class="ab-trainer-role">STEAM Trainer</div>
-            <div class="ab-trainer-school">{{#schoolname}}{{schoolname}}{{/schoolname}}{{^schoolname}}AeroBay{{/schoolname}}</div>
-            <div class="ab-online-pill"><div class="ab-online-dot"></div> {{trainerstatus}}</div>
+            <div class="ab-trainer-school">{{trainercardschoolname}}</div>
+            <div class="ab-online-pill {{#istraineronline}}online{{/istraineronline}}{{^istraineronline}}offline{{/istraineronline}}"><div class="ab-online-dot {{#istraineronline}}online{{/istraineronline}}{{^istraineronline}}offline{{/istraineronline}}"></div> {{trainerstatus}}</div>
           </div>
         </div>
         <div class="ab-trainer-bd">
           <div class="ab-trainer-row"><span>Specialization</span><strong>Aerodynamics, Robotics</strong></div>
           <div class="ab-trainer-row"><span>Sessions Taught</span><strong>{{trainersessionstaught}} Sessions</strong></div>
-          <div class="ab-trainer-row"><span>Rating</span><strong>⭐ 4.9 / 5.0</strong></div>
+          <div class="ab-trainer-row"><span>Rating</span><strong>⭐ <span id="abTrainerAvgRating">{{trainer_avg_rating}}</span> / 5.0 (<span id="abTrainerCountRating">{{trainer_count_rating}}</span> ratings)</strong></div>
           <div class="ab-divider"></div>
           <div class="ab-btn-grid">
             <a class="ab-btn ab-btn-prim"><i class="fa-solid fa-comment"></i> Message</a>
@@ -1223,9 +1233,11 @@
       <button class="ab-modal-close" onclick="abCloseRateTrainer()">✕</button>
     </div>
     <div class="ab-modal-bd" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 16px; overflow-y: visible; min-height: 0;">
-      <form id="abRateTrainerForm" onsubmit="event.preventDefault(); /* DB save not implemented yet */" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; margin: 0; min-height: 0;">
+      <form id="abRateTrainerForm" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; margin: 0; min-height: 0;">
         <input type="hidden" name="trainerid" value="{{trainerid}}">
-        <input type="hidden" name="studentid" value="{{studentid}}">
+        <input type="hidden" name="schoolid" value="{{schoolid}}">
+        <input type="hidden" name="gradeid" value="{{gradeid}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
         
         <div style="text-align: center; margin: 8px 0;">
           <div class="ab-star-rating" id="abStarRating" style="margin: 0; font-size: 34px;">
@@ -1304,6 +1316,41 @@
               s.style.color = '#cbd5e1';
             }
           });
+        });
+      });
+    }
+
+    /* Rating Form Submit */
+    var rateForm = document.getElementById('abRateTrainerForm');
+    if (rateForm) {
+      rateForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(rateForm);
+        var btn = rateForm.querySelector('button[type="submit"]');
+        var originalBtnText = btn.innerHTML;
+        btn.innerHTML = 'Submitting...';
+        btn.disabled = true;
+
+        fetch('{{config.wwwroot}}/local/mydashboard/ajax_rate_trainer.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          btn.innerHTML = originalBtnText;
+          btn.disabled = false;
+          if (data.success) {
+            document.getElementById('abTrainerAvgRating').textContent = data.avgrating;
+            document.getElementById('abTrainerCountRating').textContent = data.countrating;
+            abCloseRateTrainer();
+          } else {
+            alert(data.error || 'An error occurred.');
+          }
+        })
+        .catch(err => {
+          btn.innerHTML = originalBtnText;
+          btn.disabled = false;
+          alert('Network error.');
         });
       });
     }

@@ -395,7 +395,7 @@
    ============================================================ */
 .td-summary-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 18px;
 }
 
@@ -420,6 +420,7 @@
 .td-summary-card.sc-indigo::after { background: var(--td-primary); }
 .td-summary-card.sc-cyan::after   { background: var(--td-cyan); }
 .td-summary-card.sc-green::after  { background: var(--td-green); }
+.td-summary-card.sc-amber::after  { background: var(--td-amber); }
 
 .td-summary-icon {
     width: 48px; height: 48px; border-radius: 12px;
@@ -429,6 +430,7 @@
 .td-summary-icon.si-indigo { background: var(--td-primary-light); color: var(--td-primary); }
 .td-summary-icon.si-cyan   { background: var(--td-cyan-light);    color: var(--td-cyan); }
 .td-summary-icon.si-green  { background: var(--td-green-light);   color: var(--td-green); }
+.td-summary-icon.si-amber  { background: var(--td-amber-light);   color: var(--td-amber); }
 
 .td-summary-info { flex: 1; min-width: 0; }
 
@@ -1066,7 +1068,7 @@
      TRAINER DASHBOARD — Content only (no custom sidebar/header)
      Moodle's existing navbar and drawer remain intact above this.
      ============================================================ -->
-<div class="td-wrap" id="td-wrap" data-theme="dark">
+<div class="td-wrap" id="td-wrap">
 <div class="td-shell">
 
     <!-- ── TOP BAR: welcome + controls ── -->
@@ -1081,11 +1083,6 @@
                 <span class="td-date-day"   id="td-date-day">02</span>
                 <span class="td-date-label" id="td-date-label">June 2026</span>
             </div>
-            <!-- Theme toggle -->
-            <button class="td-icon-btn" id="td-theme-toggle" aria-label="Toggle dark/light mode" title="Toggle theme" onclick="tdToggleTheme()">
-                <span class="td-icon-moon"><i class="fas fa-moon"></i></span>
-                <span class="td-icon-sun"><i class="fas fa-sun"></i></span>
-            </button>
             <!-- Notifications -->
             <button class="td-icon-btn" id="td-notif-btn" aria-label="Notifications">
                 <i class="fas fa-bell"></i>
@@ -1144,6 +1141,22 @@
                 <div class="td-summary-label">Today's Attendance</div>
                 <div class="td-summary-sub">{{todaypresentcount}}/{{todaytotalcount}} marked today</div>
                 <span class="td-trend td-trend-up"><i class="fas fa-arrow-up"></i> {{todaypresentcount}} present</span>
+            </div>
+        </div>
+
+        <div class="td-summary-card sc-amber" id="td-card-rating" style="cursor: pointer;" onclick="document.getElementById('td-rating-backdrop').classList.add('is-open');">
+            <div class="td-summary-icon si-amber" aria-hidden="true"><i class="fas fa-star"></i></div>
+            <div class="td-summary-info">
+                <div class="td-summary-value" id="td-stat-rating">
+                    {{#hasratings}}{{rating_avg}}{{/hasratings}}
+                    {{^hasratings}}0.0{{/hasratings}}
+                </div>
+                <div class="td-summary-label">Trainer Rating</div>
+                <div class="td-summary-sub">
+                    {{#hasratings}}{{rating_count}} Ratings{{/hasratings}}
+                    {{^hasratings}}No ratings yet{{/hasratings}}
+                </div>
+                <span class="td-trend td-trend-same"><i class="fas fa-chart-bar"></i> Tap to view breakdown</span>
             </div>
         </div>
 
@@ -1595,6 +1608,90 @@
     </div>
 </div>
 
+<!-- ── RATING MODAL OVERLAY ── -->
+<div class="td-sched-backdrop" id="td-rating-backdrop" aria-hidden="true">
+    <div class="td-sched-modal" role="dialog" aria-modal="true" aria-labelledby="td-rating-modal-title" tabindex="-1">
+        <header class="td-sched-header">
+            <div>
+                <h2 class="td-sched-title" id="td-rating-modal-title">Trainer Ratings & Student Feedback</h2>
+                <div class="td-sched-sub">Overall Rating: ⭐ {{rating_avg}} / 5.0 ({{rating_count}} ratings)</div>
+            </div>
+            <button class="td-sched-close" id="td-rating-close" aria-label="Close modal"><i class="fas fa-times"></i></button>
+        </header>
+        <div class="td-sched-body" style="display: flex; flex-direction: column; gap: 20px; overflow-y: auto;">
+            {{^hasratings}}
+            <div style="text-align: center; padding: 40px; color: var(--td-muted);">
+                <i class="fas fa-star" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.2;"></i>
+                <p>No ratings received yet.</p>
+            </div>
+            {{/hasratings}}
+            
+            {{#hasratings}}
+            <!-- Top Stats -->
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; background: var(--td-surface2); padding: 15px; border-radius: 12px; border: 1px solid var(--td-border); min-width: 200px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--td-text2);">Rating Distribution</h4>
+                    <div style="display: flex; flex-direction: column; gap: 5px; font-size: 0.85rem;">
+                        <div>⭐⭐⭐⭐⭐ 5 Stars: <strong>{{star_5}}</strong></div>
+                        <div>⭐⭐⭐⭐ 4 Stars: <strong>{{star_4}}</strong></div>
+                        <div>⭐⭐⭐ 3 Stars: <strong>{{star_3}}</strong></div>
+                        <div>⭐⭐ 2 Stars: <strong>{{star_2}}</strong></div>
+                        <div>⭐ 1 Star: <strong>{{star_1}}</strong></div>
+                    </div>
+                </div>
+                <div style="flex: 1; background: var(--td-surface2); padding: 15px; border-radius: 12px; border: 1px solid var(--td-border); min-width: 200px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--td-text2);">Grade Breakdown</h4>
+                    <div style="display: flex; flex-direction: column; gap: 5px; font-size: 0.85rem;">
+                        {{#rating_grades}}
+                            <div>{{gradename}} &rarr; ⭐ {{avg}} ({{count}} ratings)</div>
+                        {{/rating_grades}}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Ratings Table -->
+            <h4 style="margin: 0; font-size: 0.9rem; color: var(--td-text2);">Recent Ratings</h4>
+            <div style="overflow-x: auto;">
+                <table class="td-recent-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--td-border); text-align: left; color: var(--td-muted);">
+                            <th style="padding: 8px;">Stars</th>
+                            <th style="padding: 8px;">Student</th>
+                            <th style="padding: 8px;">Grade</th>
+                            <th style="padding: 8px;">Feedback</th>
+                            <th style="padding: 8px;">Date</th>
+                            <th style="padding: 8px; text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#recent_ratings}}
+                        <tr style="border-bottom: 1px solid var(--td-border); vertical-align: top;">
+                            <td style="padding: 10px 8px;">{{stars}}</td>
+                            <td style="padding: 10px 8px; font-weight: 500;">{{studentname}}</td>
+                            <td style="padding: 10px 8px; color: var(--td-text2);">{{gradename}}</td>
+                            <td style="padding: 10px 8px; color: var(--td-text2); max-width: 280px; word-wrap: break-word;">{{{shortfeedback}}}</td>
+                            <td style="padding: 10px 8px; color: var(--td-muted); white-space: nowrap;">{{date}}</td>
+                            <td style="padding: 10px 8px; text-align: center; white-space: nowrap;">
+                                {{#hasfeedback}}
+                                <button type="button" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; background: var(--td-surface2); color: var(--td-primary); border: 1px solid var(--td-primary); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--td-primary)'; this.style.color='#fff';" onmouseout="this.style.background='var(--td-surface2)'; this.style.color='var(--td-primary)';" onclick="var tr=this.closest('tr').nextElementSibling; if(tr){tr.style.display=tr.style.display==='none'?'table-row':'none'; this.textContent=tr.style.display==='none'?'View':'Hide';}">View</button>
+                                {{/hasfeedback}}
+                            </td>
+                        </tr>
+                        {{#hasfeedback}}
+                        <tr class="td-full-feedback-row" style="display: none; background: var(--td-surface2); border-bottom: 1px solid var(--td-border);">
+                            <td colspan="6" style="padding: 15px; font-size: 0.85rem; color: var(--td-text); white-space: pre-wrap; word-break: break-word; line-height: 1.5;"><strong style="color: var(--td-muted);">Full Feedback:</strong><br/>{{fullfeedback}}</td>
+                        </tr>
+                        {{/hasfeedback}}
+                        {{/recent_ratings}}
+                    </tbody>
+                </table>
+            </div>
+            {{/hasratings}}
+        </div>
+    </div>
+</div>
+<!-- ── /RATING MODAL ── -->
+
 <script>
 /* ============================================================
    TRAINER DASHBOARD — Isolated UI JS only
@@ -1604,25 +1701,7 @@
     'use strict';
 
     var WRAP_ID = 'td-wrap';
-    var LS_KEY  = 'td_trainer_theme';
     var wrap    = document.getElementById(WRAP_ID);
-
-    /* Theme */
-    function applyTheme(theme) {
-        if (!wrap) { return; }
-        wrap.setAttribute('data-theme', theme);
-        localStorage.setItem(LS_KEY, theme);
-    }
-
-    (function initTheme() {
-        var saved = localStorage.getItem(LS_KEY);
-        applyTheme(saved === 'light' ? 'light' : 'dark');
-    }());
-
-    window.tdToggleTheme = function () {
-        var cur = wrap ? wrap.getAttribute('data-theme') : 'dark';
-        applyTheme(cur === 'dark' ? 'light' : 'dark');
-    };
 
     /* Live date card */
     (function updateDate() {
@@ -2082,6 +2161,33 @@
 
     }());
     /* ── end scheduleModal ── */
+
+    /* ── ratingModal logic ── */
+    (function() {
+        var ratingBackdrop = document.getElementById('td-rating-backdrop');
+        var ratingCloseBtn = document.getElementById('td-rating-close');
+        if (!ratingBackdrop) return;
+
+        function closeRatingModal() {
+            ratingBackdrop.classList.remove('is-open');
+            ratingBackdrop.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        if (ratingCloseBtn) {
+            ratingCloseBtn.addEventListener('click', closeRatingModal);
+        }
+
+        ratingBackdrop.addEventListener('click', function(e) {
+            if (e.target === ratingBackdrop) { closeRatingModal(); }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && ratingBackdrop.classList.contains('is-open')) {
+                closeRatingModal();
+            }
+        });
+    }());
 
     /* Welcome Username Wave Effect */
     (function animateWelcomeName() {

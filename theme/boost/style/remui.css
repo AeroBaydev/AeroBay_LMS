@@ -20160,7 +20160,7 @@ body,html{
     display:none
 }
 .navbar-nav .popover-region .icon:not(.edw-icon){
-    font-weight:bolder
+    font-weight:900
 }
 .navbar .popover-region.collapsed .popover-region-container{
     opacity:0;
