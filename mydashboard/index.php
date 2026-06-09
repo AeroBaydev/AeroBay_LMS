@@ -600,15 +600,6 @@ if (!empty($school_number)) {
 
     // 1. Try trainer table
     $traineruserid = $DB->get_field('trainer', 'userid', ['schoolid' => $school_number], IGNORE_MULTIPLE);
-    if (!$traineruserid && !empty($courseid) && $DB->get_manager()->table_exists('trainer_course_mapping')) {
-        // 2. Try trainer_course_mapping joined with poc_copy_course
-        $sql = "SELECT t.userid 
-                  FROM {trainer_course_mapping} tcm 
-                  JOIN {trainer} t ON t.userid = tcm.traineruserid 
-                 WHERE tcm.courseid = :courseid
-                   AND tcm.status = 1";
-        $traineruserid = $DB->get_field_sql($sql, ['courseid' => $courseid], IGNORE_MULTIPLE);
-    }
     
     if ($traineruserid) {
         if ($traineruser = core_user::get_user($traineruserid)) {

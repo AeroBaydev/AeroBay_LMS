@@ -57,15 +57,6 @@ if (!$trainer) {
 $schoolid = (int) ($student->schoolid ?? 0);
 $gradeid = (int) ($student->gradeid ?? 0);
 $trainerallowed = $schoolid > 0 && (int) $trainer->schoolid === $schoolid;
-if (!$trainerallowed && $DB->get_manager()->table_exists('trainer_course_mapping')) {
-    $trainerallowed = $DB->record_exists('trainer_course_mapping', [
-        'traineruserid' => $trainerid,
-        'schoolid' => $schoolid,
-        'gradeid' => $gradeid,
-        'courseid' => $courseid,
-        'status' => 1,
-    ]);
-}
 if (!$trainerallowed) {
     $response(['success' => false, 'error' => 'Selected trainer is not assigned to your class.']);
 }
