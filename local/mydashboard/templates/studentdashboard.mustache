@@ -824,10 +824,10 @@
       <div class="ab-hero-left">
         <div class="ab-hero-greeting">Welcome back to AeroBay STEAM Labs</div>
         <div class="ab-hero-chips" style="margin-top:10px;">
-          <span class="ab-chip"><i class="fa-solid fa-flask"></i> Session 3 · Active</span>
-          <span class="ab-chip"><i class="fa-solid fa-graduation-cap"></i> Grade 9–10</span>
-          <span class="ab-chip"><i class="fa-solid fa-school"></i> AeroBay In-House</span>
-          <span class="ab-chip"><i class="fa-solid fa-user-tie"></i> Trainer: Angad Sharma</span>
+          <span class="ab-chip"><i class="fa-solid fa-flask"></i> {{#sessionname}}{{sessionname}}{{/sessionname}}{{^sessionname}}No Active Session{{/sessionname}}</span>
+          <span class="ab-chip"><i class="fa-solid fa-graduation-cap"></i> {{#gradename}}{{gradename}}{{/gradename}}{{^gradename}}Grade Not Assigned{{/gradename}}</span>
+          <span class="ab-chip"><i class="fa-solid fa-school"></i> {{#schoolname}}{{schoolname}}{{/schoolname}}{{^schoolname}}School Not Assigned{{/schoolname}}</span>
+          <span class="ab-chip"><i class="fa-solid fa-user-tie"></i> {{#hastrainer}}Trainer: {{trainerfullname}}{{/hastrainer}}{{^hastrainer}}Trainer Not Assigned{{/hastrainer}}</span>
         </div>
         <a class="ab-hero-cta" style="margin-top:14px;"><i class="fa-solid fa-play"></i> Continue Learning</a>
       </div>

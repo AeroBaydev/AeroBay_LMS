@@ -1,0 +1,4 @@
+Total trainers in table: 1
+Trainer ID: 23, UserID: 3052, SchoolID: 470
+
+Total mappings in table: 0

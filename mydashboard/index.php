@@ -53,7 +53,10 @@ if (!empty($courses)) {
     $gradeid=$student_records->gradeid;
     $course_categories = $DB->get_record('course_categories', ['id' => $gradeid]);
     $grade_number = preg_replace('/[^0-9]/', '', $course_categories->name); 
+    $gradename = $course_categories ? format_string($course_categories->name) : '';
     $school_number=$student_records->schoolid;
+    $school_category = $DB->get_record('course_categories', ['id' => $school_number]);
+    $schoolname = $school_category ? format_string($school_category->name) : '';
 
     $sql = "SELECT * FROM mdl_news 
         WHERE FIND_IN_SET(:school_id, schoolid) > 0 
@@ -225,10 +228,18 @@ $data = [
 	    'newslist' => array_values((array) $news_records),
 	    'milestones' => [],  // Ensures it's always an array
 	    'quizzes' => $quizzes,
-	    'jsondata' => json_encode($quizzes) // JSON format for JS
+	    'jsondata' => json_encode($quizzes), // JSON format for JS
+        'gradename' => $gradename,
+        'schoolname' => $schoolname
 		];
 
 $data = array_merge($data, local_mydashboard_get_student_progress_context($student_records));
+
+$data['sessionname'] = '';
+if (!empty($data['learningpath']['active_session']) && $data['learningpath']['active_session'] !== '—') {
+    $data['sessionname'] = $data['learningpath']['active_session'];
+}
+
 
 // print_r($data);
 // die;

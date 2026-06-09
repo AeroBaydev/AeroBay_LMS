@@ -528,7 +528,7 @@ function local_mydashboard_get_student_learning_path_context(stdClass $student):
             $icon = 'fa-flask';
             $activecount++;
             if ($activesession === '—') {
-                $activesession = 'Session ' . $section['sectionnumber'];
+                $activesession = $section['sectionname'];
             }
         } else {
             $lockedcount++;
