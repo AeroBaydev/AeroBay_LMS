@@ -551,6 +551,14 @@ $data['trainerimageurl'] = '';
 $data['trainersessionstaught'] = 0;
 $data['trainerstatus'] = 'Offline';
 $data['trainercardschoolname'] = 'School Not Assigned';
+$data['trainerfullname'] = '';
+$data['hastrainer'] = false;
+$data['trainerid'] = 0;
+$data['schoolid'] = $school_number;
+$data['gradeid'] = $gradeid;
+$data['sesskey'] = sesskey();
+$data['trainer_avg_rating'] = '0.0';
+$data['trainer_count_rating'] = 0;
 
 if (!empty($school_number)) {
     // Resolve trainer card school name
@@ -585,13 +593,16 @@ if (!empty($school_number)) {
         // 2. Try trainer_course_mapping joined with poc_copy_course
         $sql = "SELECT t.userid 
                   FROM {trainer_course_mapping} tcm 
-                  JOIN {trainer} t ON t.id = tcm.trainerid 
-                 WHERE tcm.courseid = :courseid";
+                  JOIN {trainer} t ON t.userid = tcm.traineruserid 
+                 WHERE tcm.courseid = :courseid
+                   AND tcm.status = 1";
         $traineruserid = $DB->get_field_sql($sql, ['courseid' => $courseid], IGNORE_MULTIPLE);
     }
     
     if ($traineruserid) {
         if ($traineruser = core_user::get_user($traineruserid)) {
+            $data['hastrainer'] = true;
+            $data['trainerfullname'] = fullname($traineruser);
             $userpicture = new user_picture($traineruser);
             $userpicture->size = 100;
             $data['trainerimageurl'] = $userpicture->get_url($PAGE)->out(false);
@@ -639,8 +650,12 @@ if (!empty($school_number)) {
 // //echo '<pre>'; print_r($data); echo '</pre>';
 //  print_r($user);
 //   die;
-   // echo  $OUTPUT->render_from_template('local_mydashboard/welcome_student', $somdata);
-    echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $data);
+	   // echo  $OUTPUT->render_from_template('local_mydashboard/welcome_student', $somdata);
+    $PAGE->requires->js_call_amd('local_mydashboard/studentdashboard', 'init', [[
+        'submiturl' => (new moodle_url('/local/mydashboard/ajax_submit_doubt.php'))->out(false),
+        'maxchars' => 1000,
+    ]]);
+	    echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $data);
     echo $OUTPUT->footer();
 } else {
     // Render the shared admin dashboard for admins and school-scoped POCs.

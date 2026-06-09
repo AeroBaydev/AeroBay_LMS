@@ -1,6 +1,11 @@
 <?php
 
 require_once('../../config.php');
+
+// Safety redirect - this controller is incomplete, use full dashboard.
+redirect(new moodle_url('/mydashboard/index.php'));
+exit;
+
 require_once($CFG->dirroot . '/enrol/manual/lib.php');
 require_once($CFG->dirroot . '/local/dashboard/lib.php');
 require_once($CFG->dirroot . '/local/mydashboard/lib.php');

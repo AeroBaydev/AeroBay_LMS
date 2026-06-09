@@ -76,6 +76,241 @@ function local_mydashboard_get_weekly_login_flags(int $userid): array {
     return $flags;
 }
 
+function local_mydashboard_format_recent_activity(
+    string $type,
+    string $icon,
+    string $dotclass,
+    string $title,
+    string $description,
+    int $timecreated,
+    string $url = ''
+): array {
+    return [
+        'type' => $type,
+        'icon' => $icon,
+        'dotclass' => $dotclass,
+        'title' => $title,
+        'hastitle' => $title !== '',
+        'description' => $description,
+        'timecreated' => $timecreated,
+        'displaytime' => userdate($timecreated, get_string('strftimedatetimeshort', 'langconfig')),
+        'url' => $url,
+        'hasurl' => $url !== '',
+    ];
+}
+
+function local_mydashboard_get_log_events(int $userid, array $eventnames, int $limit = 20): array {
+    global $DB;
+
+    if ($userid <= 0 || empty($eventnames)) {
+        return [];
+    }
+
+    $readers = get_log_manager()->get_readers('\core\log\sql_reader');
+    if (empty($readers)) {
+        return [];
+    }
+
+    $reader = reset($readers);
+    [$eventsql, $eventparams] = $DB->get_in_or_equal($eventnames, SQL_PARAMS_NAMED, 'recentactivityevent');
+    $params = [
+        'recentactivityuserid' => $userid,
+        'recentactivityrelateduserid' => $userid,
+    ] + $eventparams;
+
+    return array_values($reader->get_events_select(
+        "(userid = :recentactivityuserid OR relateduserid = :recentactivityrelateduserid)
+         AND eventname {$eventsql}",
+        $params,
+        'timecreated DESC',
+        0,
+        $limit
+    ));
+}
+
+function local_mydashboard_collect_login_events(int $userid): array {
+    $activities = [];
+    $events = local_mydashboard_get_log_events($userid, ['\core\event\user_loggedin'], 10);
+
+    foreach ($events as $event) {
+        $url = $event->get_url();
+        $activities[] = local_mydashboard_format_recent_activity(
+            'login',
+            'fa-solid fa-right-to-bracket',
+            'ad-blue',
+            '',
+            'Logged in',
+            (int) $event->timecreated,
+            $url ? $url->out(false) : ''
+        );
+    }
+
+    return $activities;
+}
+
+function local_mydashboard_collect_quiz_events(int $userid): array {
+    global $DB;
+
+    $activities = [];
+    $events = local_mydashboard_get_log_events($userid, [
+        '\mod_quiz\event\attempt_started',
+        '\mod_quiz\event\attempt_submitted',
+    ], 40);
+    $quizcache = [];
+
+    foreach ($events as $event) {
+        $quizid = (int) ($event->other['quizid'] ?? 0);
+        if ($quizid <= 0 && !empty($event->objectid)) {
+            $quizid = (int) $DB->get_field('quiz_attempts', 'quiz', ['id' => $event->objectid]);
+        }
+        if ($quizid <= 0) {
+            continue;
+        }
+        if (!array_key_exists($quizid, $quizcache)) {
+            $quizcache[$quizid] = $DB->get_record('quiz', ['id' => $quizid], 'id, name');
+        }
+        if (!$quizcache[$quizid]) {
+            continue;
+        }
+
+        $iscompleted = $event instanceof \mod_quiz\event\attempt_submitted;
+        $url = $event->get_url();
+        $activities[] = local_mydashboard_format_recent_activity(
+            $iscompleted ? 'quiz_completed' : 'quiz_attempted',
+            $iscompleted ? 'fa-solid fa-check' : 'fa-solid fa-file-pen',
+            $iscompleted ? 'ad-green' : 'ad-amber',
+            format_string($quizcache[$quizid]->name),
+            $iscompleted ? 'Completed quiz' : 'Attempted quiz',
+            (int) $event->timecreated,
+            $url ? $url->out(false) : ''
+        );
+    }
+
+    if (!$DB->get_manager()->table_exists('quiz_grades')) {
+        return $activities;
+    }
+
+    $graderecords = $DB->get_records_sql(
+        "SELECT qg.id, qg.quiz, qg.timemodified AS timecreated, q.name, q.grade AS maxgrade, qg.grade, cm.id AS cmid
+           FROM {quiz_grades} qg
+           JOIN {quiz} q ON q.id = qg.quiz
+           JOIN {modules} m ON m.name = :modulename
+           JOIN {course_modules} cm ON cm.module = m.id
+                                   AND cm.instance = q.id
+          WHERE qg.userid = :userid
+            AND EXISTS (
+                SELECT 1
+                  FROM {quiz_attempts} qa
+                 WHERE qa.quiz = qg.quiz
+                   AND qa.userid = qg.userid
+                   AND qa.state = :state
+                   AND qa.timefinish > 0
+            )
+       ORDER BY qg.timemodified DESC",
+        [
+            'modulename' => 'quiz',
+            'userid' => $userid,
+            'state' => 'finished',
+        ],
+        0,
+        40
+    );
+    foreach ($graderecords as $record) {
+        $percentage = (float) $record->maxgrade > 0
+            ? ((float) $record->grade / (float) $record->maxgrade) * 100
+            : 0;
+        $activities[] = local_mydashboard_format_recent_activity(
+            'quiz_score',
+            'fa-solid fa-chart-simple',
+            'ad-purple',
+            format_string($record->name) . ' - ' . format_float($percentage, 1) . '%',
+            'Quiz score received',
+            (int) $record->timecreated,
+            (new moodle_url('/mod/quiz/view.php', ['id' => $record->cmid]))->out(false)
+        );
+    }
+
+    return $activities;
+}
+
+function local_mydashboard_collect_assignment_events(int $userid): array {
+    $activities = [];
+    $events = local_mydashboard_get_log_events($userid, ['\mod_assign\event\assessable_submitted'], 20);
+    $assignmentcache = [];
+
+    foreach ($events as $event) {
+        $cmid = (int) $event->contextinstanceid;
+        if ($cmid <= 0) {
+            continue;
+        }
+        if (!array_key_exists($cmid, $assignmentcache)) {
+            $assignmentcache[$cmid] = get_coursemodule_from_id('assign', $cmid, 0, false, IGNORE_MISSING);
+        }
+        if (!$assignmentcache[$cmid]) {
+            continue;
+        }
+
+        $activities[] = local_mydashboard_format_recent_activity(
+            'assignment_submitted',
+            'fa-solid fa-file-arrow-up',
+            'ad-rose',
+            format_string($assignmentcache[$cmid]->name),
+            'Submitted assignment',
+            (int) $event->timecreated,
+            (new moodle_url('/mod/assign/view.php', ['id' => $cmid]))->out(false)
+        );
+    }
+
+    return $activities;
+}
+
+function local_mydashboard_collect_streak_events(int $userid): array {
+    global $DB;
+
+    if ($userid <= 0 || !$DB->get_manager()->table_exists('local_mydashboard_streak_log')) {
+        return [];
+    }
+
+    $activities = [];
+    $records = $DB->get_records(
+        'local_mydashboard_streak_log',
+        ['userid' => $userid],
+        'timecreated DESC',
+        'id, timecreated',
+        0,
+        15
+    );
+    foreach ($records as $record) {
+        $activities[] = local_mydashboard_format_recent_activity(
+            'login_streak',
+            'fa-solid fa-fire',
+            'ad-amber',
+            '',
+            'Login streak updated',
+            (int) $record->timecreated,
+            (new moodle_url('/mydashboard/index.php'))->out(false)
+        );
+    }
+
+    return $activities;
+}
+
+function local_mydashboard_get_recent_activities(int $userid): array {
+    if ($userid <= 0) {
+        return [];
+    }
+
+    $activities = array_merge(
+        local_mydashboard_collect_quiz_events($userid),
+        local_mydashboard_collect_assignment_events($userid)
+    );
+    usort($activities, static function(array $left, array $right): int {
+        return $right['timecreated'] <=> $left['timecreated'];
+    });
+
+    return array_slice($activities, 0, 5);
+}
+
 function local_mydashboard_get_student_timetable_context(stdClass $student): array {
     global $DB;
 
@@ -336,15 +571,61 @@ function local_mydashboard_get_student_progress_context(stdClass $student): arra
 
     $attendancepresent = 0;
     $attendancetotal = 0;
+    $calendar_days = [];
+    $selected_month_name = date('F Y');
+    $att_month = optional_param('att_month', (int) date('n'), PARAM_INT);
+    $att_year = optional_param('att_year', (int) date('Y'), PARAM_INT);
+    $current_month = (int) date('n');
+    $current_year = (int) date('Y');
+
+    if ($att_month < 1 || $att_month > 12) {
+        $att_month = $current_month;
+    }
+    if ($att_year < 2000 || $att_year > 2100) {
+        $att_year = $current_year;
+    }
+
+    if ($att_year > $current_year || ($att_year == $current_year && $att_month > $current_month)) {
+        $att_month = $current_month;
+        $att_year = $current_year;
+    }
+
+    $prev_month = $att_month - 1;
+    $prev_year = $att_year;
+    if ($prev_month < 1) { $prev_month = 12; $prev_year--; }
+    
+    $attendance_has_next = !($att_year == $current_year && $att_month == $current_month);
+    $next_month = $att_month + 1;
+    $next_year = $att_year;
+    if ($next_month > 12) { $next_month = 1; $next_year++; }
+
+    $month_options = [];
+    for ($i = -6; $i <= 1; $i++) {
+        $m_ts = mktime(0, 0, 0, $current_month + $i, 1, $current_year);
+        $m_num = (int) date('n', $m_ts);
+        $y_num = (int) date('Y', $m_ts);
+        
+        if ($y_num > $current_year || ($y_num == $current_year && $m_num > $current_month)) {
+            continue;
+        }
+        
+        $month_options[] = [
+            'name' => date('F Y', $m_ts),
+            'value' => $m_num . '_' . $y_num,
+            'selected' => ($m_num == $att_month && $y_num == $att_year)
+        ];
+    }
+
     if (!empty($schoolid) && !empty($gradeid) &&
             $DB->get_manager()->table_exists('attendance') &&
             $DB->get_manager()->table_exists('attendance_student')) {
-        $monthstart = mktime(0, 0, 0, (int) date('n'), 1, (int) date('Y'));
-        $nextmonthstart = mktime(0, 0, 0, (int) date('n') + 1, 1, (int) date('Y'));
+        
+        $monthstart = mktime(0, 0, 0, $att_month, 1, $att_year);
+        $nextmonthstart = mktime(0, 0, 0, $att_month + 1, 1, $att_year);
+        $selected_month_name = date('F Y', $monthstart);
 
-        $attendance = $DB->get_record_sql(
-            "SELECT COUNT(ast.id) AS totalcount,
-                    SUM(CASE WHEN UPPER(ast.status) = 'P' THEN 1 ELSE 0 END) AS presentcount
+        $records = $DB->get_records_sql(
+            "SELECT att.id, att.date, ast.status
                FROM {attendance_student} ast
                JOIN {attendance} att ON att.id = ast.attendanceid
               WHERE ast.studentid = :userid
@@ -361,11 +642,58 @@ function local_mydashboard_get_student_progress_context(stdClass $student): arra
                 'nextmonthstart' => $nextmonthstart,
             ]
         );
-        if ($attendance) {
-            $attendancepresent = (int) $attendance->presentcount;
-            $attendancetotal = (int) $attendance->totalcount;
+        
+        $daystatus = [];
+        $last_attendance_status = 'N/A';
+        $last_attendance_date = 0;
+        foreach ($records as $rec) {
+            $day = (int) date('j', $rec->date);
+            $daystatus[$day] = strtoupper($rec->status);
+            $attendancetotal++;
+            if ($daystatus[$day] === 'P') {
+                $attendancepresent++;
+            }
+            if ($rec->date > $last_attendance_date) {
+                $last_attendance_date = $rec->date;
+                $last_attendance_status = ($daystatus[$day] === 'P') ? 'Present' : (($daystatus[$day] === 'A') ? 'Absent' : 'N/A');
+            }
+        }
+
+        $daysinmonth = (int) date('t', $monthstart);
+        $firstdayofweek = (int) date('w', $monthstart);
+        for ($i = 0; $i < $firstdayofweek; $i++) {
+            $calendar_days[] = ['day' => '', 'empty' => true];
+        }
+        for ($d = 1; $d <= $daysinmonth; $d++) {
+            $status = isset($daystatus[$d]) ? $daystatus[$d] : 'NONE';
+            $calendar_days[] = [
+                'day' => $d,
+                'empty' => false,
+                'ispresent' => $status === 'P',
+                'isabsent' => $status === 'A',
+                'isnone' => $status === 'NONE'
+            ];
         }
     }
+    
+    if (empty($calendar_days)) {
+        $fallback_monthstart = mktime(0, 0, 0, $att_month, 1, $att_year);
+        $daysinmonth = (int) date('t', $fallback_monthstart);
+        $firstdayofweek = (int) date('w', $fallback_monthstart);
+        for ($i = 0; $i < $firstdayofweek; $i++) {
+            $calendar_days[] = ['day' => '', 'empty' => true];
+        }
+        for ($d = 1; $d <= $daysinmonth; $d++) {
+            $calendar_days[] = [
+                'day' => $d,
+                'empty' => false,
+                'ispresent' => false,
+                'isabsent' => false,
+                'isnone' => true
+            ];
+        }
+    }
+    
     $attendancepercent = $attendancetotal > 0 ? ($attendancepresent / $attendancetotal) * 100 : 0;
 
     $assessmentcompleted = 0;
@@ -433,6 +761,7 @@ function local_mydashboard_get_student_progress_context(stdClass $student): arra
     $weeklyloginflags = local_mydashboard_get_weekly_login_flags($studentuserid);
     $timetablecontext = local_mydashboard_get_student_timetable_context($student);
     $learningpathcontext = local_mydashboard_get_student_learning_path_context($student);
+    $recentactivities = local_mydashboard_get_recent_activities($studentuserid);
 
     return array_merge([
         'overallprogressnumber' => (string) round($overallprogress),
@@ -440,7 +769,18 @@ function local_mydashboard_get_student_progress_context(stdClass $student): arra
         'attendancepercentnumber' => (string) round($attendancepercent),
         'attendancepercent' => local_mydashboard_format_kpi_percent($attendancepercent),
         'attendancepresentcount' => $attendancepresent,
+        'attendanceabsentcount' => $attendancetotal - $attendancepresent,
         'attendancetotalcount' => $attendancetotal,
+        'attendance_calendar_days' => $calendar_days,
+        'attendance_month_name' => $selected_month_name,
+        'attendance_prev_month' => $prev_month,
+        'attendance_prev_year' => $prev_year,
+        'attendance_next_month' => $next_month,
+        'attendance_next_year' => $next_year,
+        'attendance_has_next' => $attendance_has_next,
+        'attendance_month_options' => $month_options,
+        'attendance_status_label' => $attendancepercent >= 75 ? 'Good' : ($attendancepercent >= 50 ? 'Average' : 'Low Attendance'),
+        'attendance_last_status' => $last_attendance_status,
         'assessmentpercentnumber' => (string) round($assessmentpercent),
         'assessmentpercent' => local_mydashboard_format_kpi_percent($assessmentpercent),
         'assessmentattemptedcount' => $assessmentcompleted,
@@ -449,5 +789,7 @@ function local_mydashboard_get_student_progress_context(stdClass $student): arra
         'currentstreak' => $currentstreak,
         'longeststreak' => $longeststreak,
         'lastlogindate' => $lastlogindate,
+        'recentactivities' => $recentactivities,
+        'hasrecentactivities' => !empty($recentactivities),
     ], $weeklyloginflags, $timetablecontext, $learningpathcontext);
 }

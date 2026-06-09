@@ -2,6 +2,7 @@
 require_once('../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
 require_once('classes/form/edit_news_form.php');
+require_once($CFG->dirroot . '/local/news/lib.php');
 global $PAGE, $CFG, $DB;
 
 $newsid = optional_param('id', 0, PARAM_INT);
@@ -65,7 +66,8 @@ elseif ($data = $form->get_data()) {
         $DB->update_record('news', $news);
     } else {
         // If no ID is present, insert a new record
-        $DB->insert_record('news', $news);
+        $news->id = $DB->insert_record('news', $news);
+        local_news_send_notifications($news);
     }
     redirect("$CFG->wwwroot/local/news/", get_string('updatechangesnotify', 'local_news'), 2);
 } 

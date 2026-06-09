@@ -437,6 +437,7 @@
 .ab-btn-prim:hover { box-shadow:0 6px 18px rgba(37,99,235,0.38); color:#fff; }
 .ab-btn-out  { background:#fff; color:var(--ab-blue); border:1.5px solid #bfdbfe; }
 .ab-btn-out:hover { background:var(--ab-blue-light); color:var(--ab-blue); border-color:var(--ab-blue); }
+.ab-btn[disabled] { opacity:0.65; cursor:not-allowed; transform:none; }
 
 /* ─── TASK LIST ─── */
 .ab-task {
@@ -649,6 +650,7 @@
 .ad-rose   { background:#ffe4e6; color:#f43f5e; }
 .ab-act-info { flex:1; }
 .ab-act-text { font-size:0.79rem; color:var(--ab-text); margin-bottom:2px; line-height:1.4; }
+.ab-act-text a { color:inherit; text-decoration:none; }
 .ab-act-text strong { color:var(--ab-blue); font-weight:600; }
 .ab-act-time { font-size:0.66rem; color:var(--ab-text-3); }
 
@@ -741,6 +743,14 @@
 .ab-modal-close:hover { background:rgba(255,255,255,0.32); }
 .ab-modal-bd { padding:20px 22px; overflow-y:auto; font-size:0.88rem; color:#334155; line-height:1.7; white-space:pre-wrap; }
 .ab-modal-list { padding:14px 18px; overflow-y:auto; max-height:calc(82vh - 68px); }
+.ab-form-field { width:100%; margin-bottom:13px; white-space:normal; }
+.ab-form-label { display:block; font-size:0.76rem; font-weight:700; color:#334155; margin-bottom:5px; }
+.ab-form-control { width:100%; border:1px solid #cbd5e1; border-radius:9px; padding:10px 11px; font-family:inherit; font-size:0.86rem; color:#1e293b; outline:none; transition:border-color var(--ab-tr), box-shadow var(--ab-tr); }
+.ab-form-control:focus { border-color:var(--ab-blue); box-shadow:0 0 0 3px rgba(37,99,235,0.12); }
+.ab-form-control.is-invalid { border-color:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,0.12); }
+.ab-form-help { display:flex; justify-content:space-between; gap:10px; margin-top:5px; font-size:0.67rem; color:var(--ab-text-3); line-height:1.35; }
+.ab-form-error { color:#dc2626; font-size:0.72rem; font-weight:600; min-height:18px; margin-top:4px; line-height:1.35; }
+.ab-form-readonly { background:#f8fafc; color:#475569; font-weight:700; }
 .ab-star-rating { font-size: 2rem; color: #cbd5e1; display: inline-flex; gap: 8px; cursor: pointer; }
 .ab-star-rating i { transition: color 0.2s; }
 .ab-star-rating i.active, .ab-star-rating i:hover ~ i { /* hover logic handled via js */ }
@@ -923,22 +933,31 @@
             {{/trainerimageurl}}
           </div>
           <div class="ab-trainer-info">
-            <div class="ab-trainer-name">Angad Sharma</div>
+            <div class="ab-trainer-name">{{#hastrainer}}{{trainerfullname}}{{/hastrainer}}{{^hastrainer}}Trainer Not Assigned{{/hastrainer}}</div>
+            {{#hastrainer}}
             <div class="ab-trainer-role">STEAM Trainer</div>
             <div class="ab-trainer-school">{{trainercardschoolname}}</div>
             <div class="ab-online-pill {{#istraineronline}}online{{/istraineronline}}{{^istraineronline}}offline{{/istraineronline}}"><div class="ab-online-dot {{#istraineronline}}online{{/istraineronline}}{{^istraineronline}}offline{{/istraineronline}}"></div> {{trainerstatus}}</div>
+            {{/hastrainer}}
           </div>
         </div>
         <div class="ab-trainer-bd">
+          {{#hastrainer}}
           <div class="ab-trainer-row"><span>Specialization</span><strong>Aerodynamics, Robotics</strong></div>
           <div class="ab-trainer-row"><span>Sessions Taught</span><strong>{{trainersessionstaught}} Sessions</strong></div>
           <div class="ab-trainer-row"><span>Rating</span><strong>⭐ <span id="abTrainerAvgRating">{{trainer_avg_rating}}</span> / 5.0 (<span id="abTrainerCountRating">{{trainer_count_rating}}</span> ratings)</strong></div>
           <div class="ab-divider"></div>
           <div class="ab-btn-grid">
-            <a class="ab-btn ab-btn-prim"><i class="fa-solid fa-comment"></i> Message</a>
-            <a class="ab-btn ab-btn-out"><i class="fa-solid fa-circle-question"></i> Ask Doubt</a>
+            <button type="button" class="ab-btn ab-btn-prim" data-action="open-ask-doubt"><i class="fa-solid fa-circle-question"></i> Ask Doubt</button>
             <a class="ab-btn ab-btn-out" style="grid-column: span 2;" onclick="abOpenRateTrainer()"><i class="fa-solid fa-star"></i> Rate Trainer</a>
           </div>
+          {{/hastrainer}}
+          {{^hastrainer}}
+          <div class="ab-trainer-row" style="display:block;line-height:1.5;">
+            No trainer is currently assigned to your school/class.<br>
+            Please contact admin or wait for assignment.
+          </div>
+          {{/hastrainer}}
         </div>
       </div>
     </div>
@@ -977,51 +996,114 @@
       </div>
     </div>
 
-    {{! ── ROW 3: Project + Attendance ── }}
-    <div class="ab-grid-2">
-      {{! Current Project }}
-      <div class="ab-card">
-        <div class="ab-card-hd">
-          <div class="ab-card-title">
-            <div class="ic" style="background:#e0e7ff;color:#4f46e5;"><i class="fa-solid fa-diagram-project"></i></div>
-            Current Project
-          </div>
-          <span class="ab-tag" style="background:#dbeafe;color:#1d4ed8;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">In Progress</span>
+    {{! ── ROW 3: Attendance Overview ── }}
+    <div class="ab-card" style="margin-bottom: 18px; width: 100%;">
+      <div class="ab-card-hd">
+        <div class="ab-card-title">
+          <div class="ic" style="background:#d1fae5;color:#10b981;"><i class="fa-solid fa-chart-column"></i></div>
+          Attendance Overview
         </div>
-        <div class="ab-card-bd">
-          <div class="ab-proj-img">🛩️</div>
-          <div class="ab-proj-title">Paper Aerofoil Wing Model</div>
-          <div class="ab-proj-sub">STEAM Lab Project 2 · Aerodynamics Stream</div>
-          <div class="ab-prog-wrap">
-            <div class="ab-prog-lbl"><span>Project Progress</span><span>65%</span></div>
-            <div class="ab-prog-track"><div class="ab-prog-fill" style="width:0%" data-width="65%"></div></div>
-          </div>
-          <div class="ab-milestone-chips">
-            <span class="ab-mc done"><i class="fa-solid fa-check"></i> Research</span>
-            <span class="ab-mc done"><i class="fa-solid fa-check"></i> Design</span>
-            <span class="ab-mc act"><i class="fa-solid fa-spinner fa-spin"></i> Build</span>
-            <span class="ab-mc todo"><i class="fa-solid fa-lock"></i> Test</span>
-            <span class="ab-mc todo"><i class="fa-solid fa-lock"></i> Present</span>
-          </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <a href="?att_month={{attendance_prev_month}}&att_year={{attendance_prev_year}}" style="padding:4px 8px; background:#f1f5f9; border-radius:6px; color:#475569; text-decoration:none;"><i class="fa-solid fa-chevron-left"></i></a>
+          <select onchange="var v = this.value.split('_'); window.location.href='?att_month='+v[0]+'&att_year='+v[1];" style="padding:4px 8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; font-weight:600; color:#1e293b; outline:none; cursor:pointer;">
+            {{#attendance_month_options}}
+            <option value="{{value}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+            {{/attendance_month_options}}
+          </select>
+          {{#attendance_has_next}}
+          <a href="?att_month={{attendance_next_month}}&att_year={{attendance_next_year}}" style="padding:4px 8px; background:#f1f5f9; border-radius:6px; color:#475569; text-decoration:none;"><i class="fa-solid fa-chevron-right"></i></a>
+          {{/attendance_has_next}}
+          {{^attendance_has_next}}
+          <span style="padding:4px 8px; background:#f8fafc; border-radius:6px; color:#cbd5e1; cursor:not-allowed;"><i class="fa-solid fa-chevron-right"></i></span>
+          {{/attendance_has_next}}
         </div>
       </div>
+      <div class="ab-card-bd" style="padding:0; display:flex; flex-wrap:wrap;">
+        
+        {{! Left: Quick Stats + Calendar }}
+        <div style="flex:1 1 350px; padding:24px; border-right:1px solid #f1f5f9; display:flex; flex-direction:column; gap:24px;">
+          
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;">
+            <div style="background:#ecfdf5; padding:16px 10px; border-radius:12px; text-align:center; border:1px solid #d1fae5;">
+              <div style="font-size:1.75rem; font-weight:800; color:#059669; line-height:1;">{{attendancepresentcount}}</div>
+              <div style="font-size:0.7rem; color:#047857; text-transform:uppercase; font-weight:700; margin-top:6px;">Present</div>
+            </div>
+            <div style="background:#fef2f2; padding:16px 10px; border-radius:12px; text-align:center; border:1px solid #fee2e2;">
+              <div style="font-size:1.75rem; font-weight:800; color:#dc2626; line-height:1;">{{attendanceabsentcount}}</div>
+              <div style="font-size:0.7rem; color:#b91c1c; text-transform:uppercase; font-weight:700; margin-top:6px;">Absent</div>
+            </div>
+            <div style="background:#eef2ff; padding:16px 10px; border-radius:12px; text-align:center; border:1px solid #e0e7ff;">
+              <div style="font-size:1.75rem; font-weight:800; color:#4f46e5; line-height:1;">{{attendancepercentnumber}}<span style="font-size:1rem;">%</span></div>
+              <div style="font-size:0.7rem; color:#4338ca; text-transform:uppercase; font-weight:700; margin-top:6px;">Rate</div>
+            </div>
+          </div>
 
-      {{! Attendance Chart }}
-      <div class="ab-card">
-        <div class="ab-card-hd">
-          <div class="ab-card-title">
-            <div class="ic" style="background:#d1fae5;color:#10b981;"><i class="fa-solid fa-chart-column"></i></div>
-            Attendance Overview
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:20px; flex-grow:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+              <h4 style="margin:0; font-size:1rem; font-weight:700; color:#1e293b;">{{attendance_month_name}}</h4>
+              <div style="display:flex; gap:12px;">
+                <div style="display:flex; align-items:center; gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:block;"></span><span style="font-size:0.7rem;color:#64748b;font-weight:600;">Present</span></div>
+                <div style="display:flex; align-items:center; gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:block;"></span><span style="font-size:0.7rem;color:#64748b;font-weight:600;">Absent</span></div>
+                <div style="display:flex; align-items:center; gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#f1f5f9;display:block;"></span><span style="font-size:0.7rem;color:#64748b;font-weight:600;">No Class</span></div>
+              </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.75rem; color:#64748b; margin-bottom:8px; font-weight:700;">
+              <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.85rem; font-weight:600;">
+              {{#attendance_calendar_days}}
+                {{#empty}}
+                  <div style="padding:6px 0;"></div>
+                {{/empty}}
+                {{^empty}}
+                  {{#ispresent}}
+                  <div style="background:#10b981; color:#fff; border-radius:8px; padding:6px 0; box-shadow: 0 2px 4px rgba(16,185,129,0.2);">{{day}}</div>
+                  {{/ispresent}}
+                  {{#isabsent}}
+                  <div style="background:#ef4444; color:#fff; border-radius:8px; padding:6px 0; box-shadow: 0 2px 4px rgba(239,68,68,0.2);">{{day}}</div>
+                  {{/isabsent}}
+                  {{#isnone}}
+                  <div style="background:#f1f5f9; color:#94a3b8; border-radius:8px; padding:6px 0;">{{day}}</div>
+                  {{/isnone}}
+                {{/empty}}
+              {{/attendance_calendar_days}}
+            </div>
           </div>
-          <span class="ab-tag" style="background:#d1fae5;color:#065f46;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">91% this month</span>
+
         </div>
-        <div class="ab-card-bd">
-          <div class="ab-chart-legend">
-            <div class="ab-cl-item"><div class="ab-cl-dot" style="background:#4f46e5;"></div> Present</div>
-            <div class="ab-cl-item"><div class="ab-cl-dot" style="background:#fbbf24;"></div> Absent</div>
+
+        {{! Right: Summary Panel }}
+        <div style="flex:1 1 250px; padding:24px; display:flex; flex-direction:column; background:#f8fafc; border-radius: 0 0 12px 0;">
+          <div style="margin-bottom:20px;">
+            <h3 style="margin:0; font-size:1.1rem; font-weight:700; color:#1e293b;">Attendance Summary</h3>
+            <p style="margin:4px 0 0; font-size:0.8rem; color:#64748b;">Snapshot for {{attendance_month_name}}</p>
           </div>
-          <div class="ab-chart-area"><canvas id="abAttChart"></canvas></div>
+          
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:20px; flex-grow:1; display:flex; flex-direction:column; gap:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+              <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Present Days</span>
+              <span style="font-size:1rem; font-weight:800; color:#059669;">{{attendancepresentcount}}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+              <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Absent Days</span>
+              <span style="font-size:1rem; font-weight:800; color:#dc2626;">{{attendanceabsentcount}}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+              <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Attendance %</span>
+              <span style="font-size:1rem; font-weight:800; color:#4f46e5;">{{attendancepercentnumber}}%</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+              <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Last Attendance</span>
+              <span style="font-size:0.9rem; font-weight:700; color:#334155;">{{attendance_last_status}}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Status</span>
+              <span style="font-size:0.9rem; font-weight:700; color:#10b981;">{{attendance_status_label}}</span>
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
 
@@ -1039,7 +1121,7 @@
         </div>
         <div class="ab-card-bd">
           {{#newslist}}
-          <div class="ab-ann-item" onclick="abOpenNews(`{{{news}}}`)">
+          <div class="ab-ann-item" onclick="abOpenNews(this.dataset.content)" data-content="{{news}}">
             <div class="ab-ann-ic ai-blue"><i class="fa-solid fa-bell"></i></div>
             <div class="ab-ann-body">
               <div class="ab-ann-title">{{news}}</div>
@@ -1086,41 +1168,20 @@
           </div>
         </div>
         <div class="ab-card-bd">
+          {{#recentactivities}}
           <div class="ab-act-item">
-            <div class="ab-act-dot ad-green"><i class="fa-solid fa-check"></i></div>
+            <div class="ab-act-dot {{dotclass}}"><i class="{{icon}}"></i></div>
             <div class="ab-act-info">
-              <div class="ab-act-text">Completed <strong>Session 2: Forces & Motion</strong></div>
-              <div class="ab-act-time">Today, 9:30 AM</div>
+              <div class="ab-act-text">
+                {{#hasurl}}<a href="{{url}}">{{/hasurl}}{{description}}{{#hastitle}} <strong>{{title}}</strong>{{/hastitle}}{{#hasurl}}</a>{{/hasurl}}
+              </div>
+              <div class="ab-act-time">{{displaytime}}</div>
             </div>
           </div>
-          <div class="ab-act-item">
-            <div class="ab-act-dot ad-blue"><i class="fa-solid fa-file-pen"></i></div>
-            <div class="ab-act-info">
-              <div class="ab-act-text">Submitted <strong>Basic Physics Quiz</strong> — 85%</div>
-              <div class="ab-act-time">Yesterday, 3:15 PM</div>
-            </div>
-          </div>
-          <div class="ab-act-item">
-            <div class="ab-act-dot ad-amber"><i class="fa-solid fa-flask"></i></div>
-            <div class="ab-act-info">
-              <div class="ab-act-text">Started project <strong>Paper Aerofoil Wing Model</strong></div>
-              <div class="ab-act-time">Jun 1, 10:00 AM</div>
-            </div>
-          </div>
-          <div class="ab-act-item">
-            <div class="ab-act-dot ad-purple"><i class="fa-solid fa-medal"></i></div>
-            <div class="ab-act-info">
-              <div class="ab-act-text">Earned badge <strong>Quick Learner 🏅</strong></div>
-              <div class="ab-act-time">May 31</div>
-            </div>
-          </div>
-          <div class="ab-act-item">
-            <div class="ab-act-dot ad-rose"><i class="fa-solid fa-book"></i></div>
-            <div class="ab-act-info">
-              <div class="ab-act-text">Opened <strong>Aerodynamics Lab Manual</strong></div>
-              <div class="ab-act-time">May 30</div>
-            </div>
-          </div>
+          {{/recentactivities}}
+          {{^hasrecentactivities}}
+          <div class="ab-act-time">No recent activity yet.</div>
+          {{/hasrecentactivities}}
         </div>
       </div>
 
@@ -1215,7 +1276,7 @@
     </div>
     <div class="ab-modal-list">
       {{#newslist}}
-      <div class="ab-ann-item" onclick="abOpenNews(`{{{news}}}`);abCloseAllNotif();">
+      <div class="ab-ann-item" onclick="abOpenNews(this.dataset.content);abCloseAllNotif();" data-content="{{news}}">
         <div class="ab-ann-ic ai-blue"><i class="fa-solid fa-bell"></i></div>
         <div class="ab-ann-body"><div class="ab-ann-title">{{news}}</div></div>
       </div>
@@ -1255,6 +1316,46 @@
         <div style="display: flex; gap: 10px; justify-content: flex-end; width: 100%; margin: 0;">
           <button type="button" class="ab-btn ab-btn-out" onclick="abCloseRateTrainer()">Cancel</button>
           <button type="submit" class="ab-btn ab-btn-prim">Submit Rating</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{{! ── ASK DOUBT MODAL ── }}
+<div id="abAskDoubtModal" class="ab-modal-overlay" data-region="ask-doubt-modal" aria-hidden="true">
+  <div class="ab-modal-box" style="max-width: 520px; height: auto; min-height: 0; max-height: none; overflow: hidden;" role="dialog" aria-modal="true" aria-labelledby="abAskDoubtTitle">
+    <div class="ab-modal-hd">
+      <h3 id="abAskDoubtTitle"><i class="fa-solid fa-circle-question"></i> Ask Your Doubt</h3>
+      <button type="button" class="ab-modal-close" data-action="close-ask-doubt" aria-label="Close">✕</button>
+    </div>
+    <div class="ab-modal-bd" style="white-space: normal; line-height: 1.5;">
+      <form id="abAskDoubtForm" data-region="ask-doubt-form">
+        <input type="hidden" name="trainerid" value="{{trainerid}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+
+        <div class="ab-form-field">
+          <label class="ab-form-label" for="abAskDoubtTrainer">Trainer</label>
+          <input id="abAskDoubtTrainer" class="ab-form-control ab-form-readonly" type="text" value="{{#trainerfullname}}{{trainerfullname}}{{/trainerfullname}}{{^trainerfullname}}Angad Sharma{{/trainerfullname}}" readonly>
+        </div>
+
+        <div class="ab-form-field">
+          <label class="ab-form-label" for="abAskDoubtSubject">Subject <span style="font-weight:500;color:#94a3b8;">(optional)</span></label>
+          <input id="abAskDoubtSubject" class="ab-form-control" type="text" name="subject" maxlength="255" placeholder="What is this about?">
+        </div>
+
+        <div class="ab-form-field">
+          <label class="ab-form-label" for="abAskDoubtQuestion">Doubt / Question</label>
+          <textarea id="abAskDoubtQuestion" class="ab-form-control" name="question" rows="6" maxlength="1000" placeholder="Write your question here..." required></textarea>
+          <div class="ab-form-help">
+            <span data-region="ask-doubt-error" class="ab-form-error"></span>
+            <span><span data-region="ask-doubt-count">0</span>/1000</span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+          <button type="button" class="ab-btn ab-btn-out" data-action="close-ask-doubt">Cancel</button>
+          <button type="submit" class="ab-btn ab-btn-prim" data-action="submit-ask-doubt">Send</button>
         </div>
       </form>
     </div>
@@ -1371,32 +1472,7 @@
       var w=el.getAttribute('data-width'); el.style.width='0%'; setTimeout(function(){el.style.width=w;},400);
     });
 
-    /* Attendance chart */
-    var off  = {{{ attendance.offlineValues }}} || [0,1,0,0,0,0,0,0,0,0,0,0];
-    var on   = {{{ attendance.onlineValues  }}} || [0,2,0,0,0,0,0,0,0,0,0,0];
-    var labs = {{{ attendance.months        }}} || ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
-    var ctx  = document.getElementById('abAttChart');
-    if(ctx){
-      new Chart(ctx,{
-        type:'bar',
-        data:{
-          labels:labs,
-          datasets:[
-            {label:'Present',backgroundColor:'rgba(79,70,229,0.82)',borderRadius:5,data:on},
-            {label:'Absent', backgroundColor:'rgba(251,191,36,0.82)',borderRadius:5,data:off}
-          ]
-        },
-        options:{
-          responsive:true, maintainAspectRatio:false,
-          scales:{
-            yAxes:[{ticks:{min:0,stepSize:1,beginAtZero:true,fontColor:'#94a3b8',fontFamily:'Inter'},gridLines:{color:'#f1f5f9'}}],
-            xAxes:[{ticks:{fontColor:'#94a3b8',fontFamily:'Inter',fontSize:10},gridLines:{display:false}}]
-          },
-          legend:{display:false},
-          plugins:{labels:{render:function(){return '';}}}
-        }
-      });
-    }
+    /* Attendance chart logic removed as per redesign */
 
     /* ── Name: trainer-style letter wave ── */
     (function(){
