@@ -144,6 +144,12 @@ $table->set_sql(
     $where . " GROUP BY tr.userid, tr.firstname, tr.lastname, tr.contact_number, sc.school_name, cc.name, tr.current_address, tr.designation, tr.trainerid",
     $params
 );
+$table->set_count_sql(
+    "SELECT COUNT(DISTINCT tr.userid)
+       FROM $from
+      WHERE $where",
+    $params
+);
 $DB->execute('SET @row_number := ' . ($perpage * $page));
 $table->define_baseurl("$CFG->wwwroot/local/trainer/trainer_manage.php?page=$page");
 

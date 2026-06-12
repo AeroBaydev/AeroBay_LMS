@@ -58,9 +58,12 @@ if ($mform->is_cancelled()) {
         $DB->update_record('news', $news);
     } else {
         // If no ID is present, insert a new record
-        $DB->insert_record('news', $news);
+        $news->id = $DB->insert_record('news', $news);
         
-    redirect("$CFG->wwwroot/local/news/", get_string('newssuccess', 'local_news'), 2);
+        // Send notifications
+        local_news_send_notifications($news);
+        
+        redirect("$CFG->wwwroot/local/news/", get_string('newssuccess', 'local_news'), 2);
     }
 }
  else {

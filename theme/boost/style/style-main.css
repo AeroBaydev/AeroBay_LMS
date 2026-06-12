@@ -472,9 +472,6 @@ form.dataformatselector {
     display: flex;
     justify-content: flex-end;
 }
-i[title="Toggle messaging drawer"] {
-    display: none !important;
-}
 /*Table css*/
 /*Table css*/
 /*Table css*/
@@ -504,8 +501,8 @@ i[title="Toggle messaging drawer"] {
 }
 
 
-div#theme_boost-drawers-primary:after {
-    /* content: "";
+/* div#theme_boost-drawers-primary:after {
+    content: "";
     position: absolute;
     bottom: 0;
     left: -70px;
@@ -513,8 +510,8 @@ div#theme_boost-drawers-primary:after {
     height: 220px;
     background: url(https://edutechspark.com/update/theme/boost/style/img/kids.png);
     z-index: 999;
-    background-size: cover; */
-}
+    background-size: cover;
+} */
 
 
 /* form .col-md-9 input, form .col-md-9 select {
@@ -645,6 +642,7 @@ align-items: center; margin-right:10px; border-radius: 100%; color:#fff}
 
 .txt_ellipse{display: -webkit-box;
     -webkit-line-clamp: 1;
+    line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
     cursor: pointer;}
@@ -855,9 +853,48 @@ align-items: center; margin-right:10px; border-radius: 100%; color:#fff}
     }
 }
 
+@media (min-width: 992px) {
+    #page.drawers.show-drawer-left {
+        box-sizing: border-box;
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+        transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
+    }
+
+    .show-drawer-left .stickyfooter .sticky-footer-content-wrapper {
+        margin-left: 260px !important;
+    }
+}
+
 @media (max-width: 767.98px) {
     #page.drawers.show-drawer-primary {
         margin-left: 0 !important;
         width: 100% !important;
     }
+}
+
+/* Fix to keep dashboard scrollable when right-hand drawer opens */
+body.drawer-open-right,
+body.show-drawer-right {
+    overflow: auto !important;
+}
+
+.drawer-overlay,
+.drawer-backdrop {
+    pointer-events: none !important;
+    background: transparent !important;
+}
+
+.drawer[data-region="right-hand-drawer"] {
+    pointer-events: auto !important;
+}
+
+/* Keep the dashboard interactive behind the open primary navigation drawer. */
+body:has(#theme_boost-drawers-primary.show) [data-region="modal-backdrop"].show {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+#page.show-drawer-primary {
+    overflow: visible !important;
 }

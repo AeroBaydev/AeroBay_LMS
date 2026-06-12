@@ -1,720 +1,1093 @@
+{{! AeroBay STEAM Lab Student Dashboard — No Sidebar, Moodle-native layout }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
-/* ===== RESET & BASE ===== */
-.sd-root *,
-.sd-root *::before,
-.sd-root *::after {
-  box-sizing: border-box;
-}
-.sd-root {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: #f0f4ff;
-  min-height: 100vh;
-  padding: 0 0 40px 0;
-  color: #1e293b;
+/* ═══════════════════════════════════════════════════
+   AEROBAY STUDENT DASHBOARD — DESIGN SYSTEM
+═══════════════════════════════════════════════════ */
+:root {
+  --ab-blue:        #2563eb;
+  --ab-blue-dark:   #1d4ed8;
+  --ab-blue-light:  #dbeafe;
+  --ab-indigo:      #4f46e5;
+  --ab-cyan:        #06b6d4;
+  --ab-green:       #10b981;
+  --ab-amber:       #f59e0b;
+  --ab-rose:        #f43f5e;
+  --ab-purple:      #8b5cf6;
+  --ab-bg:          #f0f4ff;
+  --ab-surface:     #ffffff;
+  --ab-border:      #e2e8f0;
+  --ab-text:        #0f172a;
+  --ab-text-2:      #475569;
+  --ab-text-3:      #94a3b8;
+  --ab-radius:      16px;
+  --ab-radius-sm:   10px;
+  --ab-shadow:      0 2px 16px rgba(37,99,235,0.08);
+  --ab-shadow-md:   0 6px 32px rgba(37,99,235,0.12);
+  --ab-tr:          0.2s cubic-bezier(0.4,0,0.2,1);
 }
 
-/* ===== HERO BANNER ===== */
-.sd-hero {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%);
-  padding: 32px 28px 48px;
+/* RESET scoped to dashboard */
+.ab-root, .ab-root *, .ab-root *::before, .ab-root *::after {
+  box-sizing: border-box;
+}
+.ab-root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--ab-bg);
+  color: var(--ab-text);
+  font-size: 14px;
+  line-height: 1.5;
+  padding-bottom: 40px;
+}
+/* Brutal override for Moodle's default container paddings for fluid layout */
+#page.drawers {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+#page-content, #region-main-box, #page.drawers .main-inner, .main-inner, #region-main, #region-main > .card, #region-main > .card > .card-body {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.container, .container-fluid {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+#page-wrapper, #page, #page-content, #region-main-box, .main-inner, #region-main {
+  overflow-x: hidden;
+}
+
+/* ─── HERO BANNER ─── */
+.ab-hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 45%, #06b6d4 100%);
+  padding: 18px 28px 58px;
   position: relative;
   overflow: hidden;
-  color: #fff;
 }
-.sd-hero::before {
+.ab-hero::before {
   content: '';
   position: absolute;
-  top: -60px; right: -60px;
+  top: -70px; right: -70px;
   width: 300px; height: 300px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 50%;
-}
-.sd-hero::after {
-  content: '';
-  position: absolute;
-  bottom: -80px; left: 20%;
-  width: 400px; height: 200px;
   background: rgba(255,255,255,0.05);
   border-radius: 50%;
 }
-.sd-hero-inner {
+.ab-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -90px; left: 25%;
+  width: 420px; height: 200px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 50%;
+}
+.ab-hero-deco {
+  position: absolute;
+  right: 32px; top: 24px;
+  font-size: 3rem;
+  opacity: 0.12;
+  letter-spacing: 10px;
+  pointer-events: none;
+}
+.ab-hero-inner {
   position: relative;
   z-index: 1;
-  max-width: 1300px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-.sd-hero-avatar {
-  width: 72px; height: 72px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem;
-  border: 3px solid rgba(255,255,255,0.4);
-  flex-shrink: 0;
-}
-.sd-hero-text h1 {
-  font-size: 1.7rem;
-  font-weight: 700;
-  margin: 0 0 4px;
-  color: #fff;
-  line-height: 1.2;
-}
-.sd-hero-text p {
-  margin: 0;
-  font-size: 0.95rem;
-  opacity: 0.85;
-  color: #e0f2fe;
-}
-.sd-hero-chips {
-  margin-top: 10px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.sd-chip {
-  background: rgba(255,255,255,0.18);
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 20px;
-  padding: 3px 12px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: 0.3px;
-}
-
-/* ===== FLOATING STAT CARDS ===== */
-.sd-stats-row {
-  max-width: 1300px;
-  margin: -28px auto 0;
-  padding: 0 20px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  position: relative;
-  z-index: 10;
-}
-.sd-stat-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px 22px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.sd-stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
-}
-.sd-stat-icon {
-  width: 52px; height: 52px;
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-.sd-stat-icon.blue   { background: #dbeafe; }
-.sd-stat-icon.green  { background: #dcfce7; }
-.sd-stat-icon.amber  { background: #fef3c7; }
-.sd-stat-icon.purple { background: #f3e8ff; }
-.sd-stat-body h3 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin: 0 0 2px;
-  color: #1e293b;
-  line-height: 1;
-}
-.sd-stat-body p {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #64748b;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* ===== MAIN CONTENT GRID ===== */
-.sd-content {
-  max-width: 1300px;
-  margin: 28px auto 0;
-  padding: 0 20px;
-}
-.sd-grid-2-1 {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 20px;
-  align-items: start;
-}
-.sd-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-/* ===== CARDS ===== */
-.sd-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
-  overflow: hidden;
-  transition: box-shadow 0.2s;
-}
-.sd-card:hover {
-  box-shadow: 0 6px 28px rgba(0,0,0,0.12);
-}
-.sd-card-header {
-  padding: 18px 22px 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.sd-card-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1e293b;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-}
-.sd-card-title span.icon {
-  font-size: 1.1rem;
-}
-.sd-card-body {
-  padding: 16px 22px 22px;
-}
-
-/* ===== TIMETABLE ===== */
-.sd-timetable-wrap {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.sd-timetable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
-}
-.sd-timetable th {
-  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-  color: #fff;
-  padding: 10px 8px;
-  text-align: center;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-}
-.sd-timetable th:first-child {
-  border-radius: 8px 0 0 0;
-  min-width: 50px;
-}
-.sd-timetable th:last-child {
-  border-radius: 0 8px 0 0;
-}
-.sd-timetable td {
-  padding: 8px 10px;
-  text-align: center;
-  border-bottom: 1px solid #f1f5f9;
-  color: #475569;
-  font-size: 0.8rem;
-  transition: background 0.15s;
-}
-.sd-timetable tr:last-child td {
-  border-bottom: none;
-}
-.sd-timetable tr:hover td {
-  background: #f0f9ff;
-}
-.sd-timetable td:first-child {
-  font-weight: 700;
-  color: #1e3a8a;
-  background: #f8faff;
-  letter-spacing: 0.5px;
-}
-.sd-timetable .has-class {
-  color: #1d4ed8;
-  font-weight: 600;
-  background: #eff6ff;
-  border-radius: 6px;
-}
-.sd-timetable .no-class {
-  color: #cbd5e1;
-}
-.sd-timetable tr:nth-child(even) td {
-  background: #fafbff;
-}
-.sd-timetable tr:nth-child(even) td:first-child {
-  background: #f0f4ff;
-}
-
-/* ===== NOTIFICATIONS ===== */
-.sd-notif-scroll {
-  max-height: 320px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-.sd-notif-scroll::-webkit-scrollbar { width: 4px; }
-.sd-notif-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-.sd-notif-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.sd-notif-item {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-  border: 1px solid transparent;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
 }
-.sd-notif-item:last-child { margin-bottom: 0; }
-.sd-notif-item:hover {
-  background: #f0f9ff;
-  border-color: #bae6fd;
-  transform: translateX(3px);
+.ab-hero-left {
+  flex: 1;
+  min-width: 0;
 }
-.sd-notif-bell {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-  display: flex; align-items: center; justify-content: center;
+.ab-hero-right {
   flex-shrink: 0;
-  font-size: 0.9rem;
-  color: #1d4ed8;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+  margin-top: -2px;
 }
-@keyframes bell-ring {
-  0%, 100% { transform: rotate(0); }
-  20% { transform: rotate(15deg); }
-  40% { transform: rotate(-12deg); }
-  60% { transform: rotate(8deg); }
-  80% { transform: rotate(-5deg); }
+.ab-hero-greeting {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.65);
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
 }
-.sd-notif-bell i {
-  animation: bell-ring 3s ease-in-out infinite;
+.ab-hero-name {
+  font-size: 1.95rem;
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 0;
+  position: relative;
   display: inline-block;
+  text-align: right;
 }
-.sd-notif-text {
-  font-size: 0.83rem;
-  color: #334155;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.ab-name-hi {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 1px;
 }
-.sd-view-all-btn {
+.ab-name-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #3b82f6;
-  text-decoration: none;
-  padding: 4px 10px;
-  border-radius: 8px;
-  border: 1px solid #bfdbfe;
-  background: #eff6ff;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-.sd-view-all-btn:hover {
-  background: #dbeafe;
-  border-color: #93c5fd;
-  color: #1d4ed8;
-}
-
-/* ===== ATTENDANCE CHART ===== */
-.sd-chart-wrap {
-  position: relative;
-  padding: 4px 0;
-}
-.sd-attendance-legend {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-.sd-legend-dot {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  color: #64748b;
-  font-weight: 500;
-}
-.sd-legend-dot span {
-  width: 12px; height: 12px;
-  border-radius: 3px;
-  display: inline-block;
-}
-.dot-present { background: #4f46e5; }
-.dot-absent  { background: #f59e0b; }
-
-/* ===== ACHIEVEMENTS ===== */
-.sd-achievements-list {
-  list-style: none;
-  padding: 0; margin: 0;
-}
-.sd-achievement-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #fefce8, #fef3c7);
-  border: 1px solid #fde68a;
-  margin-bottom: 12px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.sd-achievement-item:last-child { margin-bottom: 0; }
-.sd-achievement-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(245,158,11,0.2);
-}
-.sd-ach-img {
-  width: 60px; height: 60px;
-  border-radius: 12px;
-  object-fit: contain;
-  background: #fff;
-  padding: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  flex-shrink: 0;
-}
-.sd-ach-emoji {
-  width: 60px; height: 60px;
-  border-radius: 12px;
-  background: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.sd-ach-body h6 {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #92400e;
-  margin: 0 0 3px;
-}
-.sd-ach-body p {
-  font-size: 0.78rem;
-  color: #78350f;
-  margin: 0;
-  line-height: 1.4;
-}
-.sd-ach-empty {
-  text-align: center;
-  padding: 32px 20px;
-  color: #94a3b8;
-}
-.sd-ach-empty p {
-  font-size: 0.85rem;
-  margin: 8px 0 0;
-}
-
-/* ===== ACTIVITY PROGRESS & RADAR ===== */
-.sd-chart-container {
-  position: relative;
-  height: 260px;
-}
-
-/* ===== NEWS MODAL ===== */
-.sd-modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(15,23,42,0.65);
-  backdrop-filter: blur(6px);
-  z-index: 10000;
-  animation: sdFadeIn 0.25s ease;
-  align-items: center;
-  justify-content: center;
-}
-.sd-modal-overlay.active {
-  display: flex;
-}
-.sd-modal-box {
-  background: #fff;
+  gap: 5px;
+  background: rgba(251,191,36,0.18);
+  border: 1px solid rgba(251,191,36,0.4);
   border-radius: 20px;
-  width: 90%;
-  max-width: 580px;
-  max-height: 80vh;
+  padding: 3px 11px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  backdrop-filter: blur(4px);
+}
+/* ── Name text: trainer-style letter wave ── */
+.ab-name-text {
+  display: inline-block;
+  color: #fff;
+  cursor: default;
+  white-space: pre-wrap;
+}
+.ab-name-text .ab-letter {
+  display: inline-block;
+  color: #fff;
+  will-change: transform, color, text-shadow;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+/* On load: play wave twice (~5 sec total) */
+.ab-name-text.is-animating .ab-letter {
+  animation: abLetterWave 2s ease-in-out 2;
+}
+/* On hover: play once */
+.ab-name-text:hover .ab-letter {
+  animation: abLetterWave 2s ease-in-out 1;
+}
+@keyframes abLetterWave {
+  0%,100% {
+    transform: translateY(0);
+    color: #fff;
+    text-shadow: none;
+  }
+  40% {
+    transform: translateY(-5px);
+    color: #fbbf24;
+    text-shadow: 0 4px 14px rgba(251,191,36,0.6);
+  }
+}
+.ab-hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.ab-chip {
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  backdrop-filter: blur(4px);
+}
+.ab-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  border-radius: var(--ab-radius-sm);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--ab-tr);
+}
+.ab-hero-cta:hover { background: rgba(255,255,255,0.28); color: #fff; }
+.ab-hero-streak-box {
+  background: rgba(255,255,255,0.14);
+  border: 1.5px solid rgba(255,255,255,0.28);
+  border-radius: 14px;
+  padding: 9px 18px;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  min-width: 100px;
+}
+.ab-streak-num { font-size: 2.2rem; font-weight: 800; color: #fbbf24; display: block; line-height: 1; }
+.ab-streak-label { font-size: 0.65rem; color: rgba(255,255,255,0.75); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+/* ─── KPI CARDS ─── */
+.ab-page { width: 100%; padding: 0 28px; }
+.ab-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: -50px;
+  position: relative;
+  z-index: 10;
+  margin-bottom: 20px;
+}
+.ab-kpi {
+  border-radius: var(--ab-radius);
+  padding: 20px;
+  box-shadow: var(--ab-shadow);
+  transition: transform var(--ab-tr), box-shadow var(--ab-tr);
+  position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-  animation: sdSlideUp 0.3s ease;
+  gap: 16px;
 }
-.sd-modal-header {
-  padding: 22px 26px 16px;
-  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+.ab-kpi.k-blue   { background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; }
+.ab-kpi.k-purple { background: linear-gradient(145deg, #faf5ff 0%, #f3e8ff 100%); border: 1px solid #e9d5ff; }
+.ab-kpi.k-green  { background: linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; }
+.ab-kpi.k-teal   { background: linear-gradient(145deg, #f0fdfa 0%, #ccfbf1 100%); border: 1px solid #99f6e4; }
+
+.ab-kpi:hover { transform: translateY(-4px); box-shadow: var(--ab-shadow-md); }
+.ab-kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ab-kpi-lbl-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ab-kpi-icon {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+}
+.k-blue .ab-kpi-icon   { color: #2563eb; }
+.k-purple .ab-kpi-icon { color: #8b5cf6; }
+.k-green .ab-kpi-icon  { color: #10b981; }
+.k-teal .ab-kpi-icon   { color: #0f766e; }
+
+.ab-kpi-lbl {
+  font-size: 0.85rem;
+  color: var(--ab-text-2);
+  font-weight: 700;
+}
+.k-blue .ab-kpi-lbl { color: #1e3a8a; }
+.k-purple .ab-kpi-lbl { color: #4c1d95; }
+.k-green .ab-kpi-lbl { color: #064e3b; }
+.k-teal .ab-kpi-lbl { color: #134e4a; }
+
+.ab-kpi-val {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.k-blue .ab-kpi-val { color: #1e3a8a; }
+.k-purple .ab-kpi-val { color: #4c1d95; }
+.k-green .ab-kpi-val { color: #064e3b; }
+.k-teal .ab-kpi-val { color: #134e4a; }
+
+.ab-kpi-progress-bg {
+  height: 6px;
+  border-radius: 3px;
+  width: 100%;
+  overflow: hidden;
+}
+.k-blue .ab-kpi-progress-bg { background: rgba(37, 99, 235, 0.15); }
+.k-purple .ab-kpi-progress-bg { background: rgba(139, 92, 246, 0.15); }
+.k-green .ab-kpi-progress-bg { background: rgba(16, 185, 129, 0.15); }
+.k-teal .ab-kpi-progress-bg { background: rgba(20, 184, 166, 0.15); }
+
+.ab-kpi-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ab-kpi-subtitle { min-height: 6px; font-size: 0.72rem; line-height: 1; color: var(--ab-text-2); }
+.k-blue .ab-kpi-progress-bar { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+.k-purple .ab-kpi-progress-bar { background: linear-gradient(90deg, #a855f7, #8b5cf6); }
+.k-green .ab-kpi-progress-bar { background: linear-gradient(90deg, #34d399, #10b981); }
+.k-teal .ab-kpi-progress-bar { background: linear-gradient(90deg, #2dd4bf, #0d9488); }
+
+.ab-kpi-trend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.k-blue .ab-kpi-trend { color: #2563eb; }
+.k-purple .ab-kpi-trend { color: #8b5cf6; }
+.k-green .ab-kpi-trend { color: #10b981; }
+.k-teal .ab-kpi-trend { color: #0f766e; }
+
+/* ─── GRID LAYOUTS ─── */
+.ab-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-bottom: 18px; }
+.ab-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.ab-grid-2-1 { display: grid; grid-template-columns: 1fr 320px; gap: 18px; margin-bottom: 18px; }
+.ab-student-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0,3fr) minmax(280px,1fr);
+  align-items: stretch;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.ab-student-overview-grid .ab-timetable-card { grid-column: auto; }
+.ab-student-right-column { display:flex; flex-direction:column; gap:18px; min-width:0; height:100%; }
+
+/* ─── CARD ─── */
+.ab-card {
+  background: #ffffff;
+  border-radius: var(--ab-radius);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0,0,0,0.04);
+  overflow: hidden;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  position: relative;
+}
+.ab-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+.ab-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  opacity: 0;
+  z-index: 10;
+}
+.ab-card.accent-blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); opacity: 1; }
+.ab-card.accent-purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); opacity: 1; }
+.ab-card.accent-green::before { background: linear-gradient(90deg, #10b981, #34d399); opacity: 1; }
+.ab-card.accent-orange::before { background: linear-gradient(90deg, #f97316, #fb923c); opacity: 1; }
+.ab-card.accent-amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); opacity: 1; }
+.ab-card.accent-teal::before { background: linear-gradient(90deg, #14b8a6, #2dd4bf); opacity: 1; }
+.ab-card-hd {
+  padding: 18px 20px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.sd-modal-header h3 {
-  color: #fff;
-  font-size: 1.05rem;
+.ab-card-title {
+  font-size: 0.88rem;
   font-weight: 700;
-  margin: 0;
+  color: var(--ab-text);
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.sd-modal-close {
-  width: 32px; height: 32px;
+.ab-card-title .ic {
+  width: 28px; height: 28px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.2);
-  border: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem;
+}
+.ab-card-btn {
+  font-size: 0.72rem; font-weight: 600; color: var(--ab-blue);
+  padding: 4px 10px; border-radius: 8px;
+  border: 1px solid #bfdbfe; background: #eff6ff;
+  cursor: pointer; text-decoration: none;
+  transition: background var(--ab-tr);
+}
+.ab-card-btn:hover { background: #dbeafe; }
+.ab-card-bd { padding: 16px 20px 20px; }
+
+/* ─── TODAY'S LAB CARD ─── */
+.ab-lab-card {
+  background: linear-gradient(135deg, #1e40af, #2563eb 60%, #0ea5e9);
+  border-radius: var(--ab-radius);
+  padding: 22px;
   color: #fff;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  line-height: 1;
-}
-.sd-modal-close:hover { background: rgba(255,255,255,0.35); }
-.sd-modal-body {
-  padding: 22px 26px;
-  overflow-y: auto;
-  font-size: 0.93rem;
-  color: #334155;
-  line-height: 1.7;
-  white-space: pre-wrap;
-}
-
-/* All Notifications Modal */
-.sd-all-notif-list {
-  padding: 18px 22px;
-  overflow-y: auto;
-  max-height: calc(80vh - 70px);
-}
-.sd-all-notif-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 12px;
-  cursor: pointer;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 10px;
-  transition: background 0.2s, border-color 0.2s;
-}
-.sd-all-notif-item:hover {
-  background: #f0f9ff;
-  border-color: #93c5fd;
-}
-.sd-all-notif-item:last-child { margin-bottom: 0; }
-.sd-all-notif-text {
-  font-size: 0.87rem;
-  color: #334155;
-  line-height: 1.5;
-}
-
-/* ===== ANIMATIONS ===== */
-@keyframes sdFadeIn {
-  from { opacity: 0; } to { opacity: 1; }
-}
-@keyframes sdSlideUp {
-  from { transform: translateY(24px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-/* ===== WELCOME POPUP ===== */
-.sd-welcome-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15,23,42,0.7);
-  backdrop-filter: blur(8px);
-  z-index: 9999;
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
-.sd-welcome-overlay.active {
-  display: flex;
-}
-.sd-welcome-box {
-  background: #fff;
-  border-radius: 24px;
-  max-width: 600px;
-  width: 92%;
-  padding: 0;
+  position: relative;
   overflow: hidden;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.3);
-  animation: sdSlideUp 0.35s ease;
-  max-height: 92vh;
-  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(37,99,235,0.28);
+  transition: transform var(--ab-tr);
 }
-.sd-welcome-hero {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 60%, #06b6d4 100%);
-  padding: 32px 30px 28px;
+.ab-lab-card:hover { transform: translateY(-3px); }
+.ab-lab-card::before { content:'🔬'; position:absolute; font-size:6rem; right:-10px; top:-10px; opacity:0.08; pointer-events:none; }
+.ab-lab-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 0.67rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.ab-lab-name { font-size: 1.15rem; font-weight: 800; margin-bottom: 5px; line-height: 1.3; }
+.ab-lab-sub  { font-size: 0.76rem; opacity: 0.8; margin-bottom: 16px; }
+.ab-lab-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.ab-lab-meta-item { background: rgba(255,255,255,0.12); border-radius: 9px; padding: 9px 12px; }
+.ab-lm-label { font-size: 0.6rem; opacity: 0.7; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+.ab-lm-val   { font-size: 0.8rem; font-weight: 700; }
+.ab-lab-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: #fff; color: var(--ab-blue-dark);
+  padding: 9px 20px; border-radius: 10px;
+  font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; border: none; text-decoration: none;
+  transition: transform var(--ab-tr), box-shadow var(--ab-tr);
+}
+.ab-lab-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.18); color: var(--ab-blue-dark); }
+
+/* ─── TRAINER CARD ─── */
+.ab-trainer-hd {
+  background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--ab-border);
+}
+.ab-trainer-av {
+  width: 120px; height: 120px; border-radius: 20px;
+  background: linear-gradient(135deg, var(--ab-indigo), var(--ab-blue));
+  color: #fff; font-size: 3.5rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0; flex-shrink: 0;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 16px rgba(79,70,229,0.25);
+  overflow: hidden;
+}
+.ab-trainer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.ab-trainer-name { font-size: 1.05rem; font-weight: 800; color: var(--ab-text); margin-bottom: 2px; line-height: 1.2; }
+.ab-trainer-role { font-size: 0.75rem; color: var(--ab-text-2); font-weight: 600; margin-bottom: 2px; }
+.ab-trainer-school { font-size: 0.7rem; color: var(--ab-text-3); font-weight: 500; }
+.ab-online-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.68rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px; margin-top: 8px;
+}
+.ab-online-pill.online { color: #10b981; background: #d1fae5; }
+.ab-online-pill.offline { color: #ef4444; background: #fee2e2; }
+.ab-online-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+}
+.ab-online-dot.online { background: #10b981; animation: abPulse 1.5s infinite; }
+.ab-online-dot.offline { background: #ef4444; }
+@keyframes abPulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(1.4);} }
+.ab-trainer-bd { padding: 14px 18px; }
+.ab-trainer-row { display:flex; justify-content:space-between; font-size:0.77rem; color:var(--ab-text-2); margin-bottom:7px; }
+.ab-trainer-row strong { color:var(--ab-text); font-weight:700; }
+.ab-chat-card-copy { font-size:0.78rem; color:var(--ab-text-2); line-height:1.55; margin:0; }
+.ab-chat-card-actions { display:flex; justify-content:flex-end; margin-top:14px; }
+.ab-divider { height:1px; background:var(--ab-border); margin:12px 0; }
+.ab-btn-grid { display:grid; grid-template-columns:1fr; gap:8px; }
+.ab-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 12px; border-radius: var(--ab-radius-sm);
+  font-size: 0.76rem; font-weight: 600; cursor: pointer;
+  border: none; text-decoration: none;
+  transition: transform var(--ab-tr), box-shadow var(--ab-tr);
+}
+.ab-btn:hover { transform: translateY(-1px); }
+.ab-btn-prim { background: linear-gradient(135deg,var(--ab-blue),var(--ab-indigo)); color:#fff; box-shadow:0 3px 10px rgba(37,99,235,0.28); }
+.ab-btn-prim:hover { box-shadow:0 6px 18px rgba(37,99,235,0.38); color:#fff; }
+.ab-btn-out  { background:#fff; color:var(--ab-blue); border:1.5px solid #bfdbfe; }
+.ab-btn-out:hover { background:var(--ab-blue-light); color:var(--ab-blue); border-color:var(--ab-blue); }
+.ab-btn[disabled] { opacity:0.65; cursor:not-allowed; transform:none; }
+
+/* ─── TASK LIST ─── */
+.ab-task {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 8px; border-radius: var(--ab-radius-sm);
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background var(--ab-tr);
+}
+.ab-task:last-child { border-bottom: none; }
+.ab-task:hover { background: #f8faff; }
+.ab-task-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.ab-task-dot.r { background:#f43f5e; box-shadow:0 0 8px rgba(244,63,94,0.4); }
+.ab-task-dot.a { background:#f59e0b; }
+.ab-task-dot.g { background:#10b981; }
+.ab-task-info { flex:1; }
+.ab-task-name { font-size:0.81rem; font-weight:600; color:var(--ab-text); margin-bottom:1px; }
+.ab-task-due  { font-size:0.68rem; color:var(--ab-text-3); }
+.ab-tag {
+  font-size: 0.63rem; font-weight: 700;
+  padding: 3px 8px; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: 0.3px;
+}
+.ab-tag.ur { background:#ffe4e6; color:#9f1239; }
+.ab-tag.am { background:#fef3c7; color:#92400e; }
+.ab-tag.gr { background:#d1fae5; color:#065f46; }
+
+/* ─── WEEKLY TIMETABLE ─── */
+.ab-timetable-card { grid-column: span 2; }
+.ab-timetable-summary {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ab-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.ab-timetable-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--ab-border);
+  border-radius: var(--ab-radius-sm);
+}
+.ab-timetable {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 0.76rem;
+}
+.ab-timetable th,
+.ab-timetable td {
+  border-right: 1px solid var(--ab-border);
+  border-bottom: 1px solid var(--ab-border);
+  padding: 10px 8px;
   text-align: center;
+  vertical-align: middle;
+  background: #fff;
+}
+.ab-timetable thead th {
+  background: #f8faff;
+  color: var(--ab-text-2);
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.ab-timetable tr:last-child td { border-bottom: 0; }
+.ab-timetable th:last-child,
+.ab-timetable td:last-child { border-right: 0; }
+.ab-timetable-day {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 96px;
+  min-width: 96px;
+  color: var(--ab-blue-dark);
+  font-weight: 800;
+  box-shadow: 8px 0 14px rgba(15,23,42,0.04);
+}
+.ab-timetable thead .ab-timetable-day {
+  z-index: 3;
+  background: #eff6ff;
+}
+.ab-timetable tbody .ab-timetable-day {
+  background: #f8faff;
+  text-align: left;
+}
+.ab-timetable-short {
+  display: block;
+  font-size: 0.62rem;
+  color: var(--ab-text-3);
+  font-weight: 700;
+  margin-top: 1px;
+}
+.ab-timetable-slot {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  padding: 6px 8px;
+  color: var(--ab-text-3);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.ab-timetable-slot.has-class {
+  background: #e0f2fe;
+  color: #075985;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin: -6px -4px;
+  min-height: 44px;
+}
+.ab-timetable-empty {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--ab-radius-sm);
+  background: #f8faff;
+  color: var(--ab-text-3);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+/* ─── LEARNING PATH ─── */
+.ab-lp-scroll { overflow-x: auto; padding-bottom: 4px; }
+.ab-lp-track {
+  display: flex; align-items: flex-start; gap: 0;
+  min-width: max-content;
+  padding: 20px 20px 16px;
+}
+.ab-lp-conn { height: 3px; width: 56px; flex-shrink: 0; margin-top: 24px; }
+.ab-lp-conn.done   { background: #10b981; }
+.ab-lp-conn.act    { background: linear-gradient(90deg,#10b981,#2563eb); }
+.ab-lp-conn.lock   { background: #e2e8f0; }
+.ab-lp-node { display:flex; flex-direction:column; align-items:center; gap:7px; cursor:pointer; }
+.ab-lp-node:hover .ab-lp-circ { transform:scale(1.1); }
+.ab-lp-circ {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.95rem; font-weight: 700;
+  border: 3px solid transparent;
+  transition: transform var(--ab-tr), box-shadow var(--ab-tr);
+  z-index: 2; position: relative;
+}
+.ab-lp-circ.done { background:linear-gradient(135deg,#10b981,#34d399); color:#fff; box-shadow:0 4px 14px rgba(16,185,129,0.4); }
+.ab-lp-circ.act  { background:linear-gradient(135deg,#2563eb,#4f46e5); color:#fff; box-shadow:0 4px 14px rgba(37,99,235,0.4); animation:abPulseRing 2s infinite; }
+@keyframes abPulseRing { 0%,100%{box-shadow:0 4px 14px rgba(37,99,235,0.4);} 50%{box-shadow:0 4px 22px rgba(37,99,235,0.7);} }
+.ab-lp-circ.lock { background:#f1f5f9; color:var(--ab-text-3); border-color:var(--ab-border); }
+.ab-lp-lbl  { font-size:0.68rem; font-weight:600; color:var(--ab-text-2); text-align:center; max-width:78px; line-height:1.3; }
+.ab-lp-status {
+  font-size:0.6rem; font-weight:700;
+  padding:2px 7px; border-radius:20px;
+  text-transform:uppercase; letter-spacing:0.3px;
+}
+.ab-lp-status.done { background:#d1fae5; color:#065f46; }
+.ab-lp-status.act  { background:#dbeafe; color:#1d4ed8; }
+.ab-lp-status.lock { background:#f1f5f9; color:var(--ab-text-3); }
+
+/* ─── PROJECT ─── */
+.ab-proj-img {
+  width:100%; height:130px; border-radius:var(--ab-radius-sm);
+  background:linear-gradient(135deg,#e0e7ff,#dbeafe 50%,#ccfbf1);
+  display:flex; align-items:center; justify-content:center;
+  font-size:3rem; margin-bottom:14px; overflow:hidden;
+}
+.ab-proj-title { font-size:0.88rem; font-weight:700; color:var(--ab-text); margin-bottom:3px; }
+.ab-proj-sub   { font-size:0.73rem; color:var(--ab-text-3); margin-bottom:13px; }
+.ab-prog-wrap  { margin-bottom:12px; }
+.ab-prog-lbl   { display:flex; justify-content:space-between; font-size:0.72rem; font-weight:600; color:var(--ab-text-2); margin-bottom:5px; }
+.ab-prog-lbl span:last-child { color:var(--ab-blue); font-weight:700; }
+.ab-prog-track { height:8px; background:#f1f5f9; border-radius:20px; overflow:hidden; }
+.ab-prog-fill  { height:100%; border-radius:20px; background:linear-gradient(90deg,var(--ab-blue),var(--ab-cyan)); transition:width 1s cubic-bezier(0.4,0,0.2,1); }
+.ab-milestone-chips { display:flex; flex-wrap:wrap; gap:5px; }
+.ab-mc { display:inline-flex; align-items:center; gap:3px; font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:20px; }
+.ab-mc.done { background:#d1fae5; color:#065f46; }
+.ab-mc.act  { background:#dbeafe; color:#1d4ed8; }
+.ab-mc.todo { background:#f1f5f9; color:var(--ab-text-3); }
+
+/* ─── ANNOUNCE ─── */
+.ab-ann-item {
+  display:flex; align-items:flex-start; gap:11px;
+  padding:11px 8px; border-radius:var(--ab-radius-sm);
+  cursor:pointer; border:1px solid transparent; margin-bottom:6px;
+  transition:background var(--ab-tr), border-color var(--ab-tr);
+}
+.ab-ann-item:last-child { margin-bottom:0; }
+.ab-ann-item:hover { background:#f8faff; border-color:#bfdbfe; }
+.ab-ann-ic { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0; }
+.ai-blue   { background:#dbeafe; color:#2563eb; }
+.ai-amber  { background:#fef3c7; color:#92400e; }
+.ai-green  { background:#d1fae5; color:#065f46; }
+.ai-purple { background:#ede9fe; color:#4f46e5; }
+.ab-ann-body { flex:1; }
+.ab-ann-title { font-size:0.8rem; font-weight:600; color:var(--ab-text); margin-bottom:2px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+.ab-ann-desc  { font-size:0.7rem; color:var(--ab-text-3); display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+.ab-ann-time  { font-size:0.63rem; color:var(--ab-text-3); white-space:nowrap; flex-shrink:0; }
+
+/* ─── ACTIVITY FEED ─── */
+.ab-act-item { display:flex; gap:11px; padding:9px 0; position:relative; }
+.ab-act-item:not(:last-child)::after { content:''; position:absolute; left:15px; top:40px; bottom:0; width:2px; background:#f1f5f9; }
+.ab-act-dot { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.72rem; flex-shrink:0; z-index:1; position:relative; }
+.ad-blue   { background:#dbeafe; color:#2563eb; }
+.ad-green  { background:#d1fae5; color:#10b981; }
+.ad-amber  { background:#fef3c7; color:#f59e0b; }
+.ad-purple { background:#ede9fe; color:#8b5cf6; }
+.ad-rose   { background:#ffe4e6; color:#f43f5e; }
+.ab-act-info { flex:1; }
+.ab-act-text { font-size:0.79rem; color:var(--ab-text); margin-bottom:2px; line-height:1.4; }
+.ab-act-text a { color:inherit; text-decoration:none; }
+.ab-act-text strong { color:var(--ab-blue); font-weight:600; }
+.ab-act-time { font-size:0.66rem; color:var(--ab-text-3); }
+
+/* ─── STREAK ─── */
+.ab-streak-card {
+  background: linear-gradient(135deg,#1e1b4b,#312e81 55%,#4338ca);
+  border-radius: var(--ab-radius);
+  padding: 20px;
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+.ab-streak-card::before { content:'🔥'; position:absolute; font-size:7rem; right:-10px; top:-10px; opacity:0.07; pointer-events:none; }
+.ab-streak-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, #8b5cf6, #a78bfa); z-index:10; }
+.ab-streak-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.ab-streak-hd-title { font-size:0.82rem; font-weight:700; color:rgba(255,255,255,0.9); display:flex; align-items:center; gap:6px; }
+.ab-streak-big  { font-size:2.8rem; font-weight:800; color:#fbbf24; line-height:1; margin-bottom:2px; }
+.ab-streak-sub  { font-size:0.72rem; color:rgba(255,255,255,0.55); margin-bottom:16px; }
+.ab-streak-days { display:flex; gap:5px; }
+.ab-sd { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.ab-sd-c { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700; }
+.ab-sd-c.done   { background:#fbbf24; color:#1e1b4b; }
+.ab-sd-c.today  { background:rgba(251,191,36,0.2); color:#fbbf24; border:2px solid #fbbf24; }
+.ab-sd-c.miss   { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.3); }
+.ab-sd-l { font-size:0.56rem; color:rgba(255,255,255,0.45); font-weight:600; text-transform:uppercase; }
+.ab-streak-tip { margin-top:14px; padding:10px 12px; background:rgba(255,255,255,0.08); border-radius:9px; font-size:0.73rem; color:rgba(255,255,255,0.65); }
+.ab-streak-meta { margin-top:10px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+.ab-streak-meta-item { background:rgba(255,255,255,0.08); border-radius:8px; padding:7px 6px; min-width:0; }
+.ab-streak-meta-label { font-size:0.55rem; color:rgba(255,255,255,0.48); font-weight:700; text-transform:uppercase; line-height:1.15; }
+.ab-streak-meta-value { margin-top:3px; font-size:0.74rem; color:rgba(255,255,255,0.9); font-weight:800; line-height:1.15; overflow-wrap:anywhere; }
+
+/* ─── ACHIEVEMENTS ─── */
+.ab-badges-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
+.ab-badge {
+  background: linear-gradient(135deg,#fefce8,#fef3c7);
+  border: 1px solid #fde68a;
+  border-radius: var(--ab-radius);
+  padding: 16px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform var(--ab-tr), box-shadow var(--ab-tr);
   position: relative;
   overflow: hidden;
 }
-.sd-welcome-hero::before {
-  content: '🚀';
-  position: absolute;
-  font-size: 5rem;
-  opacity: 0.08;
-  top: -10px; right: -10px;
-}
-.sd-welcome-emojis {
-  font-size: 1.8rem;
-  letter-spacing: 8px;
-  margin-bottom: 12px;
-  animation: float 3s ease-in-out infinite;
-}
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
-}
-.sd-welcome-hero h2 {
-  color: #fff;
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin: 0 0 6px;
-  line-height: 1.3;
-}
-.sd-welcome-hero p {
-  color: #bfdbfe;
-  font-size: 0.88rem;
-  margin: 0;
-}
-.sd-welcome-body {
-  padding: 26px 30px;
-}
-.sd-welcome-body h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1e3a8a;
-  margin: 0 0 14px;
-}
-.sd-welcome-body p {
-  font-size: 0.88rem;
-  color: #475569;
-  line-height: 1.65;
-  margin: 0 0 12px;
-}
-.sd-welcome-body p:last-of-type { margin-bottom: 0; }
-.sd-welcome-body strong { color: #1e293b; }
-.sd-welcome-footer {
-  padding: 16px 30px 24px;
-  display: flex;
-  gap: 12px;
+.ab-badge::before { content:''; position:absolute; top:-15px; right:-15px; width:55px; height:55px; background:rgba(251,191,36,0.15); border-radius:50%; }
+.ab-badge:hover { transform:translateY(-4px) scale(1.02); box-shadow:0 8px 22px rgba(245,158,11,0.2); }
+.ab-badge.locked { background:#f8faff; border-color:var(--ab-border); filter:grayscale(1); opacity:0.5; }
+.ab-badge-em  { font-size:1.8rem; margin-bottom:7px; display:block; }
+.ab-badge-nm  { font-size:0.68rem; font-weight:700; color:#92400e; }
+.ab-badge-ds  { font-size:0.6rem; color:#b45309; margin-top:2px; }
+.ab-badge.locked .ab-badge-nm { color:var(--ab-text-3); }
+.ab-badge.locked .ab-badge-ds { color:var(--ab-text-3); }
+
+/* ─── ATTENDANCE CHART ─── */
+.ab-chart-area { position:relative; height:200px; }
+.ab-chart-legend { display:flex; gap:14px; margin-bottom:8px; }
+.ab-cl-item { display:flex; align-items:center; gap:5px; font-size:0.73rem; color:var(--ab-text-2); font-weight:500; }
+.ab-cl-dot  { width:10px; height:10px; border-radius:3px; }
+
+/* ─── MODALS ─── */
+.ab-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.72);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  align-items: center;
   justify-content: center;
 }
-.sd-btn {
-  padding: 10px 28px;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+.ab-modal-overlay.open { display: flex; }
+.ab-modal-box {
+  background: #fff;
+  border-radius: 20px;
+  width: 90%; max-width: 540px;
+  max-height: 82vh;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 28px 60px rgba(0,0,0,0.3);
+  animation: abModal 0.3s cubic-bezier(0.34,1.56,0.64,1);
 }
-.sd-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+@keyframes abModal { from{transform:translateY(30px) scale(0.96);opacity:0;} to{transform:translateY(0) scale(1);opacity:1;} }
+.ab-modal-hd {
+  padding: 18px 22px 14px;
+  background: linear-gradient(135deg,#1e3a8a,#2563eb);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
 }
-.sd-btn-primary {
-  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+.ab-modal-hd h3 { color:#fff; font-size:0.92rem; font-weight:700; display:flex; align-items:center; gap:8px; }
+.ab-modal-close { width:30px; height:30px; border-radius:8px; background:rgba(255,255,255,0.18); border:none; color:#fff; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background var(--ab-tr); }
+.ab-modal-close:hover { background:rgba(255,255,255,0.32); }
+.ab-modal-bd { padding:20px 22px; overflow-y:auto; font-size:0.88rem; color:#334155; line-height:1.7; white-space:pre-wrap; }
+.ab-modal-list { padding:14px 18px; overflow-y:auto; max-height:calc(82vh - 68px); }
+.ab-form-field { width:100%; margin-bottom:13px; white-space:normal; }
+.ab-form-label { display:block; font-size:0.76rem; font-weight:700; color:#334155; margin-bottom:5px; }
+.ab-form-control { width:100%; border:1px solid #cbd5e1; border-radius:9px; padding:10px 11px; font-family:inherit; font-size:0.86rem; color:#1e293b; outline:none; transition:border-color var(--ab-tr), box-shadow var(--ab-tr); }
+.ab-form-control:focus { border-color:var(--ab-blue); box-shadow:0 0 0 3px rgba(37,99,235,0.12); }
+.ab-form-control.is-invalid { border-color:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,0.12); }
+.ab-form-help { display:flex; justify-content:space-between; gap:10px; margin-top:5px; font-size:0.67rem; color:var(--ab-text-3); line-height:1.35; }
+.ab-form-error { color:#dc2626; font-size:0.72rem; font-weight:600; min-height:18px; margin-top:4px; line-height:1.35; }
+.ab-form-readonly { background:#f8fafc; color:#475569; font-weight:700; }
+.ab-star-rating { font-size: 2rem; color: #cbd5e1; display: inline-flex; gap: 8px; cursor: pointer; }
+.ab-star-rating i { transition: color 0.2s; }
+.ab-star-rating i.active, .ab-star-rating i:hover ~ i { /* hover logic handled via js */ }
+.aero-unread-badge {
+  align-items: center;
+  justify-content: center;
+  background: #dc2626;
   color: #fff;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
 }
-.sd-btn-secondary {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
+.aero-unread-badge.aero-unread-badge-card {
+  display: inline-flex;
+  margin: 0 0 8px;
+  padding: 6px 9px;
 }
+.aero-unread-badge.aero-unread-badge-navbar {
+  display: flex;
+  position: absolute;
+  top: -3px;
+  right: -5px;
+  z-index: 2;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-shadow: 0 0 0 2px #fff;
+}
+.aero-unread-badge[hidden] { display: none; }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1100px) {
-  .sd-grid-2-1 { grid-template-columns: 1fr; }
-  .sd-stats-row { grid-template-columns: repeat(2, 1fr); }
+/* ─── STUDENT CHAT DRAWER ─── */
+.ab-doubt-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(15,23,42,0.58);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--ab-tr), visibility var(--ab-tr);
 }
-@media (max-width: 640px) {
-  .sd-stats-row { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .sd-grid-2 { grid-template-columns: 1fr; }
-  .sd-hero-text h1 { font-size: 1.3rem; }
-  .sd-stat-body h3 { font-size: 1.3rem; }
-  .sd-welcome-body, .sd-welcome-footer { padding-left: 20px; padding-right: 20px; }
+.ab-doubt-drawer-overlay.open { opacity: 1; visibility: visible; pointer-events: auto; }
+.ab-doubt-drawer {
+  width: min(440px, 100%);
+  height: 100%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -18px 0 45px rgba(15,23,42,0.2);
+  transform: translateX(100%);
+  transition: transform 0.28s ease;
+}
+.ab-doubt-drawer-overlay.open .ab-doubt-drawer { transform: translateX(0); }
+.ab-doubt-drawer-hd {
+  padding: 18px 20px;
+  background: linear-gradient(135deg,#1e3a8a,#2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.ab-chat-drawer-title { display:flex; align-items:center; gap:10px; min-width:0; }
+.ab-chat-drawer-title i { color:#fff; }
+.ab-chat-trainer-name { color:#fff; font-size:0.9rem; font-weight:700; line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ab-chat-status { color:rgba(255,255,255,0.72); font-size:0.68rem; display:flex; align-items:center; gap:5px; margin-top:2px; }
+.ab-chat-status-dot { width:7px; height:7px; border-radius:50%; background:#94a3b8; }
+.ab-chat-status-dot.online { background:#4ade80; box-shadow:0 0 0 3px rgba(74,222,128,0.2); }
+.ab-chat-drawer-bd { flex:1; padding:18px; overflow-y:auto; background:#f1f5f9; display:flex; flex-direction:column; gap:12px; }
+.ab-chat-message { display:flex; flex-direction:column; align-items:flex-start; max-width:82%; }
+.ab-chat-message.mine { align-self:flex-end; align-items:flex-end; }
+.ab-chat-bubble { padding:9px 11px; background:#fff; color:var(--ab-text); border-radius:4px 13px 13px 13px; box-shadow:0 1px 3px rgba(15,23,42,0.08); font-size:0.8rem; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; width:fit-content; max-width:100%; }
+.ab-chat-message.mine .ab-chat-bubble { background:#dbeafe; border-radius:13px 4px 13px 13px; }
+.ab-chat-image { display:block; max-width:220px; max-height:220px; border-radius:9px; object-fit:cover; margin-bottom:7px; }
+.ab-chat-time { color:var(--ab-text-3); font-size:0.61rem; margin-top:4px; }
+.ab-chat-empty { margin:auto; color:var(--ab-text-3); font-size:0.78rem; text-align:center; line-height:1.5; padding:30px 12px; }
+.ab-chat-error { color:#dc2626; font-size:0.69rem; min-height:17px; padding:0 14px; background:#fff; }
+.ab-chat-drawer-ft { flex-shrink:0; padding:10px 12px 12px; border-top:1px solid var(--ab-border); background:#fff; }
+.ab-chat-form { display:flex; gap:8px; align-items:flex-end; }
+.ab-chat-input { flex:1; min-height:42px; max-height:110px; resize:vertical; border:1px solid #cbd5e1; border-radius:11px; padding:10px 11px; font:inherit; font-size:0.78rem; line-height:1.4; outline:none; }
+.ab-chat-input:focus { border-color:var(--ab-blue); box-shadow:0 0 0 3px rgba(37,99,235,0.12); }
+.ab-chat-attach, .ab-chat-send { width:42px; height:42px; flex-shrink:0; border:none; border-radius:11px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.ab-chat-attach { color:var(--ab-blue); background:#eff6ff; border:1px solid #bfdbfe; }
+.ab-chat-send { color:#fff; background:var(--ab-blue); }
+.ab-chat-send:disabled { opacity:0.55; cursor:wait; }
+.ab-chat-attachment-name { color:var(--ab-text-3); font-size:0.65rem; margin:0 0 6px 50px; min-height:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* ─── WELCOME POPUP ─── */
+.ab-welcome-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,0.75);
+  backdrop-filter: blur(10px);
+  z-index: 99999;
+  display: none;
+  align-items: center; justify-content: center;
+}
+.ab-welcome-overlay.open { display: flex; }
+.ab-welcome-box {
+  background: #fff; border-radius: 24px;
+  max-width: 540px; width: 92%;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.35);
+  animation: abModal 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  max-height: 90vh; overflow-y: auto;
+}
+.ab-wl-hero {
+  background: linear-gradient(135deg,#1e3a8a,#2563eb 55%,#06b6d4);
+  padding: 34px 28px 26px; text-align: center; position: relative; overflow: hidden;
+}
+.ab-wl-hero::before { content:'🚀'; position:absolute; font-size:6rem; opacity:0.07; top:-10px; right:-10px; }
+.ab-wl-emoji { font-size:2.2rem; margin-bottom:10px; animation:abFloat 3s ease-in-out infinite; }
+@keyframes abFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-7px);} }
+.ab-wl-hero h2 { color:#fff; font-size:1.3rem; font-weight:800; margin:0 0 7px; }
+.ab-wl-hero p  { color:rgba(255,255,255,0.78); font-size:0.83rem; margin:0; }
+.ab-wl-body { padding:24px 28px; }
+.ab-wl-body h3 { font-size:0.95rem; font-weight:700; color:#1e3a8a; margin-bottom:10px; }
+.ab-wl-body p  { font-size:0.83rem; color:var(--ab-text-2); line-height:1.7; margin-bottom:9px; }
+.ab-wl-body p:last-child { margin-bottom:0; }
+.ab-wl-footer { padding:14px 28px 22px; display:flex; gap:10px; justify-content:flex-end; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width:1200px) {
+  .ab-student-overview-grid { grid-template-columns:1fr; }
+}
+@media (max-width:1100px) {
+  .ab-kpi-row    { grid-template-columns:repeat(2,1fr); }
+  .ab-grid-2-1   { grid-template-columns:1fr; }
+  .ab-grid-3     { grid-template-columns:1fr 1fr; }
+  .ab-badges-grid{ grid-template-columns:repeat(4,1fr); }
+}
+@media (max-width:768px) {
+  .ab-kpi-row    { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .ab-grid-2     { grid-template-columns:1fr; }
+  .ab-grid-3     { grid-template-columns:1fr; }
+  .ab-timetable-card { grid-column: auto; }
+  .ab-badges-grid{ grid-template-columns:repeat(3,1fr); }
+  .ab-hero       { padding:18px 16px 58px; }
+  .ab-hero-inner { flex-direction: column; gap: 16px; }
+  .ab-hero-right { align-items: flex-start; text-align: left; }
+  .ab-hero-name  { font-size:1.45rem; text-align: left; }
+  .ab-page       { padding:0 12px; }
+}
+@media (max-width:480px) {
+  .ab-kpi-row    { grid-template-columns:1fr; gap:9px; }
+  .ab-badges-grid{ grid-template-columns:repeat(2,1fr); }
+  .ab-doubt-drawer { width:100%; }
 }
 </style>
 
-<div class="sd-root">
-  <!-- ===== HERO ===== -->
-  <div class="sd-hero">
-    <div class="sd-hero-inner">
-      <div class="sd-hero-avatar">🎓</div>
-      <div class="sd-hero-text">
-        <h1>Welcome back, {{userfullname}}! 👋</h1>
-        <p>Here's your learning overview for today. Keep up the great work!</p>
-        <div class="sd-hero-chips">
-          <span class="sd-chip">✈️ AeroBay Program</span>
-          <span class="sd-chip">🔬 STEAM Learning</span>
+<div class="ab-root">
+
+  {{! ── HERO ── }}
+  <div class="ab-hero">
+    <div class="ab-hero-deco">🛸🚀✈️</div>
+    <div class="ab-hero-inner">
+
+      {{! Left — greeting, chips, CTA }}
+      <div class="ab-hero-left">
+        <div class="ab-hero-greeting">Welcome back to AeroBay STEAM Labs</div>
+        <div class="ab-hero-chips" style="margin-top:10px;">
+          <span class="ab-chip"><i class="fa-solid fa-flask"></i> {{#sessionname}}{{sessionname}}{{/sessionname}}{{^sessionname}}No Active Session{{/sessionname}}</span>
+          <span class="ab-chip"><i class="fa-solid fa-graduation-cap"></i> {{#gradename}}{{gradename}}{{/gradename}}{{^gradename}}Grade Not Assigned{{/gradename}}</span>
+          <span class="ab-chip"><i class="fa-solid fa-school"></i> {{#schoolname}}{{schoolname}}{{/schoolname}}{{^schoolname}}School Not Assigned{{/schoolname}}</span>
+          <span class="ab-chip"><i class="fa-solid fa-user-tie"></i> {{#hastrainer}}Trainer: {{trainerfullname}}{{/hastrainer}}{{^hastrainer}}Trainer Not Assigned{{/hastrainer}}</span>
+        </div>
+        {{#continuelearningurl}}
+        <a class="ab-hero-cta" href="{{continuelearningurl}}" style="margin-top:14px;"><i class="fa-solid fa-play"></i> Continue Learning</a>
+        {{/continuelearningurl}}
+        {{^continuelearningurl}}
+        <span class="ab-hero-cta" style="margin-top:14px;opacity:0.6;cursor:not-allowed;" aria-disabled="true"><i class="fa-solid fa-play"></i> Continue Learning</span>
+        {{/continuelearningurl}}
+      </div>
+
+      {{! Right — Name on top, Streak below }}
+      <div class="ab-hero-right">
+        <div class="ab-hero-name">
+          <div class="ab-name-badge" style="justify-content:flex-end;"><i class="fa-solid fa-star"></i> AeroBay Scholar</div>
+          <span class="ab-name-hi" style="text-align:right;">Hey there 👋</span>
+          <span class="ab-name-text">{{userfullname}}!</span>
+        </div>
+        <div class="ab-hero-streak-box">
+          <span class="ab-streak-num">🔥 {{currentstreak}}</span>
+          <div class="ab-streak-label">Login Streak</div>
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- ===== STAT CARDS ===== -->
-  <div class="sd-stats-row">
-    <div class="sd-stat-card">
-      <div class="sd-stat-icon blue">📅</div>
-      <div class="sd-stat-body">
-        <h3>9</h3>
-        <p>Periods / Day</p>
-      </div>
-    </div>
-    <div class="sd-stat-card">
-      <div class="sd-stat-icon green">🏆</div>
-      <div class="sd-stat-body">
-        <h3 id="sdAchCount">—</h3>
-        <p>Achievements</p>
-      </div>
-    </div>
-    <div class="sd-stat-card">
-      <div class="sd-stat-icon amber">📰</div>
-      <div class="sd-stat-body">
-        <h3 id="sdNotifCount">—</h3>
-        <p>Notifications</p>
-      </div>
-    </div>
-    <div class="sd-stat-card">
-      <div class="sd-stat-icon purple">📊</div>
-      <div class="sd-stat-body">
-        <h3>Live</h3>
-        <p>Attendance</p>
-      </div>
-    </div>
-  </div>
+  <div class="ab-page">
 
-  <!-- ===== MAIN CONTENT ===== -->
-  <div class="sd-content">
-
-    <!-- Row 1: Timetable + Notifications -->
-    <div class="sd-grid-2-1">
-
-      <!-- Timetable -->
-      <div class="sd-card">
-        <div class="sd-card-header">
-          <h2 class="sd-card-title">
-            <span class="icon">📋</span> Weekly Timetable
-          </h2>
+    {{! ── KPI CARDS ── }}
+    <div class="ab-kpi-row">
+      <div class="ab-kpi k-blue">
+        <div class="ab-kpi-top">
+          <div class="ab-kpi-lbl-group">
+            <div class="ab-kpi-icon"><i class="fa-solid fa-circle-half-stroke"></i></div>
+            <div class="ab-kpi-lbl">Overall Progress</div>
+          </div>
+          <div class="ab-kpi-val" data-target="{{overallprogressnumber}}" data-suffix="%">{{overallprogress}}</div>
         </div>
-        <div class="sd-card-body">
-          <div class="sd-timetable-wrap">
-            <table class="sd-timetable">
+        <div class="ab-kpi-progress-bg">
+          <div class="ab-kpi-progress-bar" style="width: {{overallprogressnumber}}%;"></div>
+        </div>
+        <div class="ab-kpi-trend neu"><i class="fa-solid fa-minus"></i> Attendance + assessments</div>
+      </div>
+      <div class="ab-kpi k-purple">
+        <div class="ab-kpi-top">
+          <div class="ab-kpi-lbl-group">
+            <div class="ab-kpi-icon"><i class="fa-solid fa-file-circle-check"></i></div>
+            <div class="ab-kpi-lbl">Assessments</div>
+          </div>
+          <div class="ab-kpi-val" data-target="{{assessmentpercentnumber}}" data-suffix="%">{{assessmentpercent}}</div>
+        </div>
+        <div class="ab-kpi-progress-bg">
+          <div class="ab-kpi-progress-bar" style="width: {{assessmentpercentnumber}}%;"></div>
+        </div>
+        <div class="ab-kpi-trend neu"><i class="fa-solid fa-minus"></i> {{assessmentattemptedcount}} / {{assessmenttotalcount}} completed</div>
+      </div>
+      <div class="ab-kpi k-green">
+        <div class="ab-kpi-top">
+          <div class="ab-kpi-lbl-group">
+            <div class="ab-kpi-icon"><i class="fa-solid fa-user-check"></i></div>
+            <div class="ab-kpi-lbl">Attendance</div>
+          </div>
+          <div class="ab-kpi-val" data-target="{{attendancepercentnumber}}" data-suffix="%">{{attendancepercent}}</div>
+        </div>
+        <div class="ab-kpi-progress-bg">
+          <div class="ab-kpi-progress-bar" style="width: {{attendancepercentnumber}}%;"></div>
+        </div>
+        <div class="ab-kpi-trend neu"><i class="fa-solid fa-minus"></i> This month</div>
+      </div>
+    </div>
+
+    {{! ── ROW 1: Weekly Timetable + Trainer ── }}
+    <div class="ab-student-overview-grid">
+
+      {{! Weekly Timetable }}
+      <div class="ab-card ab-timetable-card accent-blue">
+        <div class="ab-card-hd">
+          <div class="ab-card-title">
+            <div class="ic" style="background:#e0f2fe;color:#0284c7;"><i class="fa-solid fa-calendar-week"></i></div>
+            Weekly Timetable Overview
+          </div>
+          <div class="ab-timetable-summary">Monday-Saturday</div>
+        </div>
+        <div class="ab-card-bd">
+          <div class="ab-timetable-scroll">
+            <table class="ab-timetable">
               <thead>
                 <tr>
-                  <th>Day</th>
+                  <th class="ab-timetable-day">Day</th>
                   <th>Period 1</th>
                   <th>Period 2</th>
                   <th>Period 3</th>
@@ -729,370 +1102,610 @@
               <tbody>
                 {{#timetable.days}}
                 <tr>
-                  <td>{{day}}</td>
+                  <td class="ab-timetable-day">{{day}}<span class="ab-timetable-short">{{shortday}}</span></td>
                   {{#periods}}
-                  <td>{{checked}}</td>
+                  <td>
+                    <div class="ab-timetable-slot {{#hasclass}}has-class{{/hasclass}}">{{coursename}}</div>
+                  </td>
                   {{/periods}}
                 </tr>
                 {{/timetable.days}}
               </tbody>
             </table>
           </div>
+          {{^timetable.hasitems}}
+          <div class="ab-timetable-empty">No timetable has been published for this grade yet.</div>
+          {{/timetable.hasitems}}
         </div>
       </div>
 
-      <!-- Notifications -->
-      <div class="sd-card">
-        <div class="sd-card-header">
-          <h2 class="sd-card-title">
-            <span class="icon">🔔</span> Notifications
-          </h2>
-          <span class="sd-view-all-btn" onclick="sdOpenAllNotif()">View All →</span>
-        </div>
-        <div class="sd-card-body">
-          <div class="sd-notif-scroll">
-            {{#newslist}}
-            <div class="sd-notif-item" onclick="sdOpenNewsModal(`{{{news}}}`)">
-              <div class="sd-notif-bell"><i class="fa fa-bell"></i></div>
-              <div class="sd-notif-text">{{news}}</div>
-            </div>
-            {{/newslist}}
-            {{^newslist}}
-            <div style="text-align:center; padding:32px 0; color:#94a3b8;">
-              <div style="font-size:2.5rem;">🔕</div>
-              <p style="margin:8px 0 0; font-size:0.85rem;">No notifications yet</p>
-            </div>
-            {{/newslist}}
+      <div class="ab-student-right-column">
+      {{! Trainer Card }}
+      <div class="ab-card accent-purple" style="overflow:hidden; display: flex; flex-direction: column; height: 100%;">
+        <div class="ab-trainer-hd">
+          <div class="ab-trainer-av">
+            {{#trainerimageurl}}
+              <img src="{{trainerimageurl}}" alt="Trainer Avatar" style="width:100%; height:100%; object-fit:cover; object-position:center; border-radius:inherit; aspect-ratio:1/1;">
+            {{/trainerimageurl}}
+            {{^trainerimageurl}}
+              <i class="fa-solid fa-user"></i>
+            {{/trainerimageurl}}
           </div>
+          <div class="ab-trainer-info">
+            <div class="ab-trainer-name">{{#hastrainer}}{{trainerfullname}}{{/hastrainer}}{{^hastrainer}}Trainer Not Assigned{{/hastrainer}}</div>
+            {{#hastrainer}}
+            <div class="ab-trainer-role">STEAM Trainer</div>
+            <div class="ab-trainer-school">{{trainercardschoolname}}</div>
+            <div class="ab-online-pill {{#istraineronline}}online{{/istraineronline}}{{^istraineronline}}offline{{/istraineronline}}"><div class="ab-online-dot {{#istraineronline}}online{{/istraineronline}}{{^istraineronline}}offline{{/istraineronline}}"></div> {{trainerstatus}}</div>
+            {{/hastrainer}}
+          </div>
+        </div>
+        <div class="ab-trainer-bd" style="display: flex; flex-direction: column; flex: 1;">
+          {{#hastrainer}}
+          <div class="ab-trainer-row"><span>Specialization</span><strong>Aerodynamics, Robotics</strong></div>
+          <div class="ab-trainer-row"><span>Sessions Taught</span><strong>{{trainersessionstaught}} Sessions</strong></div>
+          <div class="ab-trainer-row"><span>Rating</span><strong>⭐ <span id="abTrainerAvgRating">{{trainer_avg_rating}}</span> / 5.0 (<span id="abTrainerCountRating">{{trainer_count_rating}}</span> ratings)</strong></div>
+          <div class="ab-divider"></div>
+          <div class="ab-btn-grid">
+            <a class="ab-btn ab-btn-out" onclick="abOpenRateTrainer()"><i class="fa-solid fa-star"></i> Rate Trainer</a>
+          </div>
+          {{/hastrainer}}
+          {{^hastrainer}}
+          <div class="ab-trainer-row" style="display:block;line-height:1.5;">
+            No trainer is currently assigned to your school/class.<br>
+            Please contact admin or wait for assignment.
+          </div>
+          {{/hastrainer}}
+
+          <div style="margin-top: auto;">
+            <div class="ab-divider"></div>
+            <div class="ab-card-title" style="margin-bottom: 8px;">
+              <div class="ic" style="background:#dbeafe;color:#2563eb;"><i class="fa-solid fa-comments"></i></div>
+              Chat With Trainer
+            </div>
+            {{#hastrainer}}
+            <p class="ab-chat-card-copy">Continue your conversation with your trainer.</p>
+            <span class="aero-unread-badge aero-unread-badge-card" data-region="trainer-unread-card" hidden></span>
+            <div class="ab-btn-grid" style="margin-top: 14px;">
+              <button type="button" class="ab-btn ab-btn-prim" style="justify-content: center;" data-action="open-student-chat"><i class="fa-solid fa-comment-dots"></i> Open Chat</button>
+            </div>
+            {{/hastrainer}}
+            {{^hastrainer}}
+            <p class="ab-chat-card-copy">Chat becomes available when a trainer is assigned.</p>
+            {{/hastrainer}}
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    {{! ── LEARNING PATH TIMELINE ── }}
+    <div class="ab-card accent-green" style="margin-bottom:18px;">
+      <div class="ab-card-hd">
+        <div class="ab-card-title">
+          <div class="ic" style="background:#dbeafe;color:#2563eb;"><i class="fa-solid fa-route"></i></div>
+          Learning Path — STEAM Lab Sessions
+        </div>
+        <div style="display:flex;gap:7px;align-items:center;">
+          <span class="ab-tag" style="background:#d1fae5;color:#065f46;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">✓ {{learningpath.completed_count}} Done</span>
+          <span class="ab-tag" style="background:#dbeafe;color:#1d4ed8;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">● {{learningpath.active_count}} Active</span>
+          <span class="ab-tag" style="background:#f1f5f9;color:#94a3b8;font-size:0.62rem;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;">🔒 {{learningpath.locked_count}} Locked</span>
+        </div>
+      </div>
+      <div class="ab-lp-scroll">
+        <div class="ab-lp-track">
+          {{#learningpath.nodes}}
+          {{#hasconnector}}<div class="ab-lp-conn {{connectorclass}}"></div>{{/hasconnector}}
+          <div class="ab-lp-node">
+            <div class="ab-lp-circ {{nodeclass}}"><i class="fa-solid {{iconclass}}"></i></div>
+            <div class="ab-lp-lbl">{{sectionname}}</div>
+            <span class="ab-lp-status {{statusclass}}">{{statustext}}</span>
+          </div>
+          {{/learningpath.nodes}}
+          {{^learningpath.hasitems}}
+          <div class="ab-lp-node">
+            <div class="ab-lp-circ lock"><i class="fa-solid fa-lock"></i></div>
+            <div class="ab-lp-lbl">No sessions<br>Course not mapped</div>
+            <span class="ab-lp-status lock">LOCKED</span>
+          </div>
+          {{/learningpath.hasitems}}
         </div>
       </div>
     </div>
 
-    <!-- Row 2: Attendance + Achievements -->
-    <div class="sd-grid-2-1" style="margin-top:20px;">
-
-      <!-- Attendance Chart -->
-      <div class="sd-card">
-        <div class="sd-card-header">
-          <h2 class="sd-card-title">
-            <span class="icon">📈</span> Attendance Overview
-          </h2>
+    {{! ── ROW 3: Attendance Overview ── }}
+    <div class="ab-card accent-orange" style="margin-bottom: 18px; width: 100%;">
+      <div class="ab-card-hd">
+        <div class="ab-card-title">
+          <div class="ic" style="background:#d1fae5;color:#10b981;"><i class="fa-solid fa-chart-column"></i></div>
+          Attendance Overview
         </div>
-        <div class="sd-card-body">
-          <div class="sd-attendance-legend">
-            <span class="sd-legend-dot"><span class="dot-present"></span>Present</span>
-            <span class="sd-legend-dot"><span class="dot-absent"></span>Absent</span>
-          </div>
-          <div class="sd-chart-wrap">
-            <canvas id="sdAttendanceChart" style="width:100%; height:300px;"></canvas>
-          </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <a href="?att_month={{attendance_prev_month}}&att_year={{attendance_prev_year}}" style="padding:4px 8px; background:#f1f5f9; border-radius:6px; color:#475569; text-decoration:none;"><i class="fa-solid fa-chevron-left"></i></a>
+          <select onchange="var v = this.value.split('_'); window.location.href='?att_month='+v[0]+'&att_year='+v[1];" style="padding:4px 8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; font-weight:600; color:#1e293b; outline:none; cursor:pointer;">
+            {{#attendance_month_options}}
+            <option value="{{value}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+            {{/attendance_month_options}}
+          </select>
+          {{#attendance_has_next}}
+          <a href="?att_month={{attendance_next_month}}&att_year={{attendance_next_year}}" style="padding:4px 8px; background:#f1f5f9; border-radius:6px; color:#475569; text-decoration:none;"><i class="fa-solid fa-chevron-right"></i></a>
+          {{/attendance_has_next}}
+          {{^attendance_has_next}}
+          <span style="padding:4px 8px; background:#f8fafc; border-radius:6px; color:#cbd5e1; cursor:not-allowed;"><i class="fa-solid fa-chevron-right"></i></span>
+          {{/attendance_has_next}}
         </div>
       </div>
+      <div class="ab-card-bd" style="padding:0; display:flex; flex-wrap:wrap;">
+        
+        {{! Left: Quick Stats + Calendar }}
+        <div style="flex:1 1 350px; padding:24px; border-right:1px solid #f1f5f9; display:flex; flex-direction:column; gap:24px;">
+          
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;">
+            <div style="background:#ecfdf5; padding:16px 10px; border-radius:12px; text-align:center; border:1px solid #d1fae5;">
+              <div style="font-size:1.75rem; font-weight:800; color:#059669; line-height:1;">{{attendancepresentcount}}</div>
+              <div style="font-size:0.7rem; color:#047857; text-transform:uppercase; font-weight:700; margin-top:6px;">Present</div>
+            </div>
+            <div style="background:#fef2f2; padding:16px 10px; border-radius:12px; text-align:center; border:1px solid #fee2e2;">
+              <div style="font-size:1.75rem; font-weight:800; color:#dc2626; line-height:1;">{{attendanceabsentcount}}</div>
+              <div style="font-size:0.7rem; color:#b91c1c; text-transform:uppercase; font-weight:700; margin-top:6px;">Absent</div>
+            </div>
+            <div style="background:#eef2ff; padding:16px 10px; border-radius:12px; text-align:center; border:1px solid #e0e7ff;">
+              <div style="font-size:1.75rem; font-weight:800; color:#4f46e5; line-height:1;">{{attendancepercentnumber}}<span style="font-size:1rem;">%</span></div>
+              <div style="font-size:0.7rem; color:#4338ca; text-transform:uppercase; font-weight:700; margin-top:6px;">Rate</div>
+            </div>
+          </div>
 
-      <!-- Achievements -->
-      <div class="sd-card">
-        <div class="sd-card-header">
-          <h2 class="sd-card-title">
-            <span class="icon">🏆</span> Achievements
-          </h2>
-        </div>
-        <div class="sd-card-body">
-          <ul class="sd-achievements-list">
-            {{#milestones}}
-            {{#imgpath}}
-            <li class="sd-achievement-item">
-              <img src="{{imgpath}}" class="sd-ach-img" alt="achievement badge" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-              <div class="sd-ach-emoji" style="display:none;">🏅</div>
-              <div class="sd-ach-body">
-                <h6>Congratulations!</h6>
-                <p>{{text}}</p>
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:20px; flex-grow:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+              <h4 style="margin:0; font-size:1rem; font-weight:700; color:#1e293b;">{{attendance_month_name}}</h4>
+              <div style="display:flex; gap:12px;">
+                <div style="display:flex; align-items:center; gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:block;"></span><span style="font-size:0.7rem;color:#64748b;font-weight:600;">Present</span></div>
+                <div style="display:flex; align-items:center; gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:block;"></span><span style="font-size:0.7rem;color:#64748b;font-weight:600;">Absent</span></div>
+                <div style="display:flex; align-items:center; gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#f1f5f9;display:block;"></span><span style="font-size:0.7rem;color:#64748b;font-weight:600;">No Class</span></div>
               </div>
-            </li>
-            {{/imgpath}}
-            {{/milestones}}
-            {{^milestones}}
-            <li class="sd-ach-empty">
-              <div style="font-size:3rem;">🌱</div>
-              <p>Keep learning to unlock achievements!</p>
-            </li>
-            {{/milestones}}
-          </ul>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.75rem; color:#64748b; margin-bottom:8px; font-weight:700;">
+              <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.85rem; font-weight:600;">
+              {{#attendance_calendar_days}}
+                {{#empty}}
+                  <div style="padding:6px 0;"></div>
+                {{/empty}}
+                {{^empty}}
+                  {{#ispresent}}
+                  <div style="background:#10b981; color:#fff; border-radius:8px; padding:6px 0; box-shadow: 0 2px 4px rgba(16,185,129,0.2);">{{day}}</div>
+                  {{/ispresent}}
+                  {{#isabsent}}
+                  <div style="background:#ef4444; color:#fff; border-radius:8px; padding:6px 0; box-shadow: 0 2px 4px rgba(239,68,68,0.2);">{{day}}</div>
+                  {{/isabsent}}
+                  {{#isnone}}
+                  <div style="background:#f1f5f9; color:#94a3b8; border-radius:8px; padding:6px 0;">{{day}}</div>
+                  {{/isnone}}
+                {{/empty}}
+              {{/attendance_calendar_days}}
+            </div>
+          </div>
+
         </div>
+
+        {{! Right: Summary Panel }}
+        <div style="flex:1 1 250px; padding:24px; display:flex; flex-direction:column; background:#f8fafc; border-radius: 0 0 12px 0;">
+          <div style="margin-bottom:20px;">
+            <h3 style="margin:0; font-size:1.1rem; font-weight:700; color:#1e293b;">Attendance Summary</h3>
+            <p style="margin:4px 0 0; font-size:0.8rem; color:#64748b;">Snapshot for {{attendance_month_name}}</p>
+          </div>
+          
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:20px; flex-grow:1; display:flex; flex-direction:column; gap:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+              <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Present Days</span>
+              <span style="font-size:1rem; font-weight:800; color:#059669;">{{attendancepresentcount}}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+              <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Absent Days</span>
+              <span style="font-size:1rem; font-weight:800; color:#dc2626;">{{attendanceabsentcount}}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+              <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Attendance %</span>
+              <span style="font-size:1rem; font-weight:800; color:#4f46e5;">{{attendancepercentnumber}}%</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+              <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Last Attendance</span>
+              <span style="font-size:0.9rem; font-weight:700; color:#334155;">{{attendance_last_status}}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Status</span>
+              <span style="font-size:0.9rem; font-weight:700; color:#10b981;">{{attendance_status_label}}</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <!-- Row 3: Activity Progress + Radar -->
-    <div class="sd-grid-2" style="margin-top:20px;">
+    {{! ── ROW 4: Announcements + Activity + Streak ── }}
+    <div class="ab-grid-3">
 
-      <!-- Activity Progress (Quiz Scores) -->
-      <div class="sd-card">
-        <div class="sd-card-header">
-          <h2 class="sd-card-title">
-            <span class="icon">⚡</span> Activity Progress
-          </h2>
+      {{! Announcements }}
+      <div class="ab-card accent-orange">
+        <div class="ab-card-hd">
+          <div class="ab-card-title">
+            <div class="ic" style="background:#fef3c7;color:#f59e0b;"><i class="fa-solid fa-bullhorn"></i></div>
+            Announcements
+          </div>
+          <a class="ab-card-btn" onclick="abOpenAllNotif()">View All</a>
         </div>
-        <div class="sd-card-body">
-          <div class="sd-chart-container">
-            <canvas id="sdActivityChart"></canvas>
+        <div class="ab-card-bd">
+          {{#newslist}}
+          <div class="ab-ann-item" onclick="abOpenNews(this.dataset.content)" data-content="{{news}}">
+            <div class="ab-ann-ic ai-blue"><i class="fa-solid fa-bell"></i></div>
+            <div class="ab-ann-body">
+              <div class="ab-ann-title">{{news}}</div>
+              <div class="ab-ann-desc">Tap to read full announcement</div>
+            </div>
+            <div class="ab-ann-time">New</div>
+          </div>
+          {{/newslist}}
+          {{^newslist}}
+          <div class="ab-ann-item">
+            <div class="ab-ann-ic ai-amber"><i class="fa-solid fa-star"></i></div>
+            <div class="ab-ann-body">
+              <div class="ab-ann-title">Session 3 Lab Materials Ready</div>
+              <div class="ab-ann-desc">Bring your lab manual and safety goggles</div>
+            </div>
+            <div class="ab-ann-time">2h ago</div>
+          </div>
+          <div class="ab-ann-item">
+            <div class="ab-ann-ic ai-green"><i class="fa-solid fa-calendar-check"></i></div>
+            <div class="ab-ann-body">
+              <div class="ab-ann-title">Assessment Rescheduled to Jun 5</div>
+              <div class="ab-ann-desc">Aerodynamics Basics — new date confirmed</div>
+            </div>
+            <div class="ab-ann-time">Yesterday</div>
+          </div>
+          <div class="ab-ann-item">
+            <div class="ab-ann-ic ai-purple"><i class="fa-solid fa-trophy"></i></div>
+            <div class="ab-ann-body">
+              <div class="ab-ann-title">You earned the "Quick Learner" badge!</div>
+              <div class="ab-ann-desc">Completed Session 2 with 95% score</div>
+            </div>
+            <div class="ab-ann-time">2d ago</div>
+          </div>
+          {{/newslist}}
+        </div>
+      </div>
+
+      {{! Recent Activity }}
+      <div class="ab-card accent-teal">
+        <div class="ab-card-hd">
+          <div class="ab-card-title">
+            <div class="ic" style="background:#d1fae5;color:#10b981;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            Recent Activity
+          </div>
+        </div>
+        <div class="ab-card-bd">
+          {{#recentactivities}}
+          <div class="ab-act-item">
+            <div class="ab-act-dot {{dotclass}}"><i class="{{icon}}"></i></div>
+            <div class="ab-act-info">
+              <div class="ab-act-text">
+                {{#hasurl}}<a href="{{url}}">{{/hasurl}}{{description}}{{#hastitle}} <strong>{{title}}</strong>{{/hastitle}}{{#hasurl}}</a>{{/hasurl}}
+              </div>
+              <div class="ab-act-time">{{displaytime}}</div>
+            </div>
+          </div>
+          {{/recentactivities}}
+          {{^hasrecentactivities}}
+          <div class="ab-act-time">No recent activity yet.</div>
+          {{/hasrecentactivities}}
+        </div>
+      </div>
+
+      {{! Streak }}
+      <div class="ab-streak-card">
+        <div class="ab-streak-hd">
+          <div class="ab-streak-hd-title">🔥 Login Streak</div>
+          <span style="background:rgba(251,191,36,0.18);color:#fbbf24;font-size:0.62rem;font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid rgba(251,191,36,0.3);">This Week</span>
+        </div>
+        <div class="ab-streak-big">{{currentstreak}}</div>
+        <div class="ab-streak-sub">Consecutive login days</div>
+        <div class="ab-streak-days">
+          <div class="ab-sd"><div class="ab-sd-c {{#mon_logged}}done{{/mon_logged}}{{^mon_logged}}miss{{/mon_logged}}">{{#mon_logged}}✓{{/mon_logged}}{{^mon_logged}}○{{/mon_logged}}</div><div class="ab-sd-l">Mon</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#tue_logged}}done{{/tue_logged}}{{^tue_logged}}miss{{/tue_logged}}">{{#tue_logged}}✓{{/tue_logged}}{{^tue_logged}}○{{/tue_logged}}</div><div class="ab-sd-l">Tue</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#wed_logged}}done{{/wed_logged}}{{^wed_logged}}miss{{/wed_logged}}">{{#wed_logged}}✓{{/wed_logged}}{{^wed_logged}}○{{/wed_logged}}</div><div class="ab-sd-l">Wed</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#thu_logged}}done{{/thu_logged}}{{^thu_logged}}miss{{/thu_logged}}">{{#thu_logged}}✓{{/thu_logged}}{{^thu_logged}}○{{/thu_logged}}</div><div class="ab-sd-l">Thu</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#fri_logged}}done{{/fri_logged}}{{^fri_logged}}miss{{/fri_logged}}">{{#fri_logged}}✓{{/fri_logged}}{{^fri_logged}}○{{/fri_logged}}</div><div class="ab-sd-l">Fri</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#sat_logged}}done{{/sat_logged}}{{^sat_logged}}miss{{/sat_logged}}">{{#sat_logged}}✓{{/sat_logged}}{{^sat_logged}}○{{/sat_logged}}</div><div class="ab-sd-l">Sat</div></div>
+          <div class="ab-sd"><div class="ab-sd-c {{#sun_logged}}done{{/sun_logged}}{{^sun_logged}}miss{{/sun_logged}}">{{#sun_logged}}✓{{/sun_logged}}{{^sun_logged}}○{{/sun_logged}}</div><div class="ab-sd-l">Sun</div></div>
+        </div>
+        <div class="ab-streak-tip"><i class="fa-solid fa-circle-info" style="color:#fbbf24;margin-right:5px;"></i>Login today to maintain your streak</div>
+        <div class="ab-streak-meta">
+          <div class="ab-streak-meta-item">
+            <div class="ab-streak-meta-label">Current Streak</div>
+            <div class="ab-streak-meta-value">{{currentstreak}}</div>
+          </div>
+          <div class="ab-streak-meta-item">
+            <div class="ab-streak-meta-label">Longest Streak</div>
+            <div class="ab-streak-meta-value">{{longeststreak}}</div>
+          </div>
+          <div class="ab-streak-meta-item">
+            <div class="ab-streak-meta-label">Last Login</div>
+            <div class="ab-streak-meta-value">{{lastlogindate}}</div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Extra Co-curricular Activities Radar -->
-      <div class="sd-card">
-        <div class="sd-card-header">
-          <h2 class="sd-card-title">
-            <span class="icon">🎭</span> Co-curricular Activities
-          </h2>
+    {{! ── ACHIEVEMENTS ── }}
+    <div class="ab-card accent-amber" style="margin-bottom:10px;">
+      <div class="ab-card-hd">
+        <div class="ab-card-title">
+          <div class="ic" style="background:#fef3c7;color:#d97706;"><i class="fa-solid fa-trophy"></i></div>
+          Achievements & Badges
         </div>
-        <div class="sd-card-body">
-          <div class="sd-chart-container">
-            <canvas id="sdRadarChart"></canvas>
+        <a class="ab-card-btn">View All</a>
+      </div>
+      <div class="ab-card-bd">
+        {{#milestones}}{{#imgpath}}
+        <div class="ab-badges-grid">
+          <div class="ab-badge">
+            <img src="{{imgpath}}" style="width:44px;height:44px;object-fit:contain;margin:0 auto 7px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" alt="badge">
+            <span style="display:none;font-size:1.8rem;margin-bottom:7px;display:block;">🏅</span>
+            <div class="ab-badge-nm">Achievement</div>
+            <div class="ab-badge-ds">{{text}}</div>
           </div>
         </div>
+        {{/imgpath}}{{/milestones}}
+        {{^milestones}}
+        <div class="ab-badges-grid">
+          <div class="ab-badge"><span class="ab-badge-em">🚀</span><div class="ab-badge-nm">Launchpad</div><div class="ab-badge-ds">First session done</div></div>
+          <div class="ab-badge"><span class="ab-badge-em">🏅</span><div class="ab-badge-nm">Quick Learner</div><div class="ab-badge-ds">Scored 90%+ in quiz</div></div>
+          <div class="ab-badge"><span class="ab-badge-em">🔬</span><div class="ab-badge-nm">Lab Explorer</div><div class="ab-badge-ds">5 lab sessions done</div></div>
+          <div class="ab-badge"><span class="ab-badge-em">🎯</span><div class="ab-badge-nm">On Target</div><div class="ab-badge-ds">{{currentstreak}}-day streak</div></div>
+          <div class="ab-badge locked"><span class="ab-badge-em">🛸</span><div class="ab-badge-nm">Innovator</div><div class="ab-badge-ds">Complete a project</div></div>
+          <div class="ab-badge locked"><span class="ab-badge-em">🤖</span><div class="ab-badge-nm">Robotics Star</div><div class="ab-badge-ds">Finish robotics session</div></div>
+        </div>
+        {{/milestones}}
       </div>
     </div>
 
-  </div><!-- /sd-content -->
-</div><!-- /sd-root -->
+  </div>{{! /ab-page }}
+</div>{{! /ab-root }}
 
-<!-- ===== NEWS DETAIL MODAL ===== -->
-<div id="sdNewsModal" class="sd-modal-overlay" onclick="if(event.target===this)sdCloseNewsModal()">
-  <div class="sd-modal-box">
-    <div class="sd-modal-header">
-      <h3>📰 Notification Details</h3>
-      <button class="sd-modal-close" onclick="sdCloseNewsModal()">✕</button>
+{{! ── NEWS MODAL ── }}
+<div id="abNewsModal" class="ab-modal-overlay" onclick="if(event.target===this)abCloseNews()">
+  <div class="ab-modal-box">
+    <div class="ab-modal-hd">
+      <h3><i class="fa-solid fa-bell"></i> Announcement</h3>
+      <button class="ab-modal-close" onclick="abCloseNews()">✕</button>
     </div>
-    <div class="sd-modal-body" id="sdNewsModalContent"></div>
+    <div class="ab-modal-bd" id="abNewsContent"></div>
   </div>
 </div>
 
-<!-- ===== ALL NOTIFICATIONS MODAL ===== -->
-<div id="sdAllNotifModal" class="sd-modal-overlay" onclick="if(event.target===this)sdCloseAllNotif()">
-  <div class="sd-modal-box">
-    <div class="sd-modal-header">
-      <h3>🔔 All Notifications</h3>
-      <button class="sd-modal-close" onclick="sdCloseAllNotif()">✕</button>
+{{! ── ALL NOTIFS MODAL ── }}
+<div id="abAllNotifModal" class="ab-modal-overlay" onclick="if(event.target===this)abCloseAllNotif()">
+  <div class="ab-modal-box">
+    <div class="ab-modal-hd">
+      <h3><i class="fa-solid fa-bullhorn"></i> All Announcements</h3>
+      <button class="ab-modal-close" onclick="abCloseAllNotif()">✕</button>
     </div>
-    <div class="sd-all-notif-list">
+    <div class="ab-modal-list">
       {{#newslist}}
-      <div class="sd-all-notif-item" onclick="sdOpenNewsModal(`{{{news}}}`);sdCloseAllNotif();">
-        <div class="sd-notif-bell"><i class="fa fa-bell"></i></div>
-        <div class="sd-all-notif-text">{{news}}</div>
+      <div class="ab-ann-item" onclick="abOpenNews(this.dataset.content);abCloseAllNotif();" data-content="{{news}}">
+        <div class="ab-ann-ic ai-blue"><i class="fa-solid fa-bell"></i></div>
+        <div class="ab-ann-body"><div class="ab-ann-title">{{news}}</div></div>
       </div>
       {{/newslist}}
-      {{^newslist}}
-      <div style="text-align:center; padding:40px 0; color:#94a3b8;">
-        <div style="font-size:3rem;">🔕</div>
-        <p style="margin:10px 0 0;">No notifications available</p>
-      </div>
-      {{/newslist}}
+      {{^newslist}}<div style="text-align:center;padding:32px;color:#94a3b8;font-size:0.85rem;">🔕 No announcements yet</div>{{/newslist}}
     </div>
   </div>
 </div>
 
+{{! ── RATE TRAINER MODAL ── }}
+<div id="abRateTrainerModal" class="ab-modal-overlay" onclick="if(event.target===this)abCloseRateTrainer()">
+  <div class="ab-modal-box" style="max-width: 460px; height: auto; min-height: 0; max-height: none; overflow: hidden;">
+    <div class="ab-modal-hd">
+      <h3><i class="fa-solid fa-star"></i> Rate Your Trainer</h3>
+      <button class="ab-modal-close" onclick="abCloseRateTrainer()">✕</button>
+    </div>
+    <div class="ab-modal-bd" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 16px; overflow-y: visible; min-height: 0;">
+      <form id="abRateTrainerForm" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; margin: 0; min-height: 0;">
+        <input type="hidden" name="trainerid" value="{{trainerid}}">
+        <input type="hidden" name="schoolid" value="{{schoolid}}">
+        <input type="hidden" name="gradeid" value="{{gradeid}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        
+        <div style="text-align: center; margin: 8px 0;">
+          <div class="ab-star-rating" id="abStarRating" style="margin: 0; font-size: 34px;">
+            <i class="fa-solid fa-star" data-rating="1"></i>
+            <i class="fa-solid fa-star" data-rating="2"></i>
+            <i class="fa-solid fa-star" data-rating="3"></i>
+            <i class="fa-solid fa-star" data-rating="4"></i>
+            <i class="fa-solid fa-star" data-rating="5"></i>
+          </div>
+          <input type="hidden" name="rating" id="abRatingValue" value="0">
+        </div>
+
+        <textarea class="ab-form-control" name="feedback" rows="3" placeholder="Share your feedback" style="width: 100%; margin-top: 0; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#cbd5e1'"></textarea>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end; width: 100%; margin: 0;">
+          <button type="button" class="ab-btn ab-btn-out" onclick="abCloseRateTrainer()">Cancel</button>
+          <button type="submit" class="ab-btn ab-btn-prim">Submit Rating</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{{! ── STUDENT CHAT DRAWER ── }}
+<div class="ab-doubt-drawer-overlay" data-region="student-chat-drawer" aria-hidden="true">
+  <aside class="ab-doubt-drawer" role="dialog" aria-modal="true" aria-labelledby="abStudentChatTitle">
+    <div class="ab-doubt-drawer-hd">
+      <div class="ab-chat-drawer-title">
+        <i class="fa-solid fa-user-tie"></i>
+        <div>
+          <div id="abStudentChatTitle" class="ab-chat-trainer-name" data-region="student-chat-trainer">{{trainerfullname}}</div>
+          <div class="ab-chat-status"><span class="ab-chat-status-dot" data-region="student-chat-status-dot"></span><span data-region="student-chat-status">Offline</span></div>
+        </div>
+      </div>
+      <button type="button" class="ab-modal-close" data-action="close-student-chat" aria-label="Close">✕</button>
+    </div>
+    <div class="ab-chat-drawer-bd" data-region="student-chat-messages">
+      <div class="ab-chat-empty">Open chat to load your conversation.</div>
+    </div>
+    <div class="ab-chat-drawer-ft">
+      <div class="ab-chat-attachment-name" data-region="student-chat-attachment-name"></div>
+      <form class="ab-chat-form" data-region="student-chat-form">
+        <input type="file" id="abStudentChatAttachment" name="attachment" accept=".jpg,.jpeg,.png,image/jpeg,image/png" hidden>
+        <label class="ab-chat-attach" for="abStudentChatAttachment" title="Attach image" aria-label="Attach image"><i class="fa-solid fa-image"></i></label>
+        <textarea class="ab-chat-input" name="message" rows="1" maxlength="4000" placeholder="Type a message..." data-region="student-chat-input"></textarea>
+        <button type="submit" class="ab-chat-send" data-action="send-student-chat" aria-label="Send message"><i class="fa-solid fa-paper-plane"></i></button>
+      </form>
+    </div>
+    <div class="ab-chat-error" data-region="student-chat-error"></div>
+  </aside>
+</div>
+
+{{! ── WELCOME POPUP ── }}
 {{#first_login}}
-<!-- ===== WELCOME POPUP ===== -->
-<div id="sdWelcomeOverlay" class="sd-welcome-overlay">
-  <div class="sd-welcome-box">
-    <div class="sd-welcome-hero">
-      <div class="sd-welcome-emojis">🛰️ 🚀 ✈️ 🛸</div>
+<div id="abWelcomeOverlay" class="ab-welcome-overlay">
+  <div class="ab-welcome-box">
+    <div class="ab-wl-hero">
+      <div class="ab-wl-emoji">🛸🚀✈️</div>
       <h2>Everything is impossible, until it is done.</h2>
-      <p>Your aerospace adventure begins here</p>
+      <p>Your STEAM aerospace adventure begins here!</p>
     </div>
-    <div class="sd-welcome-body">
-      <h3>Welcome to the AeroBay Program, {{userfullname}}! 🎉</h3>
-      <p>In the <strong>AeroBay program</strong>, we believe that no idea is too big to explore! Just like the pioneers who pushed the boundaries of what's possible, you'll be inspired to ask bold questions, try new things, and unlock the amazing potential inside you.</p>
-      <p>The journey you're about to take is filled with <strong>hands-on projects</strong>, fascinating experiments, and exciting challenges in the world of STEAM (Science, Technology, Engineering, Arts, and Mathematics).</p>
-      <p>What may seem impossible today — whether it's building a flying machine, solving a real-world problem, or creating something new — will become possible as you push the boundaries of your creativity and knowledge.</p>
-      <p>We're <strong>thrilled</strong> to see what you'll achieve and how you'll turn the impossible into possible! Let's embark on this amazing adventure and make your discoveries come to life.</p>
+    <div class="ab-wl-body">
+      <h3>Welcome to AeroBay STEAM Labs, {{userfullname}}! 🎉</h3>
+      <p>In the <strong>AeroBay program</strong>, we believe no idea is too big to explore! You'll ask bold questions, try new things, and unlock the incredible potential inside you.</p>
+      <p>Your journey is filled with <strong>hands-on lab sessions</strong>, fascinating experiments, and exciting real-world STEAM challenges!</p>
     </div>
-    <div class="sd-welcome-footer">
-      <button class="sd-btn sd-btn-secondary" onclick="sdDismissWelcome()">Maybe Later</button>
-      <button class="sd-btn sd-btn-primary" onclick="sdDismissWelcome()">🚀 Let's Go!</button>
+    <div class="ab-wl-footer">
+      <button class="ab-btn ab-btn-out" onclick="abDismissWelcome()">Maybe Later</button>
+      <button class="ab-btn ab-btn-prim" onclick="abDismissWelcome()"><i class="fa-solid fa-rocket"></i> Let's Go!</button>
     </div>
   </div>
 </div>
 {{/first_login}}
 
-<!-- ===== SCRIPTS ===== -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
 <script>
-/* --- Modals --- */
-function sdOpenNewsModal(content) {
-  document.getElementById('sdNewsModalContent').innerHTML = content;
-  document.getElementById('sdNewsModal').classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-function sdCloseNewsModal() {
-  document.getElementById('sdNewsModal').classList.remove('active');
-  document.body.style.overflow = '';
-}
-function sdOpenAllNotif() {
-  document.getElementById('sdAllNotifModal').classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-function sdCloseAllNotif() {
-  document.getElementById('sdAllNotifModal').classList.remove('active');
-  document.body.style.overflow = '';
-}
+(function(){
+  /* Modals */
+  window.abOpenNews = function(c){ document.getElementById('abNewsContent').innerHTML=c; document.getElementById('abNewsModal').classList.add('open'); document.body.style.overflow='hidden'; };
+  window.abCloseNews = function(){ document.getElementById('abNewsModal').classList.remove('open'); document.body.style.overflow=''; };
+  window.abOpenAllNotif = function(){ document.getElementById('abAllNotifModal').classList.add('open'); document.body.style.overflow='hidden'; };
+  window.abCloseAllNotif = function(){ document.getElementById('abAllNotifModal').classList.remove('open'); document.body.style.overflow=''; };
+  window.abOpenRateTrainer = function(){ document.getElementById('abRateTrainerModal').classList.add('open'); document.body.style.overflow='hidden'; };
+  window.abCloseRateTrainer = function(){ document.getElementById('abRateTrainerModal').classList.remove('open'); document.body.style.overflow=''; };
+  window.abDismissWelcome = function(){ var e=document.getElementById('abWelcomeOverlay'); if(e){e.classList.remove('open');document.body.style.overflow='';try{sessionStorage.setItem('ab_wl','1');}catch(x){}} };
 
-/* --- Welcome Popup --- */
-function sdDismissWelcome() {
-  var el = document.getElementById('sdWelcomeOverlay');
-  if (el) {
-    el.classList.remove('active');
-    document.body.style.overflow = '';
-    sessionStorage.setItem('sd_welcome_dismissed', '1');
-  }
-}
+  document.addEventListener('DOMContentLoaded', function(){
 
-document.addEventListener('DOMContentLoaded', function () {
-  /* Show welcome on first login */
-  var welcomeEl = document.getElementById('sdWelcomeOverlay');
-  if (welcomeEl && !sessionStorage.getItem('sd_welcome_dismissed')) {
-    welcomeEl.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  }
+    /* Welcome popup */
+    var wl = document.getElementById('abWelcomeOverlay');
+    if(wl){ try{ if(!sessionStorage.getItem('ab_wl')){wl.classList.add('open');document.body.style.overflow='hidden';} }catch(e){wl.classList.add('open');} }
 
-  /* --- Attendance Bar Chart --- */
-  var offlineValues = {{{ attendance.offlineValues }}};
-  var onlineValues  = {{{ attendance.onlineValues }}};
-  var xValues       = {{{ attendance.months }}};
-  var attendCanvas  = document.getElementById('sdAttendanceChart');
-  if (attendCanvas) {
-    new Chart(attendCanvas, {
-      type: 'bar',
-      data: {
-        labels: xValues,
-        datasets: [
-          {
-            label: 'Present',
-            backgroundColor: 'rgba(79,70,229,0.85)',
-            borderRadius: 6,
-            data: onlineValues
-          },
-          {
-            label: 'Absent',
-            backgroundColor: 'rgba(245,158,11,0.85)',
-            borderRadius: 6,
-            data: offlineValues
+    /* Star rating logic */
+    var stars = document.querySelectorAll('#abStarRating i');
+    var ratingInput = document.getElementById('abRatingValue');
+    if(stars.length > 0) {
+      stars.forEach(function(star) {
+        star.addEventListener('click', function() {
+          var val = parseInt(this.getAttribute('data-rating'));
+          ratingInput.value = val;
+          stars.forEach(function(s) {
+            if(parseInt(s.getAttribute('data-rating')) <= val) {
+              s.style.color = '#fbbf24';
+            } else {
+              s.style.color = '#cbd5e1';
+            }
+          });
+        });
+      });
+    }
+
+    /* Rating Form Submit */
+    var rateForm = document.getElementById('abRateTrainerForm');
+    if (rateForm) {
+      rateForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(rateForm);
+        var btn = rateForm.querySelector('button[type="submit"]');
+        var originalBtnText = btn.innerHTML;
+        btn.innerHTML = 'Submitting...';
+        btn.disabled = true;
+
+        fetch('{{config.wwwroot}}/local/mydashboard/ajax_rate_trainer.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          btn.innerHTML = originalBtnText;
+          btn.disabled = false;
+          if (data.success) {
+            document.getElementById('abTrainerAvgRating').textContent = data.avgrating;
+            document.getElementById('abTrainerCountRating').textContent = data.countrating;
+            abCloseRateTrainer();
+          } else {
+            alert(data.error || 'An error occurred.');
           }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          yAxes: [{ ticks: { min: 0, stepSize: 1, beginAtZero: true, fontColor: '#64748b' }, gridLines: { color: '#f1f5f9' } }],
-          xAxes: [{ ticks: { fontColor: '#64748b' }, gridLines: { display: false } }]
-        },
-        plugins: { labels: { render: function () { return ''; } } },
-        legend: { display: false }
-      }
+        })
+        .catch(err => {
+          btn.innerHTML = originalBtnText;
+          btn.disabled = false;
+          alert('Network error.');
+        });
+      });
+    }
+
+    /* KPI counter animation */
+    document.querySelectorAll('.ab-kpi-val[data-target]').forEach(function(el){
+      var target = parseFloat(el.getAttribute('data-target'));
+      if (!isFinite(target)) { target = 0; }
+      var suffix = el.getAttribute('data-suffix')||'';
+      el.textContent = '0'+suffix;
+      var st=null;
+      function step(ts){ if(!st)st=ts; var p=Math.min((ts-st)/900,1); var ease=1-Math.pow(1-p,3); el.textContent=Math.round(target*ease)+suffix; if(p<1)requestAnimationFrame(step); }
+      setTimeout(function(){ requestAnimationFrame(step); }, 300);
     });
-  }
 
-  /* --- Activity Progress Chart --- */
-  var quizData    = {{{jsondata}}};
-  var qLabels     = quizData.map(function (q) { return q.name; });
-  var qScores     = quizData.map(function (q) { return q.score; });
-  var actCanvas   = document.getElementById('sdActivityChart');
-  var paletteAct  = ['#4f46e5','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
-  var actColors   = qLabels.map(function (_, i) { return paletteAct[i % paletteAct.length]; });
-  if (actCanvas) {
-    new Chart(actCanvas, {
-      type: 'bar',
-      data: {
-        labels: qLabels,
-        datasets: [{
-          backgroundColor: actColors,
-          borderRadius: 6,
-          data: qScores
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          yAxes: [{ ticks: { min: 0, max: 10, fontColor: '#64748b' }, gridLines: { color: '#f1f5f9' } }],
-          xAxes: [{ ticks: { fontColor: '#64748b' }, gridLines: { display: false } }]
-        },
-        plugins: { labels: { render: function () { return ''; } } },
-        legend: { display: false }
-      }
+    /* Progress bar animation */
+    document.querySelectorAll('.ab-prog-fill[data-width]').forEach(function(el){
+      var w=el.getAttribute('data-width'); el.style.width='0%'; setTimeout(function(){el.style.width=w;},400);
     });
-  }
 
-  /* --- Radar Chart --- */
-  var radarCanvas = document.getElementById('sdRadarChart');
-  if (radarCanvas) {
-    new Chart(radarCanvas, {
-      type: 'radar',
-      data: {
-        labels: ['Dance', 'Drama', 'Sports', 'Singing', 'Literature', 'Coding', 'Design'],
-        datasets: [
-          {
-            label: 'Current Level',
-            backgroundColor: 'rgba(79,70,229,0.18)',
-            borderColor: 'rgba(79,70,229,0.9)',
-            pointBackgroundColor: 'rgba(79,70,229,1)',
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: 'rgba(79,70,229,1)',
-            data: [65, 59, 90, 81, 56, 55, 40]
-          },
-          {
-            label: 'Target Level',
-            backgroundColor: 'rgba(6,182,212,0.12)',
-            borderColor: 'rgba(6,182,212,0.9)',
-            pointBackgroundColor: 'rgba(6,182,212,1)',
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: 'rgba(6,182,212,1)',
-            data: [28, 48, 40, 19, 96, 27, 100]
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        legend: { display: true, position: 'bottom', labels: { boxWidth: 10, fontSize: 11, fontColor: '#475569' } },
-        scale: {
-          ticks: { max: 100, min: 0, stepSize: 25, beginAtZero: true, fontColor: '#94a3b8', backdropColor: 'transparent' },
-          gridLines: { color: '#e2e8f0' },
-          pointLabels: {
-            fontColor: '#475569',
-            fontSize: 11,
-            callback: function (label) { return label.length > 8 ? label.substring(0, 8) + '…' : label; }
-          }
+    /* Attendance chart logic removed as per redesign */
+
+    /* ── Name: trainer-style letter wave ── */
+    (function(){
+      var nameEl = document.querySelector('.ab-name-text');
+      if (!nameEl) return;
+      var text = nameEl.textContent;
+      nameEl.textContent = '';
+      var delayIdx = 0;
+      for (var i = 0; i < text.length; i++) {
+        if (text[i] === ' ') {
+          nameEl.appendChild(document.createTextNode(' '));
+        } else {
+          var span = document.createElement('span');
+          span.textContent = text[i];
+          span.className = 'ab-letter';
+          span.style.animationDelay = (delayIdx * 0.05) + 's';
+          delayIdx++;
+          nameEl.appendChild(span);
         }
       }
-    });
-  }
+      /* Play on load for ~5 sec */
+      nameEl.classList.add('is-animating');
+      setTimeout(function() {
+        nameEl.classList.remove('is-animating');
+      }, 5500);
+    }());
 
-  /* Timetable: highlight cells with actual class names (skip first column = day label) */
-  document.querySelectorAll('.sd-timetable tbody tr').forEach(function (row) {
-    var cells = row.querySelectorAll('td');
-    cells.forEach(function (td, i) {
-      if (i === 0) return; // day label cell
-      var txt = td.textContent.trim();
-      if (txt && txt !== '--' && txt !== '—') {
-        td.classList.add('has-class');
-      } else {
-        td.classList.add('no-class');
-        td.textContent = '—';
-      }
-    });
   });
-
-  /* Stat counters */
-  var achCount   = document.querySelectorAll('.sd-achievements-list .sd-achievement-item').length;
-  var notifCount = document.querySelectorAll('.sd-notif-item').length;
-  var achEl   = document.getElementById('sdAchCount');
-  var notifEl = document.getElementById('sdNotifCount');
-  if (achEl)   achEl.textContent   = achCount   > 0 ? achCount   : '0';
-  if (notifEl) notifEl.textContent = notifCount > 0 ? notifCount : '0';
-});
+})();
 </script>

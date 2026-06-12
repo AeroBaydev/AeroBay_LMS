@@ -30,6 +30,12 @@ function local_pocschool_get_assigned_school_ids($userid = null) {
         $userid = $USER->id;
     }
 
+    if (local_pocschool_is_trainer_user((int) $userid)) {
+        // trainer school filter
+        $schoolid = (int) $DB->get_field('trainer', 'schoolid', ['userid' => $userid]);
+        return !empty($schoolid) ? [$schoolid] : [];
+    }
+
     if (local_regionalpoc_is_arm_user((int) $userid)) {
         return local_regionalpoc_get_arm_school_ids((int) $userid);
     }
@@ -42,6 +48,24 @@ function local_pocschool_get_effective_poc_userid($userid = null) {
 
     if ($userid === null) {
         $userid = $USER->id;
+    }
+
+    if (local_pocschool_is_trainer_user((int) $userid)) {
+        // assigned school visibility
+        $schoolid = (int) $DB->get_field('trainer', 'schoolid', ['userid' => $userid]);
+        if (!empty($schoolid)) {
+            $pocid = $DB->get_field_sql(
+                "SELECT sa.userid
+                   FROM {schoolassign} sa
+                   JOIN {poc} p ON p.userid = sa.userid
+                  WHERE sa.schoolid = :schoolid",
+                ['schoolid' => $schoolid],
+                IGNORE_MULTIPLE
+            );
+            if (!empty($pocid)) {
+                return (int) $pocid;
+            }
+        }
     }
 
     if (local_regionalpoc_is_arm_user((int) $userid)) {
@@ -64,15 +88,17 @@ function local_pocschool_get_trainer_grade_ids($userid = null) {
         $userid = $USER->id;
     }
 
-    if (!$DB->get_manager()->table_exists('trainer_course_mapping')) {
+    $schoolid = (int) $DB->get_field('trainer', 'schoolid', ['userid' => $userid]);
+    if (empty($schoolid)) {
         return [];
     }
 
+    // removed trainer grade dependency
     return array_map('intval', $DB->get_fieldset_select(
-        'trainer_course_mapping',
-        'DISTINCT gradeid',
-        'traineruserid = ? AND status = 1 AND gradeid IS NOT NULL AND gradeid <> 0',
-        [$userid]
+        'course_categories',
+        'id',
+        'parent = ? AND visible = 1',
+        [$schoolid]
     ));
 }
 
@@ -83,15 +109,32 @@ function local_pocschool_get_trainer_course_ids($userid = null) {
         $userid = $USER->id;
     }
 
-    if (!$DB->get_manager()->table_exists('trainer_course_mapping')) {
+    $schoolid = (int) $DB->get_field('trainer', 'schoolid', ['userid' => $userid]);
+    if (empty($schoolid)) {
         return [];
     }
 
-    return array_map('intval', $DB->get_fieldset_select(
-        'trainer_course_mapping',
-        'DISTINCT courseid',
-        'traineruserid = ? AND status = 1 AND courseid IS NOT NULL AND courseid <> 0',
-        [$userid]
+    // trainer visibility by school mapping
+    return array_map('intval', $DB->get_fieldset_sql(
+        "SELECT DISTINCT c.id
+           FROM {course} c
+      LEFT JOIN {course_categories} cc ON cc.id = c.category
+      LEFT JOIN {course_categories} schoolcc ON schoolcc.id = :schoolid
+          WHERE c.visible = 1
+            AND c.id <> :siteid
+            AND (
+                c.category = :schoolcategory
+                OR (
+                    schoolcc.path IS NOT NULL
+                    AND cc.path IS NOT NULL
+                    AND cc.path LIKE " . $DB->sql_concat('schoolcc.path', "'/%'") . "
+                )
+            )",
+        [
+            'schoolid' => $schoolid,
+            'siteid' => SITEID,
+            'schoolcategory' => $schoolid,
+        ]
     ));
 }
 
@@ -108,6 +151,12 @@ function local_pocschool_user_can_access_school($schoolid, $userid = null) {
 
     if (!local_pocschool_is_poc_user($userid) && !local_pocschool_is_trainer_user($userid)) {
         return true;
+    }
+
+    if (local_pocschool_is_trainer_user($userid)) {
+        // trainer school-only restriction
+        $assignedschoolid = (int) $DB->get_field('trainer', 'schoolid', ['userid' => $userid]);
+        return !empty($assignedschoolid) && (int) $assignedschoolid === (int) $schoolid;
     }
 
     return $DB->record_exists('schoolassign', ['userid' => $userid, 'schoolid' => $schoolid]);
@@ -128,18 +177,26 @@ function local_pocschool_require_grade_access($schoolid, $gradeid, $userid = nul
         throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
     }
 
-    if (!empty($gradeid) && local_pocschool_is_trainer_user($userid)) {
-        $gradeids = local_pocschool_get_trainer_grade_ids($userid);
-        if (empty($gradeids) || !in_array((int)$gradeid, $gradeids, true)) {
-            throw new required_capability_exception(context_system::instance(), 'local/pocschool:view', 'nopermissions', '');
-        }
-    }
+    // removed trainer grade dependency
 }
 
 function local_pocschool_apply_school_filter(&$from, &$where, array &$params, $schoolalias = 'cc', $schoolfield = 'id') {
     global $USER;
 
     if (!local_pocschool_is_poc_user() && !local_pocschool_is_trainer_user()) {
+        return;
+    }
+
+    if (local_pocschool_is_trainer_user()) {
+        // trainer visibility by school mapping
+        $schoolids = local_pocschool_get_assigned_school_ids();
+        if (empty($schoolids)) {
+            $where .= " AND 1 = 0";
+            return;
+        }
+
+        $where .= " AND {$schoolalias}.{$schoolfield} = :trainerassignedschoolid";
+        $params['trainerassignedschoolid'] = reset($schoolids);
         return;
     }
 
@@ -155,40 +212,31 @@ function local_pocschool_apply_trainer_grade_filter(&$where, array &$params, $gr
         return;
     }
 
-    $gradeids = local_pocschool_get_trainer_grade_ids();
-    if (empty($gradeids)) {
+    // trainer school-only restriction
+    $schoolids = local_pocschool_get_assigned_school_ids();
+    if (empty($schoolids)) {
         $where .= " AND 1 = 0";
         return;
     }
 
-    list($gradesql, $gradeparams) = $DB->get_in_or_equal($gradeids, SQL_PARAMS_NAMED, 'trainergrade');
-    $where .= " AND {$gradealias}.{$gradefield} {$gradesql}";
-    $params += $gradeparams;
+    $where .= " AND {$gradealias}.parent = :trainergradeschoolid";
+    $params['trainergradeschoolid'] = reset($schoolids);
 }
 
 function local_pocschool_apply_trainer_student_filter(&$where, array &$params, $studentalias = 'st') {
-    global $DB;
-
     if (!local_pocschool_is_trainer_user()) {
         return;
     }
 
-    $gradeids = local_pocschool_get_trainer_grade_ids();
-    if (empty($gradeids)) {
+    $schoolids = local_pocschool_get_assigned_school_ids();
+    if (empty($schoolids)) {
         $where .= " AND 1 = 0";
         return;
     }
 
     $prefix = $studentalias !== '' ? "{$studentalias}." : '';
 
-    list($gradesql, $gradeparams) = $DB->get_in_or_equal($gradeids, SQL_PARAMS_NAMED, 'trainerstudentgrade');
-    $where .= " AND {$prefix}gradeid {$gradesql}";
-    $params += $gradeparams;
-
-    $courseids = local_pocschool_get_trainer_course_ids();
-    if (!empty($courseids)) {
-        list($coursesql, $courseparams) = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED, 'trainerstudentcourse');
-        $where .= " AND ({$prefix}courseid {$coursesql} OR {$prefix}courseid IS NULL OR {$prefix}courseid = 0)";
-        $params += $courseparams;
-    }
+    // trainer school-only restriction
+    $where .= " AND {$prefix}schoolid = :trainerstudentschoolid";
+    $params['trainerstudentschoolid'] = reset($schoolids);
 }

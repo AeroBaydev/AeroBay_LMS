@@ -1,5 +1,6 @@
 <?php
 require_once(__DIR__ . '/../../config.php');
+require_once($CFG->dirroot . '/local/trainer/lib.php');
 require_login();
 
 global $DB, $USER;
@@ -52,10 +53,8 @@ if (!$canmanage) {
                 throw new moodle_exception('nopermissions', 'error', '', 'Assign School');
             }
 
-            $updatetrainer = new stdClass();
-            $updatetrainer->id = $trainer->id;
-            $updatetrainer->schoolid = $schoolid;
-            $success = $DB->update_record('trainer', $updatetrainer);
+            local_trainer_sync_school_assignment((int) $userId, (int) $schoolid, (int) $pocuserid);
+            $success = true;
         } else if ($action === 'remove') {
             if (empty($schoolids)) {
                 throw new moodle_exception('invaliddata', 'error');
@@ -65,10 +64,8 @@ if (!$canmanage) {
                 throw new moodle_exception('invaliddata', 'error');
             }
 
-            $updatetrainer = new stdClass();
-            $updatetrainer->id = $trainer->id;
-            $updatetrainer->schoolid = null;
-            $success = $DB->update_record('trainer', $updatetrainer);
+            local_trainer_sync_school_assignment((int) $userId, 0, (int) $pocuserid);
+            $success = true;
         } else {
             throw new moodle_exception('invaliddata', 'error');
         }

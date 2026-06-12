@@ -1,5 +1,6 @@
 <?php
 require_once("../../config.php");
+require_once($CFG->dirroot . '/local/school/lib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Get 'id' from URL parameter, default to 0 if not set
 
@@ -24,7 +25,8 @@ if (!$school) {
 
 // Prepare the data for the template
 $templatecontext = [
-    'school' => $school
+    'school' => $school,
+    'bannerurl' => local_school_get_banner_url($id),
 ];
 
 echo $OUTPUT->header();

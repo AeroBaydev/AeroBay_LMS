@@ -84,6 +84,48 @@ class observer {
                     );
                 }
 
+                // STEP 4b: Re-sync trainers assigned to this school so they pick up the new course.
+                try {
+                    $eventschoolid = (int) $other_data['schoolid'];
+                    if ($eventschoolid > 0 && $DB->get_manager()->table_exists('trainer_course_mapping')) {
+                        require_once($CFG->dirroot . '/local/trainer/lib.php');
+
+                        $assignedtrainers = $DB->get_records('trainer', ['schoolid' => $eventschoolid], '', 'id, userid, createdby, schoolid');
+                        foreach ($assignedtrainers as $tr) {
+                            $traineruserid = (int) $tr->userid;
+                            $trainerrecordid = (int) $tr->id;
+
+                            // Insert into trainer_course_mapping if this exact mapping doesn't exist yet.
+                            $mappingexists = $DB->record_exists('trainer_course_mapping', [
+                                'traineruserid' => $traineruserid,
+                                'schoolid' => $eventschoolid,
+                                'gradeid' => (int) $other_data['gradeid'],
+                                'courseid' => (int) $courseid,
+                                'status' => 1,
+                            ]);
+                            if (!$mappingexists) {
+                                $newmapping = new \stdClass();
+                                $newmapping->trainerrecordid = $trainerrecordid;
+                                $newmapping->traineruserid = $traineruserid;
+                                $newmapping->pocid = (int) $other_data['pocid'];
+                                $newmapping->schoolid = $eventschoolid;
+                                $newmapping->gradeid = (int) $other_data['gradeid'];
+                                $newmapping->courseid = (int) $courseid;
+                                $newmapping->poccourseid = !empty($insertedid) ? (int) $insertedid : 0;
+                                $newmapping->status = 1;
+                                $newmapping->timecreated = time();
+                                $newmapping->timemodified = time();
+                                $DB->insert_record('trainer_course_mapping', $newmapping);
+                            }
+
+                            // Re-sync Moodle enrolments so trainer gets enrolled in the new course.
+                            local_trainer_sync_course_enrolments($traineruserid, $eventschoolid);
+                        }
+                    }
+                } catch (\Exception $syncerror) {
+                    error_log('Trainer re-sync after course mapping failed: ' . $syncerror->getMessage());
+                }
+
                 // STEP 5: Add user to group based on poc_id from mdl_poc table
                 mtrace("... Starting group assignment process for User ID: {$userid}");
                 try {

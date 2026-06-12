@@ -63,6 +63,20 @@
     color: #0d6efd;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
+
+/* ── Hide drawer header (X button + sitename) completely ── */
+.drawer-primary .drawerheader {
+    display: none !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ── Drawer content starts from very top ── */
+.drawer-primary .drawercontent {
+    padding-top: 8px !important;
+}
 </style>
 
 {{!

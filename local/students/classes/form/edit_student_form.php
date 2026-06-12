@@ -1,6 +1,7 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->libdir/formslib.php");
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 $PAGE->requires->js(new moodle_url("$CFG->wwwroot/local/students/amd/src/numeric_validation.js"));
 $PAGE->requires->js(new moodle_url("$CFG->wwwroot/local/students/amd/form.js"));
 class edit_student_form extends moodleform
@@ -24,9 +25,41 @@ class edit_student_form extends moodleform
         $gradeid = $customdata['gradeid'];
         $courseid = $customdata['courseid'];
 
-        $school = $DB->get_records_sql_menu("SELECT cc.id, cc.name FROM {schoolassign} sa JOIN {course_categories} cc ON sa.schoolid = cc.id 
-        where sa.userid=$userid");
-        $grade = $DB->get_records_sql_menu("SELECT cc.id,cc.name FROM {course_categories} cc WHERE cc.parent = $schoolid");
+        if (local_pocschool_is_trainer_user((int) $USER->id)) {
+            // assigned school visibility
+            $schoolids = local_pocschool_get_assigned_school_ids((int) $USER->id);
+            if (empty($schoolids)) {
+                $school = [];
+            } else {
+                list($schoolsql, $schoolparams) = $DB->get_in_or_equal($schoolids, SQL_PARAMS_NAMED, 'editstudentformschool');
+                $school = $DB->get_records_sql_menu(
+                    "SELECT cc.id, cc.name
+                       FROM {course_categories} cc
+                      WHERE cc.id {$schoolsql}
+                   ORDER BY cc.name",
+                    $schoolparams
+                );
+            }
+        } else {
+            $school = $DB->get_records_sql_menu(
+                "SELECT cc.id, cc.name
+                   FROM {schoolassign} sa
+                   JOIN {course_categories} cc ON sa.schoolid = cc.id
+                  WHERE sa.userid = :userid",
+                ['userid' => $userid]
+            );
+        }
+
+        $gradewhere = "cc.parent = :schoolid";
+        $gradeparams = ['schoolid' => $schoolid];
+        local_pocschool_apply_trainer_grade_filter($gradewhere, $gradeparams, 'cc', 'id');
+        $grade = $DB->get_records_sql_menu(
+            "SELECT cc.id, cc.name
+               FROM {course_categories} cc
+              WHERE {$gradewhere}
+           ORDER BY cc.sortorder, cc.name",
+            $gradeparams
+        );
        // $course = $DB->get_records_sql_menu("SELECT c.id,c.fullname FROM {course} c WHERE c.category = $gradeid");
      //   $group = $DB->get_records_sql_menu("SELECT g.id,g.name FROM {groups} g WHERE g.courseid = $courseid");
 

@@ -48,11 +48,13 @@ class trainer_table extends table_sql
     }
 
     function col_assignedschools($values) {
-        return $this->render_compact_list($values->assignedschools ?? '', 'trainer-school-list');
+        $val = trim($values->assignedschools ?? '');
+        return $val === '' ? html_writer::span('-', 'trainer-empty-value') : s($val);
     }
 
     function col_assignedpocs($values) {
-        return $this->render_compact_list($values->assignedpocs ?? '', 'trainer-poc-list');
+        $val = trim($values->assignedpocs ?? '');
+        return $val === '' ? html_writer::span('-', 'trainer-empty-value') : s($val);
     }
 
     function col_assignedcourses($values) {

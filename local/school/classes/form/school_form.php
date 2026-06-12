@@ -84,7 +84,13 @@ foreach ($categories as $category) {
         $mform->addElement('text', 'about', get_string('aerobay_about', 'local_school'));
         $mform->setType('about', PARAM_TEXT);
 
-        
+        $mform->addElement(
+            'filemanager',
+            'banner_filemanager',
+            get_string('schoolbanner', 'local_school'),
+            null,
+            local_school_get_banner_file_options()
+        );
 
 
         $this->add_coordinator_names($mform, 1);

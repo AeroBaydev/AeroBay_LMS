@@ -2,6 +2,7 @@
 
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 require_login();
 
@@ -33,11 +34,20 @@ if (!$schoolcategory) {
     print_error('invalidcategory', 'error');
 }
 
+if (local_pocschool_is_trainer_user()) {
+    // assigned school visibility
+    local_pocschool_require_school_access((int) $schoolcategory->id);
+}
+
 if ($gradeid) {
     $grade = $DB->get_record('course_categories', [
         'id' => $gradeid,
         'parent' => $schoolcategory->id,
     ], '*', MUST_EXIST);
+    if (local_pocschool_is_trainer_user()) {
+        // removed trainer grade dependency
+        local_pocschool_require_grade_access((int) $schoolcategory->id, (int) $gradeid);
+    }
 } else {
     $grade = null;
 }

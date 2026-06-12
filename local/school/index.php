@@ -3,6 +3,7 @@ require_once "../../config.php";
 require_once $CFG->libdir . "/tablelib.php";
 require_once "classes/table/school_table.php";
 require_once($CFG->dirroot . '/local/dashboard/lib.php');
+require_once($CFG->dirroot . '/local/pocschool/accesslib.php');
 
 global $DB, $OUTPUT, $PAGE, $USER;
 require_login();
@@ -14,10 +15,11 @@ $context = context_system::instance();
 $PAGE->set_context($context);
 $isadmin = is_siteadmin();
 $ispocschool = local_dashboard_is_pocschool_user((int) $USER->id);
+$istrainer = local_pocschool_is_trainer_user((int) $USER->id);
 $cancreateschool = local_regionalpoc_is_regional_manager_user((int) $USER->id);
 if ($isadmin) {
     $ispocschool = false;
-} else if (!$ispocschool) {
+} else if (!$ispocschool && !$istrainer) {
     throw new required_capability_exception($context, 'local/school:manage', 'nopermissions', '');
 }
 
@@ -36,7 +38,7 @@ if (!$table->is_downloading()) {
    
     
     echo $OUTPUT->header();
-    $heading_text = $ispocschool ? "My Schools" : "Manage Schools";
+    $heading_text = ($ispocschool || $istrainer) ? "My Schools" : "Manage Schools";
     echo html_writer::tag('h2', $heading_text, array('class' => 'custom-heading add-new-school'));
     echo '<div class="action-button d-flex justify-content-between">';
     if ($isadmin || $cancreateschool) {
@@ -58,7 +60,19 @@ $from = "{school} sc JOIN {course_categories} cc ON sc.school_id = cc.idnumber";
 $where = "1=1";
 $params = [];
 
-if ($ispocschool) {
+if ($istrainer) {
+    // assigned school visibility
+    $schoolids = local_pocschool_get_assigned_school_ids((int) $USER->id);
+    $schoolids = array_values(array_unique(array_filter(array_map('intval', $schoolids))));
+    if (empty($schoolids)) {
+        $where .= " AND 1 = 0";
+    } else {
+        list($catsql, $catparams) = $DB->get_in_or_equal($schoolids, SQL_PARAMS_NAMED, 'trainerschoolcat');
+        list($schoolsql, $schoolparams) = $DB->get_in_or_equal($schoolids, SQL_PARAMS_NAMED, 'trainerschoolrecord');
+        $where .= " AND (cc.id {$catsql} OR sc.course_cat_id {$schoolsql})";
+        $params += $catparams + $schoolparams;
+    }
+} else if ($ispocschool) {
     $schoolids = $DB->get_fieldset_select('schoolassign', 'schoolid', 'userid = ?', [$USER->id]);
     $schoolids = array_values(array_unique(array_filter(array_map('intval', $schoolids))));
     if (empty($schoolids)) {

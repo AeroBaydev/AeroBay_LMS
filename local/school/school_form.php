@@ -96,6 +96,14 @@ if ($mform->is_cancelled()) {
     
     $data->course_cat_id = $categoryid->id;
     $id = $DB->insert_record('school', $data);
+    file_save_draft_area_files(
+        $data->banner_filemanager,
+        context_system::instance()->id,
+        'local_school',
+        'banner',
+        $id,
+        local_school_get_banner_file_options()
+    );
 
     $schoolassign = new stdClass();
     $schoolassign->schoolid = $id;

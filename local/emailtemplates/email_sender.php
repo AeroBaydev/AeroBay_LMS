@@ -20,6 +20,7 @@ class email_sender {
        
         $subject = $template->subject;
         $body = $template->body; // Start with the original template body
+        $messagehtml = '';
         
         $logo_url = "";
        
@@ -51,6 +52,15 @@ class email_sender {
                 $body
             );
 
+        } else if ($password == "trainer_assigned") {
+            $subject = str_replace('[SCHOOL_NAME]', $approvedby, $subject);
+            $body = str_replace(
+                ['[FULLNAME]', '[SCHOOL_NAME]'],
+                [fullname($user), $approvedby],
+                $body
+            );
+            $messagehtml = $body;
+
         } else if ($approvedby) {
             // Logic for an approval email by an admin/POC
             $body = str_replace(
@@ -70,6 +80,12 @@ class email_sender {
         }
 
         // Send the final, prepared email
-        return email_to_user($user, \core_user::get_noreply_user(), $subject, $body);
+        return email_to_user(
+            $user,
+            \core_user::get_noreply_user(),
+            $subject,
+            $messagehtml ? html_to_text($body) : $body,
+            $messagehtml
+        );
     }
 }

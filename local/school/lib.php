@@ -1,5 +1,100 @@
 <?php
 
+/**
+ * Returns the filemanager options used for school banners.
+ *
+ * @return array
+ */
+function local_school_get_banner_file_options(): array
+{
+    return [
+        'accepted_types' => ['.jpg', '.jpeg', '.png', '.webp'],
+        'maxbytes' => 5 * 1024 * 1024,
+        'maxfiles' => 1,
+        'subdirs' => 0,
+    ];
+}
+
+/**
+ * Returns the stored banner URL for a school, or the local fallback image.
+ *
+ * @param int $schoolid
+ * @return moodle_url
+ */
+function local_school_get_banner_url(int $schoolid): moodle_url
+{
+    global $CFG;
+
+    $context = context_system::instance();
+    $files = get_file_storage()->get_area_files(
+        $context->id,
+        'local_school',
+        'banner',
+        $schoolid,
+        'id DESC',
+        false
+    );
+    $file = reset($files);
+
+    if ($file) {
+        return moodle_url::make_pluginfile_url(
+            $context->id,
+            'local_school',
+            'banner',
+            $schoolid,
+            $file->get_filepath(),
+            $file->get_filename()
+        );
+    }
+
+    return new moodle_url($CFG->wwwroot . '/local/school/pix/default_banner.svg');
+}
+
+/**
+ * Serves school banner files.
+ *
+ * @param stdClass|null $course
+ * @param stdClass|null $cm
+ * @param context $context
+ * @param string $filearea
+ * @param array $args
+ * @param bool $forcedownload
+ * @param array $options
+ * @return bool
+ */
+function local_school_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = [])
+{
+    global $DB;
+
+    if ($context->contextlevel !== CONTEXT_SYSTEM || $filearea !== 'banner') {
+        return false;
+    }
+
+    require_login();
+
+    $schoolid = (int) array_shift($args);
+    $filename = array_pop($args);
+    $filepath = '/' . implode('/', $args) . '/';
+
+    if (!$DB->record_exists('school', ['id' => $schoolid])) {
+        return false;
+    }
+
+    $file = get_file_storage()->get_file(
+        $context->id,
+        'local_school',
+        'banner',
+        $schoolid,
+        $filepath,
+        $filename
+    );
+    if (!$file || $file->is_directory()) {
+        return false;
+    }
+
+    send_stored_file($file, 0, 0, $forcedownload, $options);
+}
+
 function state()
 {
     $states = [

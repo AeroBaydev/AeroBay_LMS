@@ -1,0 +1,4 @@
+439:.td-summary-label { font-size: 0.82rem; font-weight: 600; color: var(--td-text2); margin-top: 4px; }
+1001:                <div class="td-summary-label">Total Students</div>
+1011:                <div class="td-summary-label">Today's Classes</div>
+1021:                <div class="td-summary-label">Today's Attendance</div>

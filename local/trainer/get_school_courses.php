@@ -18,7 +18,7 @@ if (!empty($requestedpocuserid) && (is_siteadmin() || $requestedpocuserid == $US
 
 header('Content-Type: application/json');
 
-if (!$DB->record_exists('schoolassign', ['userid' => $pocuserid, 'schoolid' => $schoolid])) {
+if (!is_siteadmin() && !$DB->record_exists('schoolassign', ['userid' => $pocuserid, 'schoolid' => $schoolid])) {
     echo json_encode(['html' => get_string('invalidschool', 'local_trainer')]);
     exit;
 }
@@ -32,11 +32,10 @@ $records = $DB->get_records_sql(
        FROM {poc_copy_course} pcc
        JOIN {course_categories} grade ON grade.id = pcc.gradeid
   LEFT JOIN {course} course ON course.id = pcc.courseid
-      WHERE pcc.pocid = :pocid
-        AND pcc.schoolid = :schoolid
+      WHERE pcc.schoolid = :schoolid
         AND pcc.status = 1
    ORDER BY grade.sortorder, grade.name, course.fullname",
-    ['pocid' => $pocuserid, 'schoolid' => $schoolid]
+    ['schoolid' => $schoolid]
 );
 
 if (empty($records)) {

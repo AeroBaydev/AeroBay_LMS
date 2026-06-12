@@ -42,4 +42,5 @@ $string['course_copy'] = 'Course Copy';
 $string['selectsubcategory'] = 'Select Grade';
 $string['school_sortname_error'] = 'short name is already used for another school';
 $string['aerobay_about'] = 'About School';
+$string['schoolbanner'] = 'School Banner';
 ?>

@@ -105,6 +105,14 @@ if ($mform->is_cancelled()) {
         $data->course_cat_id = $categoryid->id;
         $data->about = $data->about;
         $id = $DB->insert_record('school', $data);
+        file_save_draft_area_files(
+            $data->banner_filemanager,
+            $context->id,
+            'local_school',
+            'banner',
+            $id,
+            local_school_get_banner_file_options()
+        );
        // end Create school
         // Create sub category
         $category = new stdClass();
