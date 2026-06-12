@@ -93,6 +93,14 @@ class edit_school_form extends moodleform
         $mform->addElement('text', 'about', get_string('aerobay_about', 'local_school'));
         $mform->setType('about', PARAM_TEXT);
 
+        $mform->addElement(
+            'filemanager',
+            'banner_filemanager',
+            get_string('schoolbanner', 'local_school'),
+            null,
+            local_school_get_banner_file_options()
+        );
+
         $mform->addElement('header', 'coordinator_names_header', get_string('coordinator_names', 'local_school'));
         $mform->setExpanded('coordinator_names_header', true);
         

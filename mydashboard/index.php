@@ -654,8 +654,10 @@ if (!empty($school_number)) {
 //   die;
 	   // echo  $OUTPUT->render_from_template('local_mydashboard/welcome_student', $somdata);
     $PAGE->requires->js_call_amd('local_mydashboard/studentdashboard', 'init', [[
-        'submiturl' => (new moodle_url('/local/mydashboard/ajax_submit_doubt.php'))->out(false),
-        'maxchars' => 1000,
+        'studenturl' => (new moodle_url('/local/mydashboard/ajax_chat_student.php'))->out(false),
+        'threadurl' => (new moodle_url('/local/mydashboard/ajax_chat_thread.php'))->out(false),
+        'sendurl' => (new moodle_url('/local/mydashboard/ajax_chat_send.php'))->out(false),
+        'sesskey' => sesskey(),
     ]]);
 	    echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $data);
     echo $OUTPUT->footer();
@@ -1067,6 +1069,29 @@ if (!empty($school_number)) {
         }
 
         
+        // ── Student chat counts ────────────────────────────────────────────────────────
+        $somdata['chatcount_total'] = 0;
+        $somdata['chatcount_unread'] = 0;
+        if ($DB->get_manager()->table_exists('local_mydashboard_chat')) {
+            $trainerchats = $DB->get_records('local_mydashboard_chat', [
+                'trainerid' => $USER->id,
+                'status' => 'active',
+            ]);
+            $somdata['chatcount_total'] = count($trainerchats);
+            foreach ($trainerchats as $trainerchat) {
+                $somdata['chatcount_unread'] += local_mydashboard_get_unread_count(
+                    (int) $trainerchat->id,
+                    (int) $USER->id
+                );
+            }
+        }
+        $somdata['unread_plural'] = $somdata['chatcount_unread'] > 1;
+
+        $PAGE->requires->js_call_amd('local_mydashboard/trainerdashboard', 'init', [[
+            'unreadurl' => (new moodle_url('/local/mydashboard/ajax_chat_trainer_unread.php'))->out(false),
+            'sesskey' => sesskey(),
+        ]]);
+
         echo $OUTPUT->render_from_template('local_mydashboard/trainerdashboard', $somdata);
     } else {
         echo $OUTPUT->render_from_template('local_mydashboard/mydashboard', $somdata);

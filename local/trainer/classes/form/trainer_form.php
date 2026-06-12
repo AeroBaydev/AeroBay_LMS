@@ -16,15 +16,24 @@ class trainer_form extends moodleform
             $pocuserid = $_SESSION['userIdPoc'];
         }
 
-        $schools = $DB->get_records_sql_menu(
-            "SELECT cc.id, COALESCE(sc.school_name, cc.name) AS schoolname
-               FROM {schoolassign} sa
-               JOIN {course_categories} cc ON cc.id = sa.schoolid
-          LEFT JOIN {school} sc ON sc.course_cat_id = cc.id
-              WHERE sa.userid = :userid
-           ORDER BY schoolname",
-            ['userid' => $pocuserid]
-        );
+        if (is_siteadmin() && empty($_SESSION['userIdPoc'])) {
+            $schools = $DB->get_records_sql_menu(
+                "SELECT cc.id, sc.school_name AS schoolname
+                   FROM {course_categories} cc
+                   JOIN {school} sc ON sc.course_cat_id = cc.id
+               ORDER BY schoolname"
+            );
+        } else {
+            $schools = $DB->get_records_sql_menu(
+                "SELECT cc.id, COALESCE(sc.school_name, cc.name) AS schoolname
+                   FROM {schoolassign} sa
+                   JOIN {course_categories} cc ON cc.id = sa.schoolid
+              LEFT JOIN {school} sc ON sc.course_cat_id = cc.id
+                  WHERE sa.userid = :userid
+               ORDER BY schoolname",
+                ['userid' => $pocuserid]
+            );
+        }
 
         $mform->addElement('hidden', 'trainerid', $this->_customdata['trainerid'] ?? 0);
         $mform->setType('trainerid', PARAM_INT);
@@ -244,7 +253,7 @@ class trainer_form extends moodleform
             if (isset($_SESSION['userIdPoc'])) {
                 $pocuserid = $_SESSION['userIdPoc'];
             }
-            if (!$DB->record_exists('schoolassign', ['userid' => $pocuserid, 'schoolid' => $data['schoolid']])) {
+            if (!is_siteadmin() && !$DB->record_exists('schoolassign', ['userid' => $pocuserid, 'schoolid' => $data['schoolid']])) {
                 $errors['schoolid'] = get_string('invalidschool', 'local_trainer');
             }
         }

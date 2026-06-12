@@ -75,8 +75,8 @@ if ($trainer) {
     }
 
     $trainerschoolid = !empty($trainer->schoolid) ? $trainer->schoolid : $DB->get_field('schoolassign', 'schoolid', ['userid' => $USER->id]);
-    if (empty($courses) && !empty($trainerschoolid)) {
-        $courses = $DB->get_records_sql(
+    if (!empty($trainerschoolid)) {
+        $livecourses = $DB->get_records_sql(
             "SELECT c.id,
                     c.fullname,
                     grade.name AS gradename,
@@ -85,13 +85,17 @@ if ($trainer) {
                JOIN {course} c ON c.id = pcc.courseid
           LEFT JOIN {course_categories} grade ON grade.id = pcc.gradeid
           LEFT JOIN {course_categories} schoolcat ON schoolcat.id = pcc.schoolid
-              WHERE pcc.pocid = :pocid
-                AND pcc.schoolid = :schoolid
+              WHERE pcc.schoolid = :schoolid
                 AND pcc.status = 1
                 AND c.visible = 1
            ORDER BY schoolcat.name, grade.sortorder, grade.name, c.fullname",
-            ['pocid' => $trainer->createdby, 'schoolid' => $trainerschoolid]
+            ['schoolid' => $trainerschoolid]
         );
+        foreach ($livecourses as $lc) {
+            if (!array_key_exists($lc->id, $courses)) {
+                $courses[$lc->id] = $lc;
+            }
+        }
     }
 
     foreach ($courses as $course) {
@@ -160,6 +164,12 @@ if (is_siteadmin()) {
         }
     }
 
+    $PAGE->requires->js_call_amd('local_mydashboard/studentdashboard', 'init', [[
+        'studenturl' => (new moodle_url('/local/mydashboard/ajax_chat_student.php'))->out(false),
+        'threadurl' => (new moodle_url('/local/mydashboard/ajax_chat_thread.php'))->out(false),
+        'sendurl' => (new moodle_url('/local/mydashboard/ajax_chat_send.php'))->out(false),
+        'sesskey' => sesskey(),
+    ]]);
     echo $OUTPUT->render_from_template('local_mydashboard/studentdashboard', $somdata);
 } else if ($trainerrec = $DB->get_record('trainer', ['userid' => $USER->id])) {
     // Trainer dashboard — isolated, UI demo only, no DB queries beyond role check.

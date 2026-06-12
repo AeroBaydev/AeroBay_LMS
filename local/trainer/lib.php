@@ -61,7 +61,7 @@ function local_trainer_get_school_course_ids($schoolid) {
 }
 
 function local_trainer_enrol_in_course($courseid, $userid) {
-    global $DB;
+    global $CFG, $DB;
 
     $courseid = (int) $courseid;
     $userid = (int) $userid;
@@ -99,7 +99,15 @@ function local_trainer_enrol_in_course($courseid, $userid) {
         return false;
     }
 
-    $manualplugin->enrol_user($manualinstance, $userid, $role->id, time());
+    $sendcoursewelcome = $manualinstance->customint1;
+    $manualinstance->customint1 = ENROL_DO_NOT_SEND_EMAIL;
+    $CFG->enrol_manual_sendcoursewelcomemessage = 0;
+    try {
+        $manualplugin->enrol_user($manualinstance, $userid, $role->id, time());
+    } finally {
+        $manualinstance->customint1 = $sendcoursewelcome;
+        unset($CFG->enrol_manual_sendcoursewelcomemessage);
+    }
     return true;
 }
 
@@ -163,6 +171,68 @@ function local_trainer_sync_school_assignment($traineruserid, $schoolid, $pocuse
     $pocuserid = (int) $pocuserid;
     $trainer = $DB->get_record('trainer', ['userid' => $traineruserid], '*', MUST_EXIST);
 
+    if ($DB->get_manager()->table_exists('local_mydashboard_chat')) {
+        if (!empty($schoolid)) {
+            $archivedchats = $DB->get_records_sql(
+                "SELECT c.id
+                   FROM {local_mydashboard_chat} c
+                   JOIN {student} s ON s.userid = c.studentid
+                  WHERE c.trainerid = :trainerid
+                    AND s.schoolid = :schoolid
+                    AND c.status = 'archived'",
+                ['trainerid' => $traineruserid, 'schoolid' => $schoolid]
+            );
+
+            mtrace('Trainer: ' . $traineruserid);
+            mtrace('School: ' . $schoolid);
+            mtrace('Archived chats found: ' . count($archivedchats));
+
+            foreach ($archivedchats as $chat) {
+                $DB->set_field(
+                    'local_mydashboard_chat',
+                    'status',
+                    'active',
+                    ['id' => $chat->id]
+                );
+                mtrace('Reactivated chat ID: ' . $chat->id);
+            }
+        }
+
+        $stalechats = [];
+        if (!empty($schoolid)) {
+            $stalechats = $DB->get_records_sql(
+                "SELECT c.id, c.studentid, c.trainerid
+                   FROM {local_mydashboard_chat} c
+                   JOIN {student} s ON s.userid = c.studentid
+                  WHERE c.status = 'active'
+                    AND s.schoolid = :schoolid
+                    AND c.trainerid <> :trainerid",
+                ['schoolid' => $schoolid, 'trainerid' => $traineruserid]
+            );
+        }
+
+        $leavingchats = $DB->get_records_sql(
+            "SELECT c.id, c.studentid, c.trainerid
+               FROM {local_mydashboard_chat} c
+               JOIN {student} s ON s.userid = c.studentid
+              WHERE c.status = 'active'
+                AND c.trainerid = :trainerid
+                AND (:schoolid = 0 OR s.schoolid <> :currentschoolid)",
+            [
+                'trainerid' => $traineruserid,
+                'schoolid' => $schoolid,
+                'currentschoolid' => $schoolid,
+            ]
+        );
+
+        foreach (array_merge($stalechats, $leavingchats) as $oldchat) {
+            $DB->set_field('local_mydashboard_chat', 'status', 'archived', [
+                'studentid' => (int) $oldchat->studentid,
+                'trainerid' => (int) $oldchat->trainerid,
+            ]);
+        }
+    }
+
     $updatetrainer = new stdClass();
     $updatetrainer->id = $trainer->id;
     $updatetrainer->schoolid = !empty($schoolid) ? $schoolid : null;
@@ -207,7 +277,6 @@ function local_trainer_sync_school_assignment($traineruserid, $schoolid, $pocuse
         $DB->delete_records('trainer_course_mapping', ['traineruserid' => $traineruserid]);
         if (!empty($schoolid)) {
             $mappedcourses = $DB->get_records('poc_copy_course', [
-                'pocid' => $pocuserid,
                 'schoolid' => $schoolid,
                 'status' => 1,
             ]);
@@ -230,6 +299,19 @@ function local_trainer_sync_school_assignment($traineruserid, $schoolid, $pocuse
     }
 
     local_trainer_sync_course_enrolments($traineruserid, $schoolid);
+
+    if (!empty($schoolid)) {
+        $traineruser = $DB->get_record('user', ['id' => $traineruserid], 'id', IGNORE_MISSING);
+        $school = $DB->get_record('school', ['course_cat_id' => $schoolid], 'id, school_name', IGNORE_MISSING);
+        if ($traineruser && $school) {
+            \local_emailtemplates\email_sender::send_email(
+                'trainer_assigned',
+                $traineruserid,
+                'trainer_assigned',
+                $school->school_name
+            );
+        }
+    }
 }
 
 ?>

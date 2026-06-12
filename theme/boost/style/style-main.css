@@ -853,6 +853,19 @@ align-items: center; margin-right:10px; border-radius: 100%; color:#fff}
     }
 }
 
+@media (min-width: 992px) {
+    #page.drawers.show-drawer-left {
+        box-sizing: border-box;
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+        transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
+    }
+
+    .show-drawer-left .stickyfooter .sticky-footer-content-wrapper {
+        margin-left: 260px !important;
+    }
+}
+
 @media (max-width: 767.98px) {
     #page.drawers.show-drawer-primary {
         margin-left: 0 !important;

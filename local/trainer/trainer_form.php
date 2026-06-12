@@ -69,7 +69,6 @@ if ($mform->is_cancelled()) {
         if($insert){
             local_trainer_sync_school_assignment((int) $user_id, (int) $data->schoolid, (int) $userid);
             $mappedcourses = $DB->get_records('poc_copy_course', [
-                'pocid' => $userid,
                 'schoolid' => $data->schoolid,
                 'status' => 1
             ]);

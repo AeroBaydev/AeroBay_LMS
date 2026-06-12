@@ -103,6 +103,12 @@
 #page-mydashboard-index {
     overflow-x: hidden !important;
 }
+
+/* Trainer dashboard does not use the navbar message unread badge. */
+body:has(.td-wrap) [data-region="popover-region-messages"] [data-region="count-container"],
+body:has(.td-wrap) [data-region="trainer-unread-navbar"] {
+    display: none !important;
+}
 /* ── END LAYOUT / SCROLL FIX ─────────────────────────────────── */
 
 /* ── CSS custom properties (light default) ─────────────────── */
@@ -395,7 +401,8 @@
    ============================================================ */
 .td-summary-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: 1fr;
     gap: 18px;
 }
 
@@ -407,7 +414,7 @@
     display: flex; align-items: flex-start; gap: 16px;
     box-shadow: var(--td-shadow-sm);
     transition: var(--td-transition);
-    position: relative; overflow: hidden;
+    position: relative; overflow: visible; min-width: 0;
 }
 
 .td-summary-card::after {
@@ -421,6 +428,7 @@
 .td-summary-card.sc-cyan::after   { background: var(--td-cyan); }
 .td-summary-card.sc-green::after  { background: var(--td-green); }
 .td-summary-card.sc-amber::after  { background: var(--td-amber); }
+.td-summary-card.sc-rose::after   { background: var(--td-rose); }
 
 .td-summary-icon {
     width: 48px; height: 48px; border-radius: 12px;
@@ -431,8 +439,12 @@
 .td-summary-icon.si-cyan   { background: var(--td-cyan-light);    color: var(--td-cyan); }
 .td-summary-icon.si-green  { background: var(--td-green-light);   color: var(--td-green); }
 .td-summary-icon.si-amber  { background: var(--td-amber-light);   color: var(--td-amber); }
+.td-summary-icon.si-rose   { background: var(--td-rose-light);    color: var(--td-rose); }
 
-.td-summary-info { flex: 1; min-width: 0; }
+.td-summary-info {
+    flex: 1; min-width: 0; align-self: stretch;
+    display: flex; flex-direction: column;
+}
 
 .td-summary-value {
     font-size: 2rem; font-weight: 800; color: var(--td-text);
@@ -448,6 +460,39 @@
 }
 .td-trend-up   { background: var(--td-green-light);  color: var(--td-green); }
 .td-trend-same { background: var(--td-amber-light);  color: var(--td-amber); }
+.td-summary-bottom { margin-top: auto; padding-top: 8px; }
+.td-summary-bottom .td-trend { margin-top: 0; }
+.aero-trainer-unread-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e53935;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    padding: 0 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+.aero-unread-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 4px;
+    white-space: nowrap;
+}
+.aero-unread-row[hidden] {
+    display: none;
+}
+.aero-unread-label {
+    font-size: 12px;
+    color: #e53935;
+    font-weight: 600;
+}
 
 /* ============================================================
    TWO-COLUMN ROWS
@@ -686,7 +731,7 @@
 @media (max-width: 1100px) {
     .td-row-3-1 { grid-template-columns: 1fr; }
     .td-row-2   { grid-template-columns: 1fr; }
-    .td-summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .td-summary-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 640px) {
@@ -1120,7 +1165,7 @@
                 <div class="td-summary-value" id="td-stat-students">{{trainerstudentcount}}</div>
                 <div class="td-summary-label">Total Students</div>
                 <div class="td-summary-sub">In this school</div>
-                <span class="td-trend td-trend-up"><i class="fas fa-arrow-up"></i> +{{studentsaddedthismonth}} this month</span>
+                <div class="td-summary-bottom"><span class="td-trend td-trend-up"><i class="fas fa-arrow-up"></i> +{{studentsaddedthismonth}} this month</span></div>
             </div>
         </a>
 
@@ -1130,7 +1175,7 @@
                 <div class="td-summary-value" id="td-stat-classes">{{todayclassescount}}</div>
                 <div class="td-summary-label">Today's Classes</div>
                 <div class="td-summary-sub">From timetable</div>
-                <span class="td-trend td-trend-same" id="td-stat-completed"><i class="fas fa-circle" style="font-size:.5rem;"></i> {{todaycompletedcount}} completed</span>
+                <div class="td-summary-bottom"><span class="td-trend td-trend-same" id="td-stat-completed"><i class="fas fa-circle" style="font-size:.5rem;"></i> {{todaycompletedcount}} completed</span></div>
             </div>
         </div>
 
@@ -1140,7 +1185,7 @@
                 <div class="td-summary-value" id="td-stat-attendance">{{todayattendancepercent}}%</div>
                 <div class="td-summary-label">Today's Attendance</div>
                 <div class="td-summary-sub">{{todaypresentcount}}/{{todaytotalcount}} marked today</div>
-                <span class="td-trend td-trend-up"><i class="fas fa-arrow-up"></i> {{todaypresentcount}} present</span>
+                <div class="td-summary-bottom"><span class="td-trend td-trend-up"><i class="fas fa-arrow-up"></i> {{todaypresentcount}} present</span></div>
             </div>
         </div>
 
@@ -1156,9 +1201,24 @@
                     {{#hasratings}}{{rating_count}} Ratings{{/hasratings}}
                     {{^hasratings}}No ratings yet{{/hasratings}}
                 </div>
-                <span class="td-trend td-trend-same"><i class="fas fa-chart-bar"></i> Tap to view breakdown</span>
+                <div class="td-summary-bottom"><span class="td-trend td-trend-same"><i class="fas fa-chart-bar"></i> Tap to view breakdown</span></div>
             </div>
         </div>
+
+        <a href="{{{config.wwwroot}}}/local/mydashboard/trainer_chat.php" class="td-summary-card sc-rose" id="td-card-chat" role="button" style="text-decoration: none; cursor: pointer; color: inherit;">
+            <div class="td-summary-icon si-rose" aria-hidden="true"><i class="fas fa-comments"></i></div>
+            <div class="td-summary-info">
+                <div class="td-summary-value" id="td-stat-chat">{{chatcount_total}}</div>
+                <div class="td-summary-label">Student Chat</div>
+                <div class="td-summary-sub">Persistent conversations</div>
+                <div class="td-summary-bottom">
+                    <div class="aero-unread-row" data-region="trainer-dashboard-unread-row"{{^chatcount_unread}} hidden{{/chatcount_unread}}>
+                        <span class="aero-trainer-unread-badge" data-region="trainer-dashboard-unread-badge">{{chatcount_unread}}</span>
+                        <span class="aero-unread-label" data-region="trainer-dashboard-unread-label">unread message{{#unread_plural}}s{{/unread_plural}}</span>
+                    </div>
+                </div>
+            </div>
+        </a>
 
     </section>
 

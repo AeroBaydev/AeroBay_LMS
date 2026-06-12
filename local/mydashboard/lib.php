@@ -420,10 +420,11 @@ function local_mydashboard_get_learning_path_course_mapping(int $schoolid, int $
 }
 
 function local_mydashboard_get_student_learning_path_context(stdClass $student): array {
-    global $DB;
+    global $CFG, $DB, $USER;
 
     $schoolid = (int) ($student->schoolid ?? 0);
     $gradeid = (int) ($student->gradeid ?? 0);
+    $studentuserid = (int) ($student->userid ?? $USER->id);
     $courseid = 0;
     $sections = [];
     $progressbysection = [];
@@ -508,6 +509,7 @@ function local_mydashboard_get_student_learning_path_context(stdClass $student):
     $activecount = 0;
     $lockedcount = 0;
     $activesession = '—';
+    $activesectionid = 0;
     $previousstate = '';
 
     foreach ($sections as $index => $section) {
@@ -529,6 +531,7 @@ function local_mydashboard_get_student_learning_path_context(stdClass $student):
             $activecount++;
             if ($activesession === '—') {
                 $activesession = $section['sectionname'];
+                $activesectionid = $section['sectionid'];
             }
         } else {
             $lockedcount++;
@@ -547,7 +550,22 @@ function local_mydashboard_get_student_learning_path_context(stdClass $student):
         $previousstate = $state;
     }
 
+    $continuelearningurl = '';
+    if ($courseid > 0 && $activesectionid > 0) {
+        require_once($CFG->dirroot . '/course/lib.php');
+
+        $modinfo = get_fast_modinfo($courseid, $studentuserid);
+        $sectioninfo = $modinfo->get_section_info_by_id($activesectionid);
+        if ($sectioninfo && $sectioninfo->visible && $sectioninfo->uservisible) {
+            $sectionurl = course_get_url($courseid, $sectioninfo->section, ['navigation' => true]);
+            if ($sectionurl) {
+                $continuelearningurl = $sectionurl->out(false);
+            }
+        }
+    }
+
     return [
+        'continuelearningurl' => $continuelearningurl,
         'learningpath' => [
             'gradeid' => $gradeid,
             'courseid' => $courseid,
@@ -560,6 +578,261 @@ function local_mydashboard_get_student_learning_path_context(stdClass $student):
             'nodes' => $nodes,
         ],
     ];
+}
+
+/**
+ * Return a chat after confirming that the user is one of its participants.
+ *
+ * @param int $chatid
+ * @param int $userid
+ * @return stdClass
+ */
+function local_mydashboard_require_chat_participant(int $chatid, int $userid): stdClass {
+    global $DB;
+
+    if ($chatid <= 0 || $userid <= 0) {
+        throw new invalid_parameter_exception('A valid chat and user are required.');
+    }
+
+    $chat = $DB->get_record('local_mydashboard_chat', ['id' => $chatid], '*', MUST_EXIST);
+    if ($userid !== (int) $chat->studentid && $userid !== (int) $chat->trainerid) {
+        throw new required_capability_exception(context_system::instance(), 'moodle/site:config', 'nopermissions', '');
+    }
+
+    return $chat;
+}
+
+/**
+ * Return a chat owned by the logged-in participant and derive their sender type.
+ *
+ * @param int $chatid
+ * @param int $userid
+ * @return array
+ */
+function local_mydashboard_require_owned_chat(int $chatid, int $userid): array {
+    $chat = local_mydashboard_require_chat_participant($chatid, $userid);
+
+    if ($chat->status === 'archived') {
+        throw new moodle_exception('chatarchived', 'local_mydashboard');
+    }
+
+    if ((int) $chat->studentid === $userid) {
+        return [$chat, 'student'];
+    }
+    if ((int) $chat->trainerid === $userid) {
+        return [$chat, 'trainer'];
+    }
+
+    throw new required_capability_exception(context_system::instance(), 'moodle/site:config', 'nopermissions', '');
+}
+
+/**
+ * Return the trainer currently assigned to a student through their school.
+ *
+ * @param int $studentid
+ * @return stdClass|null
+ */
+function local_mydashboard_get_student_assigned_trainer(int $studentid): ?stdClass {
+    global $DB;
+
+    if ($studentid <= 0) {
+        return null;
+    }
+
+    $student = $DB->get_record('student', ['userid' => $studentid], 'userid, schoolid', IGNORE_MISSING);
+    if (!$student || empty($student->schoolid)) {
+        return null;
+    }
+
+    $trainers = $DB->get_records_sql(
+        "SELECT t.id, t.userid, t.schoolid, u.firstname, u.lastname, u.lastaccess
+           FROM {trainer} t
+           JOIN {user} u ON u.id = t.userid
+          WHERE t.schoolid = :schoolid
+       ORDER BY t.id ASC",
+        ['schoolid' => (int) $student->schoolid],
+        0,
+        1
+    );
+
+    return $trainers ? reset($trainers) : null;
+}
+
+/**
+ * Confirm that a chat belongs to the student's currently assigned trainer.
+ *
+ * @param int $chatid
+ * @param int $studentid
+ * @return stdClass
+ */
+function local_mydashboard_require_student_assigned_chat(int $chatid, int $studentid): stdClass {
+    $chat = local_mydashboard_require_chat_participant($chatid, $studentid);
+    if ($chat->status === 'archived') {
+        throw new moodle_exception('chatarchived', 'local_mydashboard');
+    }
+
+    return $chat;
+}
+
+/**
+ * Get the persistent chat for a student and trainer, creating it when needed.
+ *
+ * @param int $studentid
+ * @param int $trainerid
+ * @param int $schoolid
+ * @return stdClass
+ */
+function local_mydashboard_get_or_create_chat(int $studentid, int $trainerid, int $schoolid = 0): stdClass {
+    global $DB;
+
+    if ($studentid <= 0 || $trainerid <= 0) {
+        throw new invalid_parameter_exception('A valid student and trainer are required.');
+    }
+
+    $params = ['studentid' => $studentid, 'trainerid' => $trainerid];
+    $chat = $DB->get_record('local_mydashboard_chat', $params);
+    if ($chat) {
+        return $chat;
+    }
+
+    $dbman = $DB->get_manager();
+    $studenttable = new xmldb_table('student');
+    $trainertable = new xmldb_table('trainer');
+    if ($schoolid <= 0 && $dbman->table_exists($studenttable)
+            && $dbman->field_exists($studenttable, new xmldb_field('userid'))
+            && $dbman->field_exists($studenttable, new xmldb_field('schoolid'))) {
+        $schoolid = (int) $DB->get_field('student', 'schoolid', ['userid' => $studentid]);
+    }
+    if ($schoolid <= 0 && $dbman->table_exists($trainertable)
+            && $dbman->field_exists($trainertable, new xmldb_field('userid'))
+            && $dbman->field_exists($trainertable, new xmldb_field('schoolid'))) {
+        $schoolid = (int) $DB->get_field('trainer', 'schoolid', ['userid' => $trainerid]);
+    }
+
+    $now = time();
+    $record = (object) [
+        'studentid' => $studentid,
+        'trainerid' => $trainerid,
+        'schoolid' => max(0, $schoolid),
+        'status' => 'active',
+        'timecreated' => $now,
+        'timemodified' => $now,
+    ];
+
+    try {
+        $record->id = $DB->insert_record('local_mydashboard_chat', $record);
+        return $record;
+    } catch (dml_write_exception $exception) {
+        // Another request may have created the unique student/trainer pair first.
+        return $DB->get_record('local_mydashboard_chat', $params, '*', MUST_EXIST);
+    }
+}
+
+/**
+ * Get chat messages in chronological order.
+ *
+ * @param int $chatid
+ * @param int $userid
+ * @param int $limit
+ * @param int $beforemessageid
+ * @return array
+ */
+function local_mydashboard_get_chat_messages(
+    int $chatid,
+    int $userid,
+    int $limit = 100,
+    int $beforemessageid = 0
+): array {
+    global $DB;
+
+    local_mydashboard_require_chat_participant($chatid, $userid);
+    $limit = max(1, min(500, $limit));
+    $params = ['chatid' => $chatid];
+    $beforesql = '';
+    if ($beforemessageid > 0) {
+        $beforesql = ' AND id < :beforemessageid';
+        $params['beforemessageid'] = $beforemessageid;
+    }
+
+    $messages = $DB->get_records_sql(
+        "SELECT *
+           FROM {local_mydashboard_chat_messages}
+          WHERE chatid = :chatid{$beforesql}
+       ORDER BY timecreated DESC, id DESC",
+        $params,
+        0,
+        $limit
+    );
+
+    return array_reverse(array_values($messages));
+}
+
+/**
+ * Move a user's read position forward in a chat.
+ *
+ * @param int $chatid
+ * @param int $userid
+ * @param int $lastreadmessageid Zero marks through the latest message.
+ * @return void
+ */
+function local_mydashboard_mark_chat_read(int $chatid, int $userid, int $lastreadmessageid = 0): void {
+    global $DB;
+
+    local_mydashboard_require_chat_participant($chatid, $userid);
+    if ($lastreadmessageid > 0 && !$DB->record_exists('local_mydashboard_chat_messages', [
+        'id' => $lastreadmessageid,
+        'chatid' => $chatid,
+    ])) {
+        throw new invalid_parameter_exception('The read message does not belong to this chat.');
+    }
+    if ($lastreadmessageid <= 0) {
+        $lastreadmessageid = (int) $DB->get_field_sql(
+            'SELECT MAX(id) FROM {local_mydashboard_chat_messages} WHERE chatid = :chatid',
+            ['chatid' => $chatid]
+        );
+    }
+
+    $readrecord = $DB->get_record('local_mydashboard_chat_read', ['chatid' => $chatid, 'userid' => $userid]);
+    if ($readrecord) {
+        $readrecord->lastreadmessageid = max((int) $readrecord->lastreadmessageid, $lastreadmessageid);
+        $readrecord->timemodified = time();
+        $DB->update_record('local_mydashboard_chat_read', $readrecord);
+        return;
+    }
+
+    $DB->insert_record('local_mydashboard_chat_read', (object) [
+        'chatid' => $chatid,
+        'userid' => $userid,
+        'lastreadmessageid' => $lastreadmessageid,
+        'timemodified' => time(),
+    ]);
+}
+
+/**
+ * Count unread messages sent by the other participant.
+ *
+ * @param int $chatid
+ * @param int $userid
+ * @return int
+ */
+function local_mydashboard_get_unread_count(int $chatid, int $userid): int {
+    global $DB;
+
+    local_mydashboard_require_chat_participant($chatid, $userid);
+    $lastreadmessageid = (int) $DB->get_field('local_mydashboard_chat_read', 'lastreadmessageid', [
+        'chatid' => $chatid,
+        'userid' => $userid,
+    ]);
+
+    return (int) $DB->count_records_select(
+        'local_mydashboard_chat_messages',
+        'chatid = :chatid AND senderid <> :userid AND id > :lastreadmessageid',
+        [
+            'chatid' => $chatid,
+            'userid' => $userid,
+            'lastreadmessageid' => $lastreadmessageid,
+        ]
+    );
 }
 
 function local_mydashboard_get_student_progress_context(stdClass $student): array {
@@ -762,7 +1035,6 @@ function local_mydashboard_get_student_progress_context(stdClass $student): arra
     $timetablecontext = local_mydashboard_get_student_timetable_context($student);
     $learningpathcontext = local_mydashboard_get_student_learning_path_context($student);
     $recentactivities = local_mydashboard_get_recent_activities($studentuserid);
-
     return array_merge([
         'overallprogressnumber' => (string) round($overallprogress),
         'overallprogress' => local_mydashboard_format_kpi_percent($overallprogress),
@@ -792,4 +1064,58 @@ function local_mydashboard_get_student_progress_context(stdClass $student): arra
         'recentactivities' => $recentactivities,
         'hasrecentactivities' => !empty($recentactivities),
     ], $weeklyloginflags, $timetablecontext, $learningpathcontext);
+}
+
+/**
+ * Serve files for the local_mydashboard plugin.
+ *
+ * @param stdClass $course
+ * @param stdClass $cm
+ * @param context $context
+ * @param string $filearea
+ * @param array $args
+ * @param bool $forcedownload
+ * @param array $options
+ * @return bool false if file not found
+ */
+function local_mydashboard_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    global $DB, $USER;
+
+    require_login();
+
+    if ($filearea !== 'doubt_attachment' && $filearea !== 'chat_message_attachment') {
+        return false;
+    }
+
+    $itemid = (int) array_shift($args);
+    $filename = array_pop($args);
+    $filepath = $args ? '/' . implode('/', $args) . '/' : '/';
+
+    $userid = (int) $USER->id;
+    if ($filearea === 'doubt_attachment') {
+        $doubt = $DB->get_record('local_mydashboard_doubt', ['id' => $itemid], '*', IGNORE_MISSING);
+        if (!$doubt || ($userid !== (int) $doubt->studentid
+                && $userid !== (int) $doubt->trainerid
+                && !is_siteadmin())) {
+            return false;
+        }
+    } else {
+        $message = $DB->get_record('local_mydashboard_chat_messages', ['id' => $itemid], 'id, chatid', IGNORE_MISSING);
+        if (!$message) {
+            return false;
+        }
+        $chat = $DB->get_record('local_mydashboard_chat', ['id' => $message->chatid], '*', IGNORE_MISSING);
+        if (!$chat || ($userid !== (int) $chat->studentid
+                && $userid !== (int) $chat->trainerid)) {
+            return false;
+        }
+    }
+
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, 'local_mydashboard', $filearea, $itemid, $filepath, $filename);
+    if (!$file || $file->is_directory()) {
+        return false;
+    }
+
+    send_stored_file($file, 0, 0, $forcedownload, $options);
 }

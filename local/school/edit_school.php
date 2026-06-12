@@ -41,6 +41,15 @@ $school->coordinator_contact4 = $school_record->coordinator_contact4;
 $school->syllabus = $school_record->syllabus;
 $school->aerobay_fees = $school_record->aerobay_fees;
 $school->about = $school_record->about;
+$school = file_prepare_standard_filemanager(
+    $school,
+    'banner',
+    local_school_get_banner_file_options(),
+    context_system::instance(),
+    'local_school',
+    'banner',
+    $schoolid
+);
 
 $form = new edit_school_form($schoolid);
 
@@ -78,6 +87,14 @@ if ($form->is_cancelled()) {
     $school->about = $data->about;
   
     $DB->update_record('school', $school);
+    file_save_draft_area_files(
+        $data->banner_filemanager,
+        context_system::instance()->id,
+        'local_school',
+        'banner',
+        $data->schoolid,
+        local_school_get_banner_file_options()
+    );
     
     $cohort = $DB->get_record('cohort', ['name' => $school_record->school_sortname]);
     $objcohort = new stdClass();

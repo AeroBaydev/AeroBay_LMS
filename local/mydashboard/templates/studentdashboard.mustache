@@ -255,63 +255,143 @@
   margin-bottom: 20px;
 }
 .ab-kpi {
-  background: #fff;
   border-radius: var(--ab-radius);
-  padding: 16px 18px 14px;
+  padding: 20px;
   box-shadow: var(--ab-shadow);
-  border: 1px solid rgba(255,255,255,0.9);
   transition: transform var(--ab-tr), box-shadow var(--ab-tr);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
-.ab-kpi::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  border-radius: var(--ab-radius) var(--ab-radius) 0 0;
-}
-.ab-kpi.k-blue::before   { background: linear-gradient(90deg,#2563eb,#06b6d4); }
-.ab-kpi.k-green::before  { background: linear-gradient(90deg,#10b981,#34d399); }
-.ab-kpi.k-amber::before  { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
-.ab-kpi.k-purple::before { background: linear-gradient(90deg,#8b5cf6,#a78bfa); }
-.ab-kpi.k-rose::before   { background: linear-gradient(90deg,#f43f5e,#fb7185); }
-.ab-kpi.k-indigo::before { background: linear-gradient(90deg,#4f46e5,#2563eb); }
+.ab-kpi.k-blue   { background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; }
+.ab-kpi.k-purple { background: linear-gradient(145deg, #faf5ff 0%, #f3e8ff 100%); border: 1px solid #e9d5ff; }
+.ab-kpi.k-green  { background: linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; }
+.ab-kpi.k-teal   { background: linear-gradient(145deg, #f0fdfa 0%, #ccfbf1 100%); border: 1px solid #99f6e4; }
+
 .ab-kpi:hover { transform: translateY(-4px); box-shadow: var(--ab-shadow-md); }
-.ab-kpi-icon {
-  width: 36px; height: 36px;
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.95rem;
-  margin-bottom: 10px;
+.ab-kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.k-blue .ab-kpi-icon   { background:#dbeafe; color:#2563eb; }
-.k-green .ab-kpi-icon  { background:#d1fae5; color:#10b981; }
-.k-amber .ab-kpi-icon  { background:#fef3c7; color:#f59e0b; }
-.k-purple .ab-kpi-icon { background:#ede9fe; color:#8b5cf6; }
-.k-rose .ab-kpi-icon   { background:#ffe4e6; color:#f43f5e; }
-.k-indigo .ab-kpi-icon { background:#e0e7ff; color:#4f46e5; }
-.ab-kpi-val  { font-size: 1.5rem; font-weight: 800; color: var(--ab-text); line-height: 1; margin-bottom: 3px; }
-.ab-kpi-lbl  { font-size: 0.68rem; color: var(--ab-text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
-.ab-kpi-trend { font-size: 0.65rem; font-weight: 600; margin-top: 5px; display: flex; align-items: center; gap: 3px; }
-.ab-kpi-trend.up   { color: #10b981; }
-.ab-kpi-trend.neu  { color: var(--ab-text-3); }
+
+.ab-kpi-lbl-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ab-kpi-icon {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+}
+.k-blue .ab-kpi-icon   { color: #2563eb; }
+.k-purple .ab-kpi-icon { color: #8b5cf6; }
+.k-green .ab-kpi-icon  { color: #10b981; }
+.k-teal .ab-kpi-icon   { color: #0f766e; }
+
+.ab-kpi-lbl {
+  font-size: 0.85rem;
+  color: var(--ab-text-2);
+  font-weight: 700;
+}
+.k-blue .ab-kpi-lbl { color: #1e3a8a; }
+.k-purple .ab-kpi-lbl { color: #4c1d95; }
+.k-green .ab-kpi-lbl { color: #064e3b; }
+.k-teal .ab-kpi-lbl { color: #134e4a; }
+
+.ab-kpi-val {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.k-blue .ab-kpi-val { color: #1e3a8a; }
+.k-purple .ab-kpi-val { color: #4c1d95; }
+.k-green .ab-kpi-val { color: #064e3b; }
+.k-teal .ab-kpi-val { color: #134e4a; }
+
+.ab-kpi-progress-bg {
+  height: 6px;
+  border-radius: 3px;
+  width: 100%;
+  overflow: hidden;
+}
+.k-blue .ab-kpi-progress-bg { background: rgba(37, 99, 235, 0.15); }
+.k-purple .ab-kpi-progress-bg { background: rgba(139, 92, 246, 0.15); }
+.k-green .ab-kpi-progress-bg { background: rgba(16, 185, 129, 0.15); }
+.k-teal .ab-kpi-progress-bg { background: rgba(20, 184, 166, 0.15); }
+
+.ab-kpi-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ab-kpi-subtitle { min-height: 6px; font-size: 0.72rem; line-height: 1; color: var(--ab-text-2); }
+.k-blue .ab-kpi-progress-bar { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+.k-purple .ab-kpi-progress-bar { background: linear-gradient(90deg, #a855f7, #8b5cf6); }
+.k-green .ab-kpi-progress-bar { background: linear-gradient(90deg, #34d399, #10b981); }
+.k-teal .ab-kpi-progress-bar { background: linear-gradient(90deg, #2dd4bf, #0d9488); }
+
+.ab-kpi-trend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.k-blue .ab-kpi-trend { color: #2563eb; }
+.k-purple .ab-kpi-trend { color: #8b5cf6; }
+.k-green .ab-kpi-trend { color: #10b981; }
+.k-teal .ab-kpi-trend { color: #0f766e; }
 
 /* ─── GRID LAYOUTS ─── */
 .ab-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-bottom: 18px; }
 .ab-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
 .ab-grid-2-1 { display: grid; grid-template-columns: 1fr 320px; gap: 18px; margin-bottom: 18px; }
+.ab-student-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0,3fr) minmax(280px,1fr);
+  align-items: stretch;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.ab-student-overview-grid .ab-timetable-card { grid-column: auto; }
+.ab-student-right-column { display:flex; flex-direction:column; gap:18px; min-width:0; height:100%; }
 
 /* ─── CARD ─── */
 .ab-card {
-  background: var(--ab-surface);
+  background: #ffffff;
   border-radius: var(--ab-radius);
-  box-shadow: var(--ab-shadow);
-  border: 1px solid var(--ab-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0,0,0,0.04);
   overflow: hidden;
-  transition: box-shadow var(--ab-tr);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  position: relative;
 }
-.ab-card:hover { box-shadow: var(--ab-shadow-md); }
+.ab-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+.ab-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  opacity: 0;
+  z-index: 10;
+}
+.ab-card.accent-blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); opacity: 1; }
+.ab-card.accent-purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); opacity: 1; }
+.ab-card.accent-green::before { background: linear-gradient(90deg, #10b981, #34d399); opacity: 1; }
+.ab-card.accent-orange::before { background: linear-gradient(90deg, #f97316, #fb923c); opacity: 1; }
+.ab-card.accent-amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); opacity: 1; }
+.ab-card.accent-teal::before { background: linear-gradient(90deg, #14b8a6, #2dd4bf); opacity: 1; }
 .ab-card-hd {
   padding: 18px 20px 0;
   display: flex;
@@ -423,8 +503,10 @@
 .ab-trainer-bd { padding: 14px 18px; }
 .ab-trainer-row { display:flex; justify-content:space-between; font-size:0.77rem; color:var(--ab-text-2); margin-bottom:7px; }
 .ab-trainer-row strong { color:var(--ab-text); font-weight:700; }
+.ab-chat-card-copy { font-size:0.78rem; color:var(--ab-text-2); line-height:1.55; margin:0; }
+.ab-chat-card-actions { display:flex; justify-content:flex-end; margin-top:14px; }
 .ab-divider { height:1px; background:var(--ab-border); margin:12px 0; }
-.ab-btn-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.ab-btn-grid { display:grid; grid-template-columns:1fr; gap:8px; }
 .ab-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   padding: 8px 12px; border-radius: var(--ab-radius-sm);
@@ -664,6 +746,7 @@
   position: relative;
 }
 .ab-streak-card::before { content:'🔥'; position:absolute; font-size:7rem; right:-10px; top:-10px; opacity:0.07; pointer-events:none; }
+.ab-streak-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, #8b5cf6, #a78bfa); z-index:10; }
 .ab-streak-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
 .ab-streak-hd-title { font-size:0.82rem; font-weight:700; color:rgba(255,255,255,0.9); display:flex; align-items:center; gap:6px; }
 .ab-streak-big  { font-size:2.8rem; font-weight:800; color:#fbbf24; line-height:1; margin-bottom:2px; }
@@ -754,6 +837,91 @@
 .ab-star-rating { font-size: 2rem; color: #cbd5e1; display: inline-flex; gap: 8px; cursor: pointer; }
 .ab-star-rating i { transition: color 0.2s; }
 .ab-star-rating i.active, .ab-star-rating i:hover ~ i { /* hover logic handled via js */ }
+.aero-unread-badge {
+  align-items: center;
+  justify-content: center;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.aero-unread-badge.aero-unread-badge-card {
+  display: inline-flex;
+  margin: 0 0 8px;
+  padding: 6px 9px;
+}
+.aero-unread-badge.aero-unread-badge-navbar {
+  display: flex;
+  position: absolute;
+  top: -3px;
+  right: -5px;
+  z-index: 2;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-shadow: 0 0 0 2px #fff;
+}
+.aero-unread-badge[hidden] { display: none; }
+
+/* ─── STUDENT CHAT DRAWER ─── */
+.ab-doubt-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(15,23,42,0.58);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--ab-tr), visibility var(--ab-tr);
+}
+.ab-doubt-drawer-overlay.open { opacity: 1; visibility: visible; pointer-events: auto; }
+.ab-doubt-drawer {
+  width: min(440px, 100%);
+  height: 100%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -18px 0 45px rgba(15,23,42,0.2);
+  transform: translateX(100%);
+  transition: transform 0.28s ease;
+}
+.ab-doubt-drawer-overlay.open .ab-doubt-drawer { transform: translateX(0); }
+.ab-doubt-drawer-hd {
+  padding: 18px 20px;
+  background: linear-gradient(135deg,#1e3a8a,#2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.ab-chat-drawer-title { display:flex; align-items:center; gap:10px; min-width:0; }
+.ab-chat-drawer-title i { color:#fff; }
+.ab-chat-trainer-name { color:#fff; font-size:0.9rem; font-weight:700; line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ab-chat-status { color:rgba(255,255,255,0.72); font-size:0.68rem; display:flex; align-items:center; gap:5px; margin-top:2px; }
+.ab-chat-status-dot { width:7px; height:7px; border-radius:50%; background:#94a3b8; }
+.ab-chat-status-dot.online { background:#4ade80; box-shadow:0 0 0 3px rgba(74,222,128,0.2); }
+.ab-chat-drawer-bd { flex:1; padding:18px; overflow-y:auto; background:#f1f5f9; display:flex; flex-direction:column; gap:12px; }
+.ab-chat-message { display:flex; flex-direction:column; align-items:flex-start; max-width:82%; }
+.ab-chat-message.mine { align-self:flex-end; align-items:flex-end; }
+.ab-chat-bubble { padding:9px 11px; background:#fff; color:var(--ab-text); border-radius:4px 13px 13px 13px; box-shadow:0 1px 3px rgba(15,23,42,0.08); font-size:0.8rem; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; width:fit-content; max-width:100%; }
+.ab-chat-message.mine .ab-chat-bubble { background:#dbeafe; border-radius:13px 4px 13px 13px; }
+.ab-chat-image { display:block; max-width:220px; max-height:220px; border-radius:9px; object-fit:cover; margin-bottom:7px; }
+.ab-chat-time { color:var(--ab-text-3); font-size:0.61rem; margin-top:4px; }
+.ab-chat-empty { margin:auto; color:var(--ab-text-3); font-size:0.78rem; text-align:center; line-height:1.5; padding:30px 12px; }
+.ab-chat-error { color:#dc2626; font-size:0.69rem; min-height:17px; padding:0 14px; background:#fff; }
+.ab-chat-drawer-ft { flex-shrink:0; padding:10px 12px 12px; border-top:1px solid var(--ab-border); background:#fff; }
+.ab-chat-form { display:flex; gap:8px; align-items:flex-end; }
+.ab-chat-input { flex:1; min-height:42px; max-height:110px; resize:vertical; border:1px solid #cbd5e1; border-radius:11px; padding:10px 11px; font:inherit; font-size:0.78rem; line-height:1.4; outline:none; }
+.ab-chat-input:focus { border-color:var(--ab-blue); box-shadow:0 0 0 3px rgba(37,99,235,0.12); }
+.ab-chat-attach, .ab-chat-send { width:42px; height:42px; flex-shrink:0; border:none; border-radius:11px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.ab-chat-attach { color:var(--ab-blue); background:#eff6ff; border:1px solid #bfdbfe; }
+.ab-chat-send { color:#fff; background:var(--ab-blue); }
+.ab-chat-send:disabled { opacity:0.55; cursor:wait; }
+.ab-chat-attachment-name { color:var(--ab-text-3); font-size:0.65rem; margin:0 0 6px 50px; min-height:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
 /* ─── WELCOME POPUP ─── */
 .ab-welcome-overlay {
@@ -789,14 +957,17 @@
 .ab-wl-footer { padding:14px 28px 22px; display:flex; gap:10px; justify-content:flex-end; }
 
 /* ─── RESPONSIVE ─── */
+@media (max-width:1200px) {
+  .ab-student-overview-grid { grid-template-columns:1fr; }
+}
 @media (max-width:1100px) {
-  .ab-kpi-row    { grid-template-columns:repeat(3,1fr); }
+  .ab-kpi-row    { grid-template-columns:repeat(2,1fr); }
   .ab-grid-2-1   { grid-template-columns:1fr; }
   .ab-grid-3     { grid-template-columns:1fr 1fr; }
   .ab-badges-grid{ grid-template-columns:repeat(4,1fr); }
 }
 @media (max-width:768px) {
-  .ab-kpi-row    { grid-template-columns:repeat(3,1fr); gap:10px; }
+  .ab-kpi-row    { grid-template-columns:repeat(2,1fr); gap:10px; }
   .ab-grid-2     { grid-template-columns:1fr; }
   .ab-grid-3     { grid-template-columns:1fr; }
   .ab-timetable-card { grid-column: auto; }
@@ -810,6 +981,7 @@
 @media (max-width:480px) {
   .ab-kpi-row    { grid-template-columns:1fr; gap:9px; }
   .ab-badges-grid{ grid-template-columns:repeat(2,1fr); }
+  .ab-doubt-drawer { width:100%; }
 }
 </style>
 
@@ -829,7 +1001,12 @@
           <span class="ab-chip"><i class="fa-solid fa-school"></i> {{#schoolname}}{{schoolname}}{{/schoolname}}{{^schoolname}}School Not Assigned{{/schoolname}}</span>
           <span class="ab-chip"><i class="fa-solid fa-user-tie"></i> {{#hastrainer}}Trainer: {{trainerfullname}}{{/hastrainer}}{{^hastrainer}}Trainer Not Assigned{{/hastrainer}}</span>
         </div>
-        <a class="ab-hero-cta" style="margin-top:14px;"><i class="fa-solid fa-play"></i> Continue Learning</a>
+        {{#continuelearningurl}}
+        <a class="ab-hero-cta" href="{{continuelearningurl}}" style="margin-top:14px;"><i class="fa-solid fa-play"></i> Continue Learning</a>
+        {{/continuelearningurl}}
+        {{^continuelearningurl}}
+        <span class="ab-hero-cta" style="margin-top:14px;opacity:0.6;cursor:not-allowed;" aria-disabled="true"><i class="fa-solid fa-play"></i> Continue Learning</span>
+        {{/continuelearningurl}}
       </div>
 
       {{! Right — Name on top, Streak below }}
@@ -853,30 +1030,51 @@
     {{! ── KPI CARDS ── }}
     <div class="ab-kpi-row">
       <div class="ab-kpi k-blue">
-        <div class="ab-kpi-icon"><i class="fa-solid fa-circle-half-stroke"></i></div>
-        <div class="ab-kpi-val" data-target="{{overallprogressnumber}}" data-suffix="%">{{overallprogress}}</div>
-        <div class="ab-kpi-lbl">Overall Progress</div>
+        <div class="ab-kpi-top">
+          <div class="ab-kpi-lbl-group">
+            <div class="ab-kpi-icon"><i class="fa-solid fa-circle-half-stroke"></i></div>
+            <div class="ab-kpi-lbl">Overall Progress</div>
+          </div>
+          <div class="ab-kpi-val" data-target="{{overallprogressnumber}}" data-suffix="%">{{overallprogress}}</div>
+        </div>
+        <div class="ab-kpi-progress-bg">
+          <div class="ab-kpi-progress-bar" style="width: {{overallprogressnumber}}%;"></div>
+        </div>
         <div class="ab-kpi-trend neu"><i class="fa-solid fa-minus"></i> Attendance + assessments</div>
       </div>
       <div class="ab-kpi k-purple">
-        <div class="ab-kpi-icon"><i class="fa-solid fa-file-circle-check"></i></div>
-        <div class="ab-kpi-val" data-target="{{assessmentpercentnumber}}" data-suffix="%">{{assessmentpercent}}</div>
-        <div class="ab-kpi-lbl">Assessments</div>
+        <div class="ab-kpi-top">
+          <div class="ab-kpi-lbl-group">
+            <div class="ab-kpi-icon"><i class="fa-solid fa-file-circle-check"></i></div>
+            <div class="ab-kpi-lbl">Assessments</div>
+          </div>
+          <div class="ab-kpi-val" data-target="{{assessmentpercentnumber}}" data-suffix="%">{{assessmentpercent}}</div>
+        </div>
+        <div class="ab-kpi-progress-bg">
+          <div class="ab-kpi-progress-bar" style="width: {{assessmentpercentnumber}}%;"></div>
+        </div>
         <div class="ab-kpi-trend neu"><i class="fa-solid fa-minus"></i> {{assessmentattemptedcount}} / {{assessmenttotalcount}} completed</div>
       </div>
-      <div class="ab-kpi k-indigo">
-        <div class="ab-kpi-icon"><i class="fa-solid fa-user-check"></i></div>
-        <div class="ab-kpi-val" data-target="{{attendancepercentnumber}}" data-suffix="%">{{attendancepercent}}</div>
-        <div class="ab-kpi-lbl">Attendance</div>
+      <div class="ab-kpi k-green">
+        <div class="ab-kpi-top">
+          <div class="ab-kpi-lbl-group">
+            <div class="ab-kpi-icon"><i class="fa-solid fa-user-check"></i></div>
+            <div class="ab-kpi-lbl">Attendance</div>
+          </div>
+          <div class="ab-kpi-val" data-target="{{attendancepercentnumber}}" data-suffix="%">{{attendancepercent}}</div>
+        </div>
+        <div class="ab-kpi-progress-bg">
+          <div class="ab-kpi-progress-bar" style="width: {{attendancepercentnumber}}%;"></div>
+        </div>
         <div class="ab-kpi-trend neu"><i class="fa-solid fa-minus"></i> This month</div>
       </div>
     </div>
 
     {{! ── ROW 1: Weekly Timetable + Trainer ── }}
-    <div class="ab-grid-3" style="margin-bottom:18px;">
+    <div class="ab-student-overview-grid">
 
       {{! Weekly Timetable }}
-      <div class="ab-card ab-timetable-card">
+      <div class="ab-card ab-timetable-card accent-blue">
         <div class="ab-card-hd">
           <div class="ab-card-title">
             <div class="ic" style="background:#e0f2fe;color:#0284c7;"><i class="fa-solid fa-calendar-week"></i></div>
@@ -921,8 +1119,9 @@
         </div>
       </div>
 
+      <div class="ab-student-right-column">
       {{! Trainer Card }}
-      <div class="ab-card" style="overflow:hidden;">
+      <div class="ab-card accent-purple" style="overflow:hidden; display: flex; flex-direction: column; height: 100%;">
         <div class="ab-trainer-hd">
           <div class="ab-trainer-av">
             {{#trainerimageurl}}
@@ -941,15 +1140,14 @@
             {{/hastrainer}}
           </div>
         </div>
-        <div class="ab-trainer-bd">
+        <div class="ab-trainer-bd" style="display: flex; flex-direction: column; flex: 1;">
           {{#hastrainer}}
           <div class="ab-trainer-row"><span>Specialization</span><strong>Aerodynamics, Robotics</strong></div>
           <div class="ab-trainer-row"><span>Sessions Taught</span><strong>{{trainersessionstaught}} Sessions</strong></div>
           <div class="ab-trainer-row"><span>Rating</span><strong>⭐ <span id="abTrainerAvgRating">{{trainer_avg_rating}}</span> / 5.0 (<span id="abTrainerCountRating">{{trainer_count_rating}}</span> ratings)</strong></div>
           <div class="ab-divider"></div>
           <div class="ab-btn-grid">
-            <button type="button" class="ab-btn ab-btn-prim" data-action="open-ask-doubt"><i class="fa-solid fa-circle-question"></i> Ask Doubt</button>
-            <a class="ab-btn ab-btn-out" style="grid-column: span 2;" onclick="abOpenRateTrainer()"><i class="fa-solid fa-star"></i> Rate Trainer</a>
+            <a class="ab-btn ab-btn-out" onclick="abOpenRateTrainer()"><i class="fa-solid fa-star"></i> Rate Trainer</a>
           </div>
           {{/hastrainer}}
           {{^hastrainer}}
@@ -958,12 +1156,31 @@
             Please contact admin or wait for assignment.
           </div>
           {{/hastrainer}}
+
+          <div style="margin-top: auto;">
+            <div class="ab-divider"></div>
+            <div class="ab-card-title" style="margin-bottom: 8px;">
+              <div class="ic" style="background:#dbeafe;color:#2563eb;"><i class="fa-solid fa-comments"></i></div>
+              Chat With Trainer
+            </div>
+            {{#hastrainer}}
+            <p class="ab-chat-card-copy">Continue your conversation with your trainer.</p>
+            <span class="aero-unread-badge aero-unread-badge-card" data-region="trainer-unread-card" hidden></span>
+            <div class="ab-btn-grid" style="margin-top: 14px;">
+              <button type="button" class="ab-btn ab-btn-prim" style="justify-content: center;" data-action="open-student-chat"><i class="fa-solid fa-comment-dots"></i> Open Chat</button>
+            </div>
+            {{/hastrainer}}
+            {{^hastrainer}}
+            <p class="ab-chat-card-copy">Chat becomes available when a trainer is assigned.</p>
+            {{/hastrainer}}
+          </div>
         </div>
+      </div>
       </div>
     </div>
 
     {{! ── LEARNING PATH TIMELINE ── }}
-    <div class="ab-card" style="margin-bottom:18px;">
+    <div class="ab-card accent-green" style="margin-bottom:18px;">
       <div class="ab-card-hd">
         <div class="ab-card-title">
           <div class="ic" style="background:#dbeafe;color:#2563eb;"><i class="fa-solid fa-route"></i></div>
@@ -997,7 +1214,7 @@
     </div>
 
     {{! ── ROW 3: Attendance Overview ── }}
-    <div class="ab-card" style="margin-bottom: 18px; width: 100%;">
+    <div class="ab-card accent-orange" style="margin-bottom: 18px; width: 100%;">
       <div class="ab-card-hd">
         <div class="ab-card-title">
           <div class="ic" style="background:#d1fae5;color:#10b981;"><i class="fa-solid fa-chart-column"></i></div>
@@ -1111,7 +1328,7 @@
     <div class="ab-grid-3">
 
       {{! Announcements }}
-      <div class="ab-card">
+      <div class="ab-card accent-orange">
         <div class="ab-card-hd">
           <div class="ab-card-title">
             <div class="ic" style="background:#fef3c7;color:#f59e0b;"><i class="fa-solid fa-bullhorn"></i></div>
@@ -1160,7 +1377,7 @@
       </div>
 
       {{! Recent Activity }}
-      <div class="ab-card">
+      <div class="ab-card accent-teal">
         <div class="ab-card-hd">
           <div class="ab-card-title">
             <div class="ic" style="background:#d1fae5;color:#10b981;"><i class="fa-solid fa-clock-rotate-left"></i></div>
@@ -1221,7 +1438,7 @@
     </div>
 
     {{! ── ACHIEVEMENTS ── }}
-    <div class="ab-card" style="margin-bottom:10px;">
+    <div class="ab-card accent-amber" style="margin-bottom:10px;">
       <div class="ab-card-hd">
         <div class="ab-card-title">
           <div class="ic" style="background:#fef3c7;color:#d97706;"><i class="fa-solid fa-trophy"></i></div>
@@ -1322,44 +1539,33 @@
   </div>
 </div>
 
-{{! ── ASK DOUBT MODAL ── }}
-<div id="abAskDoubtModal" class="ab-modal-overlay" data-region="ask-doubt-modal" aria-hidden="true">
-  <div class="ab-modal-box" style="max-width: 520px; height: auto; min-height: 0; max-height: none; overflow: hidden;" role="dialog" aria-modal="true" aria-labelledby="abAskDoubtTitle">
-    <div class="ab-modal-hd">
-      <h3 id="abAskDoubtTitle"><i class="fa-solid fa-circle-question"></i> Ask Your Doubt</h3>
-      <button type="button" class="ab-modal-close" data-action="close-ask-doubt" aria-label="Close">✕</button>
+{{! ── STUDENT CHAT DRAWER ── }}
+<div class="ab-doubt-drawer-overlay" data-region="student-chat-drawer" aria-hidden="true">
+  <aside class="ab-doubt-drawer" role="dialog" aria-modal="true" aria-labelledby="abStudentChatTitle">
+    <div class="ab-doubt-drawer-hd">
+      <div class="ab-chat-drawer-title">
+        <i class="fa-solid fa-user-tie"></i>
+        <div>
+          <div id="abStudentChatTitle" class="ab-chat-trainer-name" data-region="student-chat-trainer">{{trainerfullname}}</div>
+          <div class="ab-chat-status"><span class="ab-chat-status-dot" data-region="student-chat-status-dot"></span><span data-region="student-chat-status">Offline</span></div>
+        </div>
+      </div>
+      <button type="button" class="ab-modal-close" data-action="close-student-chat" aria-label="Close">✕</button>
     </div>
-    <div class="ab-modal-bd" style="white-space: normal; line-height: 1.5;">
-      <form id="abAskDoubtForm" data-region="ask-doubt-form">
-        <input type="hidden" name="trainerid" value="{{trainerid}}">
-        <input type="hidden" name="sesskey" value="{{sesskey}}">
-
-        <div class="ab-form-field">
-          <label class="ab-form-label" for="abAskDoubtTrainer">Trainer</label>
-          <input id="abAskDoubtTrainer" class="ab-form-control ab-form-readonly" type="text" value="{{#trainerfullname}}{{trainerfullname}}{{/trainerfullname}}{{^trainerfullname}}Angad Sharma{{/trainerfullname}}" readonly>
-        </div>
-
-        <div class="ab-form-field">
-          <label class="ab-form-label" for="abAskDoubtSubject">Subject <span style="font-weight:500;color:#94a3b8;">(optional)</span></label>
-          <input id="abAskDoubtSubject" class="ab-form-control" type="text" name="subject" maxlength="255" placeholder="What is this about?">
-        </div>
-
-        <div class="ab-form-field">
-          <label class="ab-form-label" for="abAskDoubtQuestion">Doubt / Question</label>
-          <textarea id="abAskDoubtQuestion" class="ab-form-control" name="question" rows="6" maxlength="1000" placeholder="Write your question here..." required></textarea>
-          <div class="ab-form-help">
-            <span data-region="ask-doubt-error" class="ab-form-error"></span>
-            <span><span data-region="ask-doubt-count">0</span>/1000</span>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
-          <button type="button" class="ab-btn ab-btn-out" data-action="close-ask-doubt">Cancel</button>
-          <button type="submit" class="ab-btn ab-btn-prim" data-action="submit-ask-doubt">Send</button>
-        </div>
+    <div class="ab-chat-drawer-bd" data-region="student-chat-messages">
+      <div class="ab-chat-empty">Open chat to load your conversation.</div>
+    </div>
+    <div class="ab-chat-drawer-ft">
+      <div class="ab-chat-attachment-name" data-region="student-chat-attachment-name"></div>
+      <form class="ab-chat-form" data-region="student-chat-form">
+        <input type="file" id="abStudentChatAttachment" name="attachment" accept=".jpg,.jpeg,.png,image/jpeg,image/png" hidden>
+        <label class="ab-chat-attach" for="abStudentChatAttachment" title="Attach image" aria-label="Attach image"><i class="fa-solid fa-image"></i></label>
+        <textarea class="ab-chat-input" name="message" rows="1" maxlength="4000" placeholder="Type a message..." data-region="student-chat-input"></textarea>
+        <button type="submit" class="ab-chat-send" data-action="send-student-chat" aria-label="Send message"><i class="fa-solid fa-paper-plane"></i></button>
       </form>
     </div>
-  </div>
+    <div class="ab-chat-error" data-region="student-chat-error"></div>
+  </aside>
 </div>
 
 {{! ── WELCOME POPUP ── }}

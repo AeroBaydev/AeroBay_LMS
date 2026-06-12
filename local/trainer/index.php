@@ -62,14 +62,12 @@ if (!$table->is_downloading()) {
         .trainer-name-link:focus {
             text-decoration: underline;
         }
-        .trainer-compact-list,
         .trainer-course-list {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
             max-width: 260px;
         }
-        .trainer-list-pill,
         .trainer-course-summary,
         .trainer-list-more {
             background: #eff6ff;

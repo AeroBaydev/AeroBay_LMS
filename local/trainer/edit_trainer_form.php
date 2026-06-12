@@ -72,7 +72,6 @@ if ($form->is_cancelled()) {
     $DB->update_record('trainer',$trainer);
     local_trainer_sync_school_assignment((int) $id, (int) $data->schoolid, (int) $pocuserid);
     $mappedcourses = $DB->get_records('poc_copy_course', [
-        'pocid' => $pocuserid,
         'schoolid' => $data->schoolid,
         'status' => 1
     ]);

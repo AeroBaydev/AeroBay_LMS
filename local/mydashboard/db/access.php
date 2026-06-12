@@ -13,4 +13,14 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+    'local/mydashboard:managedoubts' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'editingteacher' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];
